@@ -326,6 +326,40 @@
   font-family: 'Outfit', sans-serif;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
+
+/* ── MOBIELE WEERGAVE ── */
+@media (max-width: 680px) {
+  .app-header {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  /* Sidebar wordt een lade onderin i.p.v. een paneel rechts (dat op smalle
+     schermen bijna de hele kaart zou bedekken) */
+  #sidebar {
+    top: auto;
+    left: 10px;
+    right: 10px;
+    bottom: 92px;
+    width: auto;
+    max-height: 34vh;
+  }
+
+  #tbar {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 8px 10px;
+    row-gap: 8px;
+  }
+  #tbar #scrubber { flex-basis: 100%; order: 5; }
+  #route-status { display: none; }
+
+  .mav { width: 30px; height: 30px; }
+}
 </style>
 </head>
 <body>

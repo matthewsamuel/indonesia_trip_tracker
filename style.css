@@ -1641,3 +1641,102 @@ ul.history .hdel:hover {
   transform: scale(1.25);
 }
 
+/* ════════════════════════════════════════════════════════
+   MOBIELE WEERGAVE — geldt voor alle pagina's (≤ 680px)
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 680px) {
+  .wrap { padding: 14px 12px 60px; }
+
+  /* Header: titel boven, nav wordt een horizontaal scrollbare rij */
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .app-brand h1 { font-size: 17px; }
+  .app-brand .sub { font-size: 10px; }
+
+  .app-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .app-nav::-webkit-scrollbar { display: none; }
+  .app-nav-link {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    gap: 6px;
+  }
+
+  /* Panels compacter */
+  .panel { padding: 16px; border-radius: 16px; margin-bottom: 16px; }
+  .panel h2 { font-size: 15.5px; margin-bottom: 14px; padding-bottom: 10px; }
+
+  .stat-card { padding: 14px 16px; }
+  .stat-card .value { font-size: 20px; }
+
+  /* Personenkiezer: 2 kolommen i.p.v. 5 */
+  .person-selector-container { padding: 12px; }
+  .person-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .person-card { padding: 7px 10px; }
+  .person-card-name { font-size: 12px; }
+
+  .chart-container { height: 200px; }
+
+  /* Route & kaart: kaart blijft breed en scrollt horizontaal, dat is prima op mobiel */
+  .map-wrap { padding: 8px; }
+
+  /* Reisschema (indonesia-timeline.html): datumkolom boven de kaart in plaats van ernaast */
+  .timeline-item {
+    grid-template-columns: 22px 1fr;
+    grid-template-areas:
+      "when when"
+      "node card";
+    gap: 4px 10px;
+    padding: 18px 0;
+  }
+  .timeline-item .when {
+    grid-area: when;
+    text-align: left;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-top: 0;
+  }
+  .timeline-item .when .yr { display: inline; opacity: 0.5; }
+  .timeline-item .when .dur { margin-top: 0; margin-left: auto; }
+  .timeline-item .timeline-node { grid-area: node; padding-top: 4px; }
+  .timeline-item .item-card { grid-area: card; }
+  .timeline-container::before { left: 10px; }
+
+  .item-card { padding: 15px; }
+  .item-head h3 { font-size: 15px; }
+
+  /* Kostenregels wrappen i.p.v. overlopen */
+  .cost-line { flex-wrap: wrap; row-gap: 6px; }
+  .cost-line .clabel { flex-basis: 100%; }
+
+  form.update { padding: 14px; }
+
+  /* Bestemmingen-strip iets compacter */
+  .dest-card { flex: 0 0 240px; height: 180px; }
+  .locked-photo-hero { height: 160px; }
+
+  /* Gezondheid: SOS/formulier-grids naar 1 kolom op zeer smalle schermen */
+  .sos-grid, .sos-form-grid { grid-template-columns: 1fr; }
+  .sos-field.full, .sos-form-grid .full-w { grid-column: span 1; }
+
+  /* Live tracker */
+  .sim-date-display { min-width: 0; font-size: 14px; }
+  .status-widget { grid-template-columns: 1fr; }
+
+  /* Transport: tickets iets smaller zodat er meer zichtbaar is */
+  .boarding-pass { flex-basis: 260px; }
+  .transport-block-item { padding: 10px 12px; gap: 8px; }
+  .tbi-icon { width: 36px; height: 36px; font-size: 16px; }
+  .tbi-date { width: 38px; }
+}
+
