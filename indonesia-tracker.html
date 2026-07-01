@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indonesië — Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP BAR & NAVIGATION -->
+  <header class="app-header">
+    <div class="app-brand">
+      <h1>🧭 Reis naar Indonesië</h1>
+      <div class="sub">28 aug – 29 sep 2026</div>
+    </div>
+    <nav class="app-nav">
+      <a class="app-nav-link active" href="indonesia-tracker.html">📊 Dashboard</a>
+      <a class="app-nav-link" href="indonesia-timeline.html">📅 Reisschema</a>
+      <a class="app-nav-link" href="indonesia-map.html">🗺️ Reiskaart</a>
+      <a class="app-nav-link" href="indonesia-live.html">📍 Live Tracker</a>
+      <a class="app-nav-link" href="indonesia-health.html">🏥 Gezondheid</a>
+      <a class="app-nav-link" href="indonesia-transport.html">🚇 Transport</a>
+    </nav>
+  </header>
+
+  <!-- PERSON SELECTOR -->
+  <div class="person-selector-container" id="personSelector"></div>
+
+  <!-- QUICK STATS -->
+  <div class="stat-row" id="statRow"></div>
+
+  <!-- TOP ROW: REISGEZELSCHAP & KOSTEN (EQUAL HEIGHT) -->
+  <div class="panel-grid-top">
+    <!-- REISGEZELSCHAP -->
+    <section class="panel group-panel-height">
+      <h2>👥 Reisgezelschap</h2>
+      <div id="groupPanel"></div>
+    </section>
+
+    <!-- KOSTEN DASHBOARD -->
+    <section class="panel group-panel-height">
+      <h2>💶 Kosten <span id="tbdPill"></span></h2>
+      <div class="cost-flex">
+        <div class="cost-totals" id="costTotals"></div>
+        <div class="chart-container">
+          <canvas id="costChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- BOTTOM ROW: COMBINED ROUTE MAP & STEPPER -->
+  <section class="panel combined-route-panel">
+    <h2>🗺️ Route &amp; Verloop <span id="routeStepperCount" class="tbd-pill" style="margin-left:auto; background:var(--teal-soft); color:var(--teal); border-color:rgba(0,180,216,0.2)"></span></h2>
+    <div class="combined-route-grid">
+      <div class="route-left">
+        <div class="route-stepper" id="routeStepper"></div>
+      </div>
+      <div class="route-right">
+        <div class="map-wrap">
+          <svg id="routemap" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="map-legend" id="mapLegend"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note">Kosten zijn per persoon. Wijzigingen worden lokaal in de browser onthouden en gesynchroniseerd met het reisschema.</footer>
+</div>
+
+<script>
+/* ================================================================
+   DATA & SCHEDULING (SHARED LOGIC)
+   ================================================================ */
+const FASES = {
+  heen:    { label: "Vlucht heen",  color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Heenreis vanuit Brussel (overstap in Bangkok) naar Singapore." },
+  sg:      { label: "Singapore",    color: "#00b4d8", soft: "rgba(0, 180, 216, 0.1)", uitleg: "Acclimatiseren, Gardens by the Bay en heerlijk streetfood." },
+  sumatra: { label: "Sumatra",      color: "#4ad66d", soft: "rgba(74, 214, 109, 0.1)", uitleg: "Intense 5-daagse jungle trekking in Ketambe met de hele crew." },
+  jakarta: { label: "Jakarta",      color: "#f77f00", soft: "rgba(247, 127, 0, 0.1)", uitleg: "Aankomst in de hoofdstad en samenkomst van de complete groep van 9." },
+  java:    { label: "Java",         color: "#9d4edd", soft: "rgba(157, 78, 221, 0.1)", uitleg: "Reis langs Yogyakarta, Borobudur, Prambanan en Bromo/Ijen vulkanen." },
+  flores:  { label: "Flores",       color: "#f72585", soft: "rgba(247, 37, 133, 0.1)", uitleg: "Verkenning van het bergachtige Flores, Ruteng en spinnenwebvelden." },
+  komodo:  { label: "Komodo",       color: "#00f5d4", soft: "rgba(0, 245, 212, 0.1)", uitleg: "Boottocht naar Padar Island, Pink Beach en Komodovaranen." },
+  bali:    { label: "Bali",         color: "#ffb703", soft: "rgba(255, 183, 3, 0.1)", uitleg: "Afsluitende ontspanning met luxe villa, strand en gezellig uit eten." },
+};
+
+const PERSONS = {
+  matthew: { name: "Matthew", color: "#0F6B5C" },
+  hinke:   { name: "Hinke",   color: "#C8567D" },
+  arne:    { name: "Arne",    color: "#5B7FB5" },
+  eliott:  { name: "Eliott",  color: "#D97A2B" },
+  jens:    { name: "Jens",    color: "#6B4E9C" },
+  kamiel:  { name: "Kamiel",  color: "#4A8B3B" },
+  maurice: { name: "Maurice", color: "#C8932B" },
+  mathias: { name: "Mathias", color: "#1C8AA0" },
+  willem:  { name: "Willem",  color: "#C75D3A" },
+  kasper:  { name: "Kasper",  color: "#8A6D3B" }
+};
+
+const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
+
+const PERSON_TRIPS = {
+  matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
+  hinke:   ["t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
+  arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
+  eliott:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
+  jens:    ["t7", "t8", "t9", "t10", "t24"],
+  kamiel:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
+  maurice: ["t7", "t8", "t9", "t10", "t24"],
+  kasper:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
+  willem:  ["t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
+  mathias: ["t7", "t8", "t9", "t10", "t24"]
+};
+
+const PERSON_GROUP_INFO = {
+  matthew: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>28/08 – 31/08:</b> Matthew + Arne (Brussel → Singapore → Medan)</li>
+      <li><b>31/08, in Medan:</b> Ontmoeting met de Sumatra-groep — 6 man trekken de jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>08/09, Jakarta:</b> Maurice, Mathias & Jens sluiten aan — crew compleet met 9 man voor Java</li>
+      <li><b>11/09, Malang:</b> Matthew splitst af naar Surabaya; de jongens gaan naar Tumpak Sewu/Bromo</li>
+      <li><b>14/09, Surabaya:</b> Hinke landt, vanaf hier reizen Matthew & Hinke samen</li>
+    </ul>
+    <div style="margin-top:14px; font-size:13px; color:var(--text-soft); background:rgba(0,0,0,0.18); border:1px solid var(--border); border-radius:12px; padding:12px 14px;">
+      📎 Matthew splitst af om Bromo/Ijen later samen met Hinke te doen.
+    </div>
+  `,
+  hinke: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>14/09:</b> Hinke landt om 08:00 uur in Surabaya.</li>
+      <li><b>14/09 – 29/09:</b> Reist samen met Matthew (Surabaya → Bromo/Ijen → Flores → Komodo → Bali).</li>
+      <li><b>Reisgezelschap:</b> Exclusief met Matthew. De andere jongens zijn al eerder naar huis of reizen apart.</li>
+    </ul>
+    <div style="margin-top:14px; font-size:13px; color:var(--text-soft); background:rgba(0,0,0,0.18); border:1px solid var(--border); border-radius:12px; padding:12px 14px;">
+      📎 Hinke sluit halverwege aan in Surabaya voor het tweede deel van de reis.
+    </div>
+  `,
+  arne: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>28/08 – 31/08:</b> Samen met Matthew (Brussel → Singapore → Medan)</li>
+      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep compleet met 9 man)</li>
+      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
+      <li><b>13/09:</b> Einde jongens-trip en terugvlucht/vervolg.</li>
+    </ul>
+  `,
+  eliott: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
+      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
+      <li><b>13/09 – 20/09:</b> Samen met Kamiel naar Bali voor een week; daarna terugvlucht naar huis.</li>
+    </ul>
+  `,
+  jens: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>08/09:</b> Sluit aan in Jakarta bij de jongens crew (samen met Maurice & Mathias).</li>
+      <li><b>08/09 – 10/09:</b> Java-etappe met de groep (Jakarta → Yogyakarta → Malang).</li>
+      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo.</li>
+      <li><b>13/09:</b> Einde jongens-trip en terugvlucht naar huis.</li>
+    </ul>
+  `,
+  kamiel: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
+      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
+      <li><b>13/09 – 20/09:</b> Samen met Eliott naar Bali voor een week; daarna terugvlucht naar huis.</li>
+    </ul>
+  `,
+  maurice: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>08/09:</b> Sluit aan in Jakarta bij de jongens crew (samen met Mathias & Jens).</li>
+      <li><b>08/09 – 10/09:</b> Java-etappe met de groep (Jakarta → Yogyakarta → Malang).</li>
+      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo.</li>
+      <li><b>13/09:</b> Einde jongens-trip en terugvlucht/vervolg.</li>
+    </ul>
+  `,
+  kasper: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
+      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
+      <li><b>13/09:</b> Einde jongens-trip en terugvlucht/vervolg.</li>
+    </ul>
+  `,
+  willem: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>30/08:</b> Aankomst Jakarta (09:55) — dag acclimatiseren</li>
+      <li><b>31/08:</b> Jakarta verkennen</li>
+      <li><b>01/09:</b> Vlucht Jakarta → Medan (~220 €/pp), taxi Medan → Ketambe (7-8u)</li>
+      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (5d/4n, all-in ~160 €/pp) — met Matthew, Arne, Kasper, Eliott, Kamiel</li>
+      <li><b>07/09:</b> Taxi Ketambe → Medan, vlucht Medan → Jakarta</li>
+      <li><b>08/09:</b> Jakarta — Maurice & Mathias komen toe (08:25), groep compleet</li>
+      <li><b>09/09:</b> Trein Jakarta → Yogyakarta, Prambanan tempel, Malioboro</li>
+      <li><b>10/09:</b> Borobudur vroeg 's ochtends, nachttrein Yogyakarta → Malang</li>
+      <li><b>11/09:</b> Tumpak Sewu waterval (2,5u rijden), dan naar Combu Lawang</li>
+      <li><b>12/09:</b> 3u 's nachts op voor Mount Bromo, taxi Bromo → Banyuwangi</li>
+      <li><b>13/09:</b> 1u 's nachts op voor Kawah Ijen, taxi → Ketapang, ferry → Bali</li>
+      <li><b>13/09 – 20/09:</b> Bali (een week)</li>
+    </ul>
+  `,
+  mathias: `
+    <ul class="details" style="font-size:14.5px">
+      <li><b>08/09:</b> Sluit aan in Jakarta bij de jongens crew (samen met Maurice & Jens).</li>
+      <li><b>08/09 – 10/09:</b> Java-etappe met de groep (Jakarta → Yogyakarta → Malang).</li>
+      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo.</li>
+      <li><b>13/09:</b> Einde jongens-trip.</li>
+    </ul>
+  `
+};
+
+const COSTS = {
+  c1:  { label: "Vlucht BRU → Bangkok → Singapore (THAI)", cat: "vlucht", amount: 464.23 },
+  c2:  { label: "Vlucht Singapore → Medan (Scoot)", cat: "vlucht", amount: 71 },
+  c3:  { label: "Taxi/minibus Medan → Ketambe", cat: "transport", amount: 20 },
+  c4:  { label: "Jungle trekking Ketambe (5d/4n, all-in)", cat: "activiteit", amount: 160 },
+  c5:  { label: "Taxi/minibus Ketambe → Medan", cat: "transport", amount: 20 },
+  c6:  { label: "Vlucht Medan → Jakarta", cat: "vlucht", amount: 220 },
+  c7:  { label: "Trein Jakarta → Yogyakarta", cat: "transport", amount: 20 },
+  c7b: { label: "Tempels entree (Borobudur + Prambanan)", cat: "activiteit", amount: 40 },
+  c8:  { label: "Nachttrein Yogyakarta → Malang", cat: "transport", amount: 15 },
+  c9:  { label: "Overnachting Surabaya (1n)", cat: "accommodatie", amount: 40 },
+  c10: { label: "Overnachting Banyuwangi (2n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1420571119911855020" },
+  c11: { label: "Vlucht Java → Denpasar → Labuan Bajo", cat: "vlucht", amount: null },
+  c12: { label: "Overnachting Labuan Bajo (3n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1202849662764744783" },
+  c13: { label: "Overnachting Ruteng (2n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/50427330" },
+  c14: { label: "Overnachting Labuan Bajo, terugkeer (3n)", cat: "accommodatie", amount: null },
+  c15: { label: "Vlucht Labuan Bajo → Bali", cat: "vlucht", amount: null },
+  c16: { label: "Bali villa (26-29 sep)", cat: "accommodatie", amount: 101 },
+  c17: { label: "Terugvlucht Bali → huis", cat: "vlucht", amount: null },
+  c18: { label: "Hotel Singapore (2n)", cat: "accommodatie", amount: 90 },
+  c19: { label: "Hotel Jakarta (1n)", cat: "accommodatie", amount: 35 },
+  c20: { label: "Hotel Yogyakarta (1n)", cat: "accommodatie", amount: 30 },
+  c21: { label: "Bromo + Tumpak Sewu (jeep-tour + entree, met Hinke)", cat: "activiteit", amount: 25 },
+  c22: { label: "Kawah Ijen (entree + gids)", cat: "activiteit", amount: 18 },
+  c23: { label: "Komodo dagtour (boot, Padar + Pink Beach + Komodo + Manta)", cat: "activiteit", amount: 68 },
+  c24: { label: "Hotel Surabaya (11–13/09, 3n, wachten op Hinke)", cat: "accommodatie", amount: 75 },
+};
+
+const PTS = {
+  singapore:  { x: 304, y: 112, label: "Singapore", dx: 9, dy: 3, anchor: "start" },
+  medan:      { x: 143, y: 61,  label: "Medan", dx: 9, dy: 3, anchor: "start" },
+  ketambe:    { x: 112, y: 58,  label: "Ketambe", dx: -9, dy: 3, anchor: "end" },
+  jakarta:    { x: 399, y: 285, label: "Jakarta", dx: 9, dy: 3, anchor: "start" },
+  yogya:      { x: 508, y: 321, label: "Yogyakarta", dx: -9, dy: 10, anchor: "end" },
+  malang:     { x: 579, y: 325, label: "Malang", dx: 9, dy: 14, anchor: "start" },
+  surabaya:   { x: 583, y: 309, label: "Surabaya", dx: 9, dy: -6, anchor: "start" },
+  banyuwangi: { x: 634, y: 331, label: "Banyuwangi", dx: 9, dy: -6, anchor: "start" },
+  bali:       { x: 660, y: 341, label: "Bali (Denpasar)", dx: 9, dy: 6, anchor: "start" },
+  labuanbajo: { x: 806, y: 337, label: "Labuan Bajo", dx: -9, dy: -6, anchor: "end" },
+  ruteng:     { x: 824, y: 340, label: "Ruteng", dx: 9, dy: 8, anchor: "start" }
+};
+
+const TRIP = [
+  { id:"t1", fase:"heen", start:"2026-08-28", end:"2026-08-29", title:"Brussel → Bangkok → Singapore (met Arne)", details:[], costs:["c1"], map:["singapore"] },
+  { id:"t2", fase:"sg", start:"2026-08-29", end:"2026-08-30", title:"Singapore (met Arne)", details:[], costs:["c18"], map:["singapore"] },
+  { id:"t3", fase:"sumatra", start:"2026-08-31", end:"2026-08-31", title:"Singapore → Medan (Scoot)", details:[], costs:["c2"], map:["singapore","medan"] },
+  { id:"t4", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Medan → Ketambe — alle 6 man samen", details:["Taxi/minibus vertrekt 07:00 uit Medan. Alle 6 man: Matthew, Arne, Willem, Kasper, Eliott, Kamiel. Rit ±7-8u."], costs:["c3"], map:["medan","ketambe"] },
+  { id:"t5", fase:"sumatra", start:"2026-09-02", end:"2026-09-06", title:"Jungle trekking — Ketambe", details:[], costs:["c4"], map:["ketambe"] },
+  { id:"t6", fase:"sumatra", start:"2026-09-07", end:"2026-09-07", title:"Ketambe → Medan → Jakarta", details:[], costs:["c5","c6"], map:["ketambe","medan","jakarta"] },
+  { id:"t7", fase:"jakarta", start:"2026-09-08", end:"2026-09-08", title:"Jakarta — Maurice & Mathias sluiten aan", details:[], costs:["c19"], map:["jakarta"] },
+  { id:"t8", fase:"java", start:"2026-09-09", end:"2026-09-09", title:"Jakarta → Yogyakarta", details:[], costs:["c7","c7b","c20"], map:["jakarta","yogya"] },
+  { id:"t9", fase:"java", start:"2026-09-10", end:"2026-09-10", title:"Yogyakarta → nachttrein naar Malang", details:[], costs:["c8"], map:["yogya","malang"] },
+  { id:"t10", fase:"java", start:"2026-09-11", end:"2026-09-13", title:"Splitsingspunt — Matthew wacht in Surabaya, jongens → Bromo", details:[], costs:["c24"], map:["malang","surabaya"] },
+  { id:"t11", fase:"java", start:"2026-09-14", end:"2026-09-15", title:"Hinke landt in Surabaya — ze zijn samen", details:[], costs:["c9"], map:["surabaya"] },
+  { id:"t12", fase:"java", start:"2026-09-16", end:"2026-09-16", title:"Bromo + Tumpak Sewu (met Hinke)", details:[], costs:["c10","c21"], map:["surabaya","banyuwangi"] },
+  { id:"t13", fase:"java", start:"2026-09-17", end:"2026-09-17", title:"Kawah Ijen (met Hinke)", details:[], costs:["c22"], map:["banyuwangi"] },
+  { id:"t14", fase:"flores", start:"2026-09-18", end:"2026-09-18", title:"Java → Bali → Flores", details:[], costs:["c11"], map:["banyuwangi","bali","labuanbajo"] },
+  { id:"t15", fase:"flores", start:"2026-09-19", end:"2026-09-19", title:"Labuan Bajo — aankomen & relax", details:[], costs:["c12"], map:["labuanbajo"] },
+  { id:"t16", fase:"flores", start:"2026-09-20", end:"2026-09-20", title:"Labuan Bajo — chill + omgeving", details:[], costs:[], map:["labuanbajo"] },
+  { id:"t17", fase:"flores", start:"2026-09-21", end:"2026-09-22", title:"Ruteng (binnenland)", details:[], costs:["c13"], map:["labuanbajo","ruteng"] },
+  { id:"t18", fase:"flores", start:"2026-09-23", end:"2026-09-23", title:"Terug naar Labuan Bajo regio", details:[], costs:["c14"], map:["ruteng","labuanbajo"] },
+  { id:"t19", fase:"komodo", start:"2026-09-24", end:"2026-09-24", title:"Komodo — full day boottour", details:[], costs:["c23"], map:["labuanbajo"] },
+  { id:"t20", fase:"komodo", start:"2026-09-25", end:"2026-09-25", title:"Relaxdag Labuan Bajo", details:[], costs:[], map:["labuanbajo"] },
+  { id:"t21", fase:"bali", start:"2026-09-26", end:"2026-09-26", title:"Labuan Bajo → Bali", details:[], costs:["c15"], map:["labuanbajo","bali"] },
+  { id:"t22", fase:"bali", start:"2026-09-26", end:"2026-09-28", title:"Bali — luxe & chill", details:[], costs:["c16"], map:["bali"] },
+  { id:"t23", fase:"bali", start:"2026-09-29", end:"2026-09-29", title:"Terug naar huis", details:[], costs:["c17"], map:["bali"] },
+  { id:"t24", fase:"java", start:"2026-09-13", end:"2026-09-13", title:"Terugvlucht naar huis (Arne, Jens, Maurice, Mathias, Willem, Kasper)", details:[], costs:[], map:["malang"] },
+  { id:"t25", fase:"bali", start:"2026-09-13", end:"2026-09-20", title:"Bali — verlenging (Eliott & Kamiel)", details:[], costs:[], map:["malang","bali"] },
+  { id:"t26", fase:"bali", start:"2026-09-20", end:"2026-09-20", title:"Terugvlucht Bali → huis (Eliott & Kamiel)", details:[], costs:[], map:["bali"] },
+];
+
+/* ---------------- HELPERS ---------------- */
+const MONTHS = ["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+function fmtShort(d){ const dt=new Date(d+"T00:00:00"); return dt.getDate()+" "+MONTHS[dt.getMonth()]; }
+function fmtRange(s,e){ return s===e ? fmtShort(s) : (s.slice(0,7)===e.slice(0,7) ? new Date(s+"T00:00:00").getDate()+"–"+fmtShort(e) : fmtShort(s)+" – "+fmtShort(e)); }
+
+function today(){ return new Date(new Date().toDateString()); }
+function dateOf(s){ return new Date(s+"T00:00:00"); }
+
+function statusOf(item){
+  const t = today();
+  const s = dateOf(item.start), e = dateOf(item.end);
+  if (e < t) return "voltooid";
+  if (s <= t && t <= e) return "bezig";
+  const days = (s - t) / 86400000;
+  if (days <= 10) return "binnenkort";
+  return "gepland";
+}
+
+function ls_get(key, fallback){ try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); } catch(e){ return fallback; } }
+function ls_set(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+function costValue(id){
+  const stored = ls_get("cost_"+id, undefined);
+  if (stored !== undefined && stored !== "") return Number(stored);
+  const def = COSTS[id].amount;
+  return def === null ? null : def;
+}
+function isBooked(id){ return ls_get("booked_"+id, false); }
+
+let chartRef = null;
+
+function getCostsForPerson(personKey) {
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const costIds = new Set();
+  for (const item of TRIP) {
+    if (tripIds.includes(item.id)) {
+      for (const cid of item.costs) {
+        costIds.add(cid);
+      }
+    }
+  }
+  return costIds;
+}
+
+function recalcAll(){
+  const personKey = ls_get("selected_person", "matthew");
+  const allowedCosts = getCostsForPerson(personKey);
+
+  let total = 0, confirmed = 0, tbdCount = 0;
+  const byCat = { vlucht:0, accommodatie:0, transport:0, activiteit:0 };
+  for (const id in COSTS) {
+    if (!allowedCosts.has(id)) continue;
+    const v = costValue(id);
+    const cat = COSTS[id].cat;
+    if (v === null) { tbdCount++; continue; }
+    total += v;
+    byCat[cat] += v;
+    if (isBooked(id)) confirmed += v;
+  }
+  
+  document.getElementById("costTotals").innerHTML = `
+    <div class="row"><span class="l">✈️ Vluchten</span><span class="v">€ ${(byCat.vlucht).toFixed(2)}</span></div>
+    <div class="row"><span class="l">🏨 Accommodatie</span><span class="v">€ ${(byCat.accommodatie).toFixed(2)}</span></div>
+    <div class="row"><span class="l">🚌 Transport (taxi/trein)</span><span class="v">€ ${(byCat.transport).toFixed(2)}</span></div>
+    <div class="row"><span class="l">🎟️ Activiteiten</span><span class="v">€ ${(byCat.activiteit).toFixed(2)}</span></div>
+    <div class="row"><span class="l">🔒 Geboekt &amp; Bevestigd</span><span class="v" style="color:var(--teal)">€ ${confirmed.toFixed(2)}</span></div>
+    <div class="row total"><span class="l">Geschat Totaal (pp)</span><span class="v">€ ${total.toFixed(2)}</span></div>
+  `;
+  document.getElementById("tbdPill").innerHTML = tbdCount ? `<span class="tbd-pill">${tbdCount} open TBDs</span>` : "";
+
+  const ctx = document.getElementById("costChart");
+  const labels = ["Vluchten", "Accommodatie", "Transport", "Activiteiten"];
+  const data = [byCat.vlucht, byCat.accommodatie, byCat.transport, byCat.activiteit];
+  const colors = ["#4cc9f0", "#ffb703", "#4ad66d", "#f72585"];
+  if (chartRef) chartRef.destroy();
+  chartRef = new Chart(ctx, {
+    type: "doughnut",
+    data: { 
+      labels, 
+      datasets: [{ 
+        data, 
+        backgroundColor: colors, 
+        borderWidth: 2,
+        borderColor: "#0d111c",
+        hoverOffset: 4
+      }] 
+    },
+    options: {
+      responsive: true, 
+      maintainAspectRatio: false,
+      plugins: { 
+        legend: { 
+          position: "bottom", 
+          labels: { 
+            boxWidth: 10, 
+            color: "#94a3b8",
+            font: { family: "Outfit", size: 11, weight: "500" } 
+          } 
+        } 
+      }
+    }
+  });
+
+  // Trip stats calculations
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+
+  let countdownLabel, countdownVal;
+  let doneDays = 0, totalDays = 0;
+
+  if (personTrips.length > 0) {
+    const start = dateOf(personTrips[0].start), end = dateOf(personTrips[personTrips.length-1].end);
+    const t = today();
+    if (t < start) { 
+      countdownVal = Math.ceil((start - t)/86400000); 
+      countdownLabel = "dagen tot vertrek"; 
+    } else if (t <= end) { 
+      countdownVal = Math.ceil((end - t)/86400000); 
+      countdownLabel = "dagen te gaan"; 
+    } else { 
+      countdownVal = "✓"; 
+      countdownLabel = "reis afgelopen"; 
+    }
+    doneDays = personTrips.filter(i => statusOf(i)==="voltooid").length;
+    totalDays = personTrips.length;
+  } else {
+    countdownVal = "—";
+    countdownLabel = "geen actieve data";
+  }
+  
+  document.getElementById("statRow").innerHTML = `
+    <div>
+      <div class="stat-card">
+        <div class="label">📅 Aftelklok</div>
+        <div class="value">${countdownVal} <small>${countdownLabel}</small></div>
+      </div>
+    </div>
+    <div class="stat-cards-right">
+      <div class="stat-card">
+        <div class="label">🛫 Periode</div>
+        <div class="value" style="font-size: 19px; padding-top: 4px;">28 aug – 29 sep <small>2026</small></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">🧗 Etappes Voltooid</div>
+        <div class="value">${doneDays} <small>/ ${totalDays}</small></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">💶 Totaal Overzicht</div>
+        <div class="value">€${total.toFixed(0)} <small>per persoon</small></div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------- RENDER: map & ZOOM ---------------- */
+let mapZoom = {
+  currentX: 0,
+  currentY: 0,
+  currentW: 900,
+  currentH: 400,
+  targetX: 0,
+  targetY: 0,
+  targetW: 900,
+  targetH: 400,
+  animationFrameId: null
+};
+
+function setMapZoomTarget(x, y, w, h) {
+  mapZoom.targetX = x;
+  mapZoom.targetY = y;
+  mapZoom.targetW = w;
+  mapZoom.targetH = h;
+  
+  if (mapZoom.animationFrameId === null) {
+    animateZoom();
+  }
+}
+
+function animateZoom() {
+  const dx = mapZoom.targetX - mapZoom.currentX;
+  const dy = mapZoom.targetY - mapZoom.currentY;
+  const dw = mapZoom.targetW - mapZoom.currentW;
+  const dh = mapZoom.targetH - mapZoom.currentH;
+  
+  const ease = 0.12;
+  
+  mapZoom.currentX += dx * ease;
+  mapZoom.currentY += dy * ease;
+  mapZoom.currentW += dw * ease;
+  mapZoom.currentH += dh * ease;
+  
+  const svg = document.getElementById("routemap");
+  if (svg) {
+    svg.setAttribute("viewBox", `${mapZoom.currentX} ${mapZoom.currentY} ${mapZoom.currentW} ${mapZoom.currentH}`);
+  }
+  
+  if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1 && Math.abs(dw) < 0.1 && Math.abs(dh) < 0.1) {
+    mapZoom.currentX = mapZoom.targetX;
+    mapZoom.currentY = mapZoom.targetY;
+    mapZoom.currentW = mapZoom.targetW;
+    mapZoom.currentH = mapZoom.targetH;
+    if (svg) {
+      svg.setAttribute("viewBox", `${mapZoom.currentX} ${mapZoom.currentY} ${mapZoom.currentW} ${mapZoom.currentH}`);
+    }
+    mapZoom.animationFrameId = null;
+  } else {
+    mapZoom.animationFrameId = requestAnimationFrame(animateZoom);
+  }
+}
+
+function renderMap(highlightTripIds = null){
+  const svg = document.getElementById("routemap");
+  const personKey = ls_get("selected_person", "matthew");
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+
+  const seq = [];
+  for (const item of personTrips) {
+    for (const k of item.map) {
+      seq.push({k, item});
+    }
+  }
+
+  let hoveredPhase = null;
+  const activeMapKeys = new Set();
+  
+  if (highlightTripIds && highlightTripIds.length > 0) {
+    const firstTrip = TRIP.find(i => i.id === highlightTripIds[0]);
+    if (firstTrip) {
+      hoveredPhase = firstTrip.fase;
+      
+      const personPhases = [];
+      const seenPhases = new Set();
+      for (const item of personTrips) {
+        if (!seenPhases.has(item.fase)) {
+          seenPhases.add(item.fase);
+          personPhases.push(item.fase);
+        }
+      }
+      
+      const idx = personPhases.indexOf(hoveredPhase);
+      const relevantPhases = [];
+      if (idx !== -1) {
+        if (idx > 0) relevantPhases.push(personPhases[idx - 1]);
+        relevantPhases.push(personPhases[idx]);
+        if (idx < personPhases.length - 1) relevantPhases.push(personPhases[idx + 1]);
+      }
+      
+      for (const item of personTrips) {
+        if (relevantPhases.includes(item.fase)) {
+          for (const mk of item.map) {
+            activeMapKeys.add(mk);
+          }
+        }
+      }
+    }
+  }
+
+  let svgContent = "";
+  if (seq.length > 0) {
+    if (highlightTripIds && highlightTripIds.length > 0) {
+      for (let i = 0; i < seq.length - 1; i++) {
+        const p1 = PTS[seq[i].k];
+        const p2 = PTS[seq[i+1].k];
+        const isActiveSegment = activeMapKeys.has(seq[i].k) && activeMapKeys.has(seq[i+1].k);
+        const opacity = isActiveSegment ? 0.6 : 0.05;
+        svgContent += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="rgba(0, 180, 216, ${opacity})" stroke-width="2" stroke-dasharray="5 4" style="transition: stroke 0.3s, opacity 0.3s" />`;
+      }
+
+      for (const tid of highlightTripIds) {
+        const hItem = personTrips.find(i => i.id === tid);
+        if (hItem && hItem.map.length > 1) {
+          let hPath = "M " + hItem.map.map(k => `${PTS[k].x} ${PTS[k].y}`).join(" L ");
+          svgContent += `<path d="${hPath}" fill="none" stroke="#ff4d4d" stroke-width="4" stroke-linecap="round" class="glowing-route" style="filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.7)); transition: all 0.3s;" />`;
+        }
+      }
+    } else {
+      let path = "M " + seq.map(s => `${PTS[s.k].x} ${PTS[s.k].y}`).join(" L ");
+      svgContent += `<path d="${path}" fill="none" stroke="rgba(0, 180, 216, 0.4)" stroke-width="2" stroke-dasharray="5 4" />`;
+    }
+  }
+
+  const seen = {};
+  for (const s of seq) {
+    if (seen[s.k]) continue;
+    seen[s.k] = s.item;
+  }
+  const curItem = personTrips.find(i => statusOf(i) === "bezig");
+
+  for (const k in PTS) {
+    const p = PTS[k];
+    const isVisited = !!seen[k];
+    const item = seen[k];
+    const f = isVisited ? FASES[item.fase] : { color: "#475569" };
+    const isCurrent = isVisited && curItem && curItem.map.includes(k);
+    
+    const isHoveredNode = highlightTripIds && seen[k] && highlightTripIds.includes(seen[k].id);
+    
+    let opacity = isVisited ? "1" : "0.25";
+    let pointerEvents = isVisited ? "auto" : "none";
+    
+    if (highlightTripIds && highlightTripIds.length > 0) {
+      if (activeMapKeys.has(k)) {
+        opacity = "1";
+      } else {
+        opacity = "0.05";
+        pointerEvents = "none";
+      }
+    }
+
+    svgContent += `
+      <g class="map-pt" style="opacity:${opacity}; pointer-events:${pointerEvents}; transition: opacity 0.3s;" ${isVisited ? `onclick="window.location.href='indonesia-timeline.html#${item.id}'"` : ""}>
+        <circle class="halo" cx="${p.x}" cy="${p.y}" r="14" fill="${isHoveredNode ? '#ff4d4d' : f.color}" style="${isHoveredNode ? 'opacity: 0.6' : ''}"/>
+        ${isCurrent ? `<circle cx="${p.x}" cy="${p.y}" r="10" fill="none" stroke="#ff4d4d" stroke-width="2"><animate attributeName="r" values="8;13;8" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite"/></circle>` : ""}
+        <circle cx="${p.x}" cy="${p.y}" r="5.5" fill="${isHoveredNode ? '#ff4d4d' : f.color}" stroke="#07090e" stroke-width="2"/>
+        <text x="${p.x + (p.dx !== undefined ? p.dx : 9)}" y="${p.y + (p.dy !== undefined ? p.dy : 3)}" text-anchor="${p.anchor || 'start'}" style="${isHoveredNode ? 'fill: #ff4d4d; font-weight: 700;' : ''}; transition: fill 0.3s;">${p.label}</text>
+      </g>`;
+  }
+  svg.innerHTML = svgContent;
+
+  document.getElementById("mapLegend").innerHTML = Object.values(FASES).map(f =>
+    `<span><i style="background:${f.color}"></i>${f.label}</span>`
+  ).join("") + `<span><i style="background:#ff4d4d"></i>vandaag</span>`;
+
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  if (highlightTripIds && highlightTripIds.length > 0 && activeMapKeys.size > 0) {
+    for (const key of activeMapKeys) {
+      const pt = PTS[key];
+      if (pt.x < minX) minX = pt.x;
+      if (pt.x > maxX) maxX = pt.x;
+      if (pt.y < minY) minY = pt.y;
+      if (pt.y > maxY) maxY = pt.y;
+    }
+  }
+
+  let targetX, targetY, targetW, targetH;
+  if (minX === Infinity) {
+    targetX = 0;
+    targetY = 0;
+    targetW = 900;
+    targetH = 400;
+  } else {
+    const padX = 80;
+    const padY = 50;
+    targetX = minX - padX;
+    targetY = minY - padY;
+    targetW = (maxX - minX) + padX * 2;
+    targetH = (maxY - minY) + padY * 2;
+
+    const aspect = 900 / 400;
+    if (targetW / targetH > aspect) {
+      const newH = targetW / aspect;
+      targetY -= (newH - targetH) / 2;
+      targetH = newH;
+    } else {
+      const newW = targetH * aspect;
+      targetX -= (newW - targetW) / 2;
+      targetW = newW;
+    }
+
+    if (targetW < 320) {
+      const diffW = 320 - targetW;
+      targetX -= diffW / 2;
+      targetW = 320;
+      targetH = 320 / aspect;
+      targetY -= (targetH - (targetH * (targetW/320))) / 2;
+    }
+  }
+
+  setMapZoomTarget(targetX, targetY, targetW, targetH);
+}
+
+/* ---------------- STEPPER HOVER & RENDER ---------------- */
+function hoverPhaseSteps(tripIds) {
+  renderMap(tripIds);
+}
+
+function renderRouteStepper() {
+  const container = document.getElementById("routeStepper");
+  const countBadge = document.getElementById("routeStepperCount");
+  if (!container) return;
+
+  const personKey = ls_get("selected_person", "matthew");
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+
+  // Group trip items by phase
+  const phases = [];
+  const phaseMap = {};
+
+  for (const item of personTrips) {
+    if (!phaseMap[item.fase]) {
+      phaseMap[item.fase] = {
+        faseKey: item.fase,
+        faseInfo: FASES[item.fase],
+        start: item.start,
+        end: item.end,
+        tripIds: [item.id],
+      };
+      phases.push(phaseMap[item.fase]);
+    } else {
+      const p = phaseMap[item.fase];
+      p.tripIds.push(item.id);
+      if (item.start < p.start) p.start = item.start;
+      if (item.end > p.end) p.end = item.end;
+    }
+  }
+
+  if (countBadge) {
+    countBadge.textContent = `${phases.length} regio's`;
+  }
+
+  let html = `<div class="simple-timeline">`;
+  
+  for (const p of phases) {
+    // Collect all unique companions during this phase
+    const companionsSet = new Set();
+    for (const tid of p.tripIds) {
+      const cmps = Object.keys(PERSON_TRIPS).filter(key => PERSON_TRIPS[key].includes(tid));
+      for (const c of cmps) {
+        companionsSet.add(c);
+      }
+    }
+    const companions = Array.from(companionsSet);
+
+    const nDays = Math.round((dateOf(p.end) - dateOf(p.start)) / 86400000) + 1;
+    const durStr = nDays > 1 ? `${nDays} dgn` : "1 dag";
+
+    let companionsHtml = "";
+    if (companions.length > 0) {
+      const chunks = [];
+      for (let i = 0; i < companions.length; i += 5) {
+        chunks.push(companions.slice(i, i + 5));
+      }
+      companionsHtml = `
+        <div class="simple-step-companions-container">
+          ${chunks.map(chunk => `
+            <div class="simple-step-companions-row">
+              ${chunk.map(ckey => {
+                const pers = PERSONS[ckey];
+                const init = pers.name.substring(0, 2);
+                return `<span class="simple-companion-dot" style="background:${pers.color}" title="${pers.name}">${init}</span>`;
+              }).join("")}
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    const color = p.faseInfo.color;
+    const tripIdsJson = JSON.stringify(p.tripIds);
+
+    let airbnbUrl = null;
+    for (const tid of p.tripIds) {
+      const item = TRIP.find(i => i.id === tid);
+      if (item && item.costs) {
+        for (const cid of item.costs) {
+          if (COSTS[cid] && COSTS[cid].url) {
+            airbnbUrl = COSTS[cid].url;
+            break;
+          }
+        }
+      }
+      if (airbnbUrl) break;
+    }
+
+    let airbnbHtml = "";
+    if (airbnbUrl) {
+      airbnbHtml = `
+        <a href="${airbnbUrl}" target="_blank" rel="noopener" class="simple-step-airbnb" onclick="event.stopPropagation()" title="Bekijk Airbnb verblijf">
+          🏠
+        </a>
+      `;
+    }
+
+    html += `
+      <div class="simple-step" 
+           onmouseenter='hoverPhaseSteps(${tripIdsJson})' 
+           onmouseleave="hoverPhaseSteps(null)">
+        <div class="simple-step-line" style="background: ${color}"></div>
+        <div class="simple-step-node" style="color: ${color}"></div>
+        <div class="simple-step-content">
+          <div class="simple-step-header">
+            <span class="simple-step-title" style="color: ${color}">${p.faseInfo.label}${airbnbHtml}</span>
+          </div>
+          <div class="simple-step-dates">
+            <span>${fmtRange(p.start, p.end)}</span>
+            <span class="simple-step-duration">${durStr}</span>
+          </div>
+          <div class="simple-step-desc">${p.faseInfo.uitleg || ""}</div>
+          ${companionsHtml}
+        </div>
+      </div>
+    `;
+  }
+  
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function renderPersonSelector() {
+  const container = document.getElementById("personSelector");
+  if (!container) return;
+  
+  const activePerson = ls_get("selected_person", "matthew");
+  
+  let html = `<span class="person-selector-label">Bekijk weergave van:</span>`;
+  html += `<div class="person-grid">`;
+  html += PERSON_ORDER.map(key => {
+    const p = PERSONS[key];
+    const isActive = key === activePerson;
+    const photo = localStorage.getItem(`mapphoto_${key}`);
+    const avatarHtml = photo 
+      ? `<img src="${photo}" alt="">` 
+      : `<span class="avatar-initials" style="color:${p.color}">${p.name.substring(0, 2)}</span>`;
+
+    return `
+      <button class="person-card ${isActive ? 'active' : ''}" onclick="selectPerson('${key}')">
+        <div class="person-card-avatar" style="border-color:${p.color}">
+          ${avatarHtml}
+        </div>
+        <span class="person-card-name">${p.name}</span>
+      </button>
+    `;
+  }).join("");
+  html += `</div>`;
+  
+  container.innerHTML = html;
+}
+
+function selectPerson(key) {
+  ls_set("selected_person", key);
+  renderPersonSelector();
+  recalcAll();
+  renderMap();
+  renderRouteStepper();
+  
+  const groupPanel = document.getElementById("groupPanel");
+  if (groupPanel) {
+    groupPanel.innerHTML = PERSON_GROUP_INFO[key] || "";
+  }
+}
+
+/* ---------------- INIT ---------------- */
+function init() {
+  renderPersonSelector();
+  
+  const activePerson = ls_get("selected_person", "matthew");
+  const groupPanel = document.getElementById("groupPanel");
+  if (groupPanel) {
+    groupPanel.innerHTML = PERSON_GROUP_INFO[activePerson] || "";
+  }
+  
+  renderMap();
+  recalcAll();
+  renderRouteStepper();
+}
+
+window.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>

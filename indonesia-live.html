@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indonesië — Waar is iedereen?</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Extra styling for premium Live Tracker upgrades */
+  .live-control-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .sim-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .sim-title {
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--teal);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .sim-mode-toggle {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  
+  .sim-mode-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text-soft);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .sim-mode-toggle button.active {
+    background: var(--teal-soft);
+    color: #fff;
+    box-shadow: 0 0 8px var(--teal-glow);
+  }
+  
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .slider-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  
+  .sim-btn:hover:not(:disabled) {
+    background: var(--teal-soft);
+    border-color: var(--teal);
+    transform: scale(1.05);
+  }
+  
+  .sim-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  
+  #sim-slider {
+    flex: 1;
+    accent-color: var(--teal);
+    cursor: pointer;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  
+  .sim-date-display {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    min-width: 190px;
+    text-align: center;
+  }
+  
+  /* Layout Grid for Map and Groups */
+  .live-middle-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  
+  @media (max-width: 860px) {
+    .live-middle-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Mini Map Styling */
+  .mini-map-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .mini-map-container {
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .mini-map-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .map-grid-line {
+    stroke: rgba(255,255,255,0.02);
+    stroke-width: 1;
+  }
+  
+  .map-island {
+    fill: rgba(255, 255, 255, 0.025);
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1.5;
+    transition: all 0.3s;
+  }
+  
+  .map-island.active {
+    fill: rgba(0, 180, 216, 0.04);
+    stroke: rgba(0, 180, 216, 0.2);
+  }
+  
+  .map-node {
+    fill: #1e293b;
+    stroke: rgba(255,255,255,0.2);
+    stroke-width: 1.5;
+    cursor: pointer;
+  }
+  
+  .map-node.visited {
+    fill: var(--teal-soft);
+    stroke: var(--teal);
+    filter: drop-shadow(0 0 4px var(--teal-glow));
+  }
+  
+  .map-node-label {
+    font-size: 9px;
+    fill: var(--text-soft);
+    font-weight: 500;
+    pointer-events: none;
+    paint-order: stroke fill;
+    stroke: #07090e;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+  
+  .map-node-label.active {
+    fill: #fff;
+    font-weight: 600;
+  }
+  
+  /* Cluster of traveler dots on map node */
+  .cluster-dot {
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .cluster-dot:hover {
+    transform: scale(1.2);
+  }
+  
+  /* Groups dynamics styling */
+  .groups-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .groups-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+    flex: 1;
+    overflow-y: auto;
+    max-height: 310px;
+  }
+  
+  .group-item {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  
+  .group-loc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 4px;
+  }
+  
+  .group-loc-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .group-count {
+    font-size: 10px;
+    background: var(--teal-soft);
+    color: var(--teal);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  
+  .group-avatars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .avatar-bubble {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .avatar-bubble:hover {
+    transform: scale(1.1) translateY(-1px);
+    z-index: 10;
+  }
+  
+  /* Status Info Widget */
+  .status-widget {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .widget-box {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .widget-label {
+    font-size: 11px;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  
+  .widget-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  /* Quick Preset Actions */
+  .presets-section {
+    margin-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 14px;
+  }
+  
+  .presets-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .presets-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .preset-btn {
+    background: rgba(0, 180, 216, 0.06);
+    border: 1px solid rgba(0, 180, 216, 0.15);
+    color: var(--teal);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  
+  .preset-btn:hover {
+    background: var(--teal);
+    color: #000;
+    transform: translateY(-1px);
+  }
+  
+  /* Progress Bar */
+  .progress-container {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    height: 8px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal) 0%, #00f5d4 100%);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP BAR & NAVIGATION -->
+  <header class="app-header">
+    <div class="app-brand">
+      <h1>🧭 Waar is iedereen?</h1>
+      <div class="sub">Reis naar Indonesië · Live Status</div>
+    </div>
+    <nav class="app-nav">
+      <a class="app-nav-link" href="indonesia-tracker.html">📊 Dashboard</a>
+      <a class="app-nav-link" href="indonesia-timeline.html">📅 Reisschema</a>
+      <a class="app-nav-link" href="indonesia-map.html">🗺️ Reiskaart</a>
+      <a class="app-nav-link active" href="indonesia-live.html">📍 Live Tracker</a>
+      <a class="app-nav-link" href="indonesia-health.html">🏥 Gezondheid</a>
+      <a class="app-nav-link" href="indonesia-transport.html">🚇 Transport</a>
+    </nav>
+    <div class="toolbar" style="display: flex; gap: 8px;">
+      <button class="btn primary" onclick="downloadUpdatedSite()">💾 Download site</button>
+      <button class="btn danger" onclick="resetToSeed()">↺ Reset</button>
+    </div>
+  </header>
+
+  <!-- LIVE & SIMULATION DATE CONTROL PANEL -->
+  <div class="live-control-panel">
+    <div class="sim-header">
+      <div class="sim-title">⏳ Reisdag &amp; Datum Simulator</div>
+      <div class="sim-mode-toggle">
+        <button id="mode-live" onclick="setControlMode('live')">🔴 Real-time</button>
+        <button id="mode-sim" onclick="setControlMode('sim')" class="active">⚙️ Simulator</button>
+      </div>
+    </div>
+    
+    <div class="slider-row">
+      <button class="sim-btn" id="btn-prev-day" onclick="adjustDay(-1)">◀</button>
+      <div class="slider-container">
+        <input type="range" id="sim-slider" min="0" max="32" value="0" oninput="onSliderChange(this.value)">
+      </div>
+      <div class="sim-date-display" id="sim-date-label">Laden...</div>
+      <button class="sim-btn" id="btn-next-day" onclick="adjustDay(1)">▶</button>
+    </div>
+    <div id="live-warning" style="display:none; color:#f77f00; font-size:11.5px; margin-top:8px; text-align:center; font-weight:500;">
+      ⚠️ Huidige datum ligt buiten de reisperiode (28 aug - 29 sep 2026). Simulator is actief.
+    </div>
+  </div>
+
+  <!-- INTERACTIVE SVG MAP & GROUP DYNAMICS ROW -->
+  <div class="live-middle-grid">
+    <!-- MINI SVG MAP -->
+    <div class="mini-map-card">
+      <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:14px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft);">🗺️ Actieve Posities</h3>
+        <span id="map-region-indicator" style="font-size:12px; color:var(--teal); font-weight:600;">Indonesië</span>
+      </div>
+      <div class="mini-map-container">
+        <svg class="mini-map-svg" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid Background -->
+          <defs>
+            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          
+          <!-- Stylized Islands Outlines -->
+          <!-- Sumatra -->
+          <path class="map-island" d="M 60 15 L 290 150 L 220 210 L 40 45 Z" />
+          <!-- Java -->
+          <path class="map-island" d="M 360 278 L 640 332 L 640 348 L 360 298 Z" />
+          <!-- Bali -->
+          <path class="map-island" d="M 650 339 L 676 340 L 676 349 L 650 348 Z" />
+          <!-- Flores/Lombok Chain -->
+          <path class="map-island" d="M 682 340 L 855 336 L 855 346 L 682 347 Z" />
+          
+          <!-- Connections routes -->
+          <path d="M 304 112 L 143 61 M 143 61 L 112 58 M 143 61 L 399 285 M 399 285 L 508 321 L 579 325 L 583 309 L 634 331 L 660 341 L 806 337 L 824 340" 
+                fill="none" stroke="rgba(0, 180, 216, 0.15)" stroke-width="1.5" stroke-dasharray="4 4" />
+          
+          <!-- Nodes -->
+          <g id="map-nodes-layer"></g>
+          
+          <!-- Traveler avatars mapped -->
+          <g id="map-avatars-layer"></g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- GROUPS / DYNAMICS -->
+    <div class="groups-card">
+      <h3 style="font-size:14px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft); border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px;">👥 Groepsindeling</h3>
+      <div class="groups-list" id="groups-container">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW TILES GRID -->
+  <div class="overview-grid" id="overview"></div>
+
+  <!-- DETAILS PANEL -->
+  <nav class="tabs" id="tabs"></nav>
+  <div id="panels"></div>
+
+  <footer class="note">
+    Werkt volledig lokaal en offline via localStorage. Voeg live updates toe en klik bovenaan op "Download site" om een geactualiseerde HTML-versie op te slaan die je rechtstreeks op je domein kunt uploaden.
+  </footer>
+</div>
+
+<!-- SEED JSON DATA BLOCK (SERIALIZATION TARGET) -->
+<script id="seed-data" type="application/json">
+{
+  "matthew": { "name": "Matthew", "color": "#0F6B5C", "log": [
+    {"date":"2026-08-28","location":"Brussel","note":"Vertrek met Arne richting Singapore","planned":true},
+    {"date":"2026-08-29","location":"Singapore","note":"Aankomst 11:15, met Arne","planned":true},
+    {"date":"2026-08-31","location":"Medan → Ketambe","note":"Ontmoeten de Sumatra-groep in Medan/Ketambe","planned":true},
+    {"date":"2026-09-02","location":"Ketambe","note":"Start jungle trekking (5d/4n)","planned":true},
+    {"date":"2026-09-07","location":"Jakarta","note":"Terug via Medan","planned":true},
+    {"date":"2026-09-08","location":"Jakarta","note":"Maurice, Mathias & Jens sluiten aan, crew compleet (9 man)","planned":true},
+    {"date":"2026-09-09","location":"Yogyakarta","note":"Prambanan + Malioboro","planned":true},
+    {"date":"2026-09-10","location":"Nachttrein naar Malang","note":"Borobudur overdag, dan nachttrein","planned":true},
+    {"date":"2026-09-11","location":"Malang → op weg naar Surabaya","note":"Splitst hier van de jongens (zij gaan naar Bromo/Tumpak Sewu)","planned":true},
+    {"date":"2026-09-14","location":"Surabaya","note":"Hinke landt om 8u, samen verder","planned":true},
+    {"date":"2026-09-16","location":"Banyuwangi","note":"Bromo + Tumpak Sewu met Hinke","planned":true},
+    {"date":"2026-09-17","location":"Banyuwangi","note":"Kawah Ijen met Hinke","planned":true},
+    {"date":"2026-09-18","location":"Labuan Bajo","note":"Via Denpasar","planned":true},
+    {"date":"2026-09-21","location":"Ruteng","note":"Roadtrip binnenland","planned":true},
+    {"date":"2026-09-23","location":"Labuan Bajo","note":"Terug richting kust, Komodo-voorbereiding","planned":true},
+    {"date":"2026-09-26","location":"Bali","note":"Villa, laatste etappe","planned":true},
+    {"date":"2026-09-29","location":"Onderweg naar huis","note":"Internationale vlucht vanuit Bali","planned":true}
+  ]},
+  "hinke": { "name": "Hinke", "color": "#C8567D", "log": [
+    {"date":"2026-09-14","location":"Surabaya","note":"Landt om 8u, Matthew wacht haar op","planned":true},
+    {"date":"2026-09-16","location":"Banyuwangi","note":"Bromo + Tumpak Sewu met Matthew","planned":true},
+    {"date":"2026-09-17","location":"Banyuwangi","note":"Kawah Ijen met Matthew","planned":true},
+    {"date":"2026-09-18","location":"Labuan Bajo","note":"Via Denpasar","planned":true},
+    {"date":"2026-09-21","location":"Ruteng","note":"Roadtrip binnenland","planned":true},
+    {"date":"2026-09-26","location":"Bali","note":"Villa, laatste etappe","planned":true},
+    {"date":"2026-09-29","location":"Onderweg naar huis","note":"","planned":true}
+  ]},
+  "arne": { "name": "Arne", "color": "#5B7FB5", "log": [
+    {"date":"2026-08-28","location":"Brussel","note":"Vertrek met Matthew richting Singapore","planned":true},
+    {"date":"2026-08-31","location":"Medan → Ketambe","note":"Ontmoet de Sumatra-groep in Medan","planned":true},
+    {"date":"2026-09-02","location":"Ketambe","note":"Jungle trekking (5d/4n)","planned":true},
+    {"date":"2026-09-08","location":"Jakarta","note":"Maurice, Mathias & Jens sluiten aan (groep van 9)","planned":true},
+    {"date":"2026-09-11","location":"Malang → Tumpak Sewu","note":"Met de jongens, zonder Matthew","planned":true},
+    {"date":"2026-09-12","location":"Bromo","note":"Afsluiter van de jongens-trip — verder nog onbekend","planned":true}
+  ]},
+  "mathias": { "name": "Mathias", "color": "#1C8AA0", "log": [
+    {"date":"2026-09-08","location":"Jakarta","note":"Aankomst, sluit aan bij de jongens crew (samen met Maurice & Jens)","planned":true},
+    {"date":"2026-09-11","location":"Malang → Tumpak Sewu","note":"Met de jongens","planned":true},
+    {"date":"2026-09-12","location":"Bromo","note":"Afsluiter van de jongens-trip — verder nog onbekend","planned":true}
+  ]},
+  "eliott": { "name": "Eliott", "color": "#D97A2B", "log": [
+    {"date":"2026-08-31","location":"Medan → Ketambe","note":"Ontmoet de jongens in Medan, taxi naar Ketambe","planned":true},
+    {"date":"2026-09-02","location":"Ketambe","note":"Jungle trekking (5d/4n) — groep van 6 (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)","planned":true},
+    {"date":"2026-09-07","location":"Jakarta","note":"Terug via Medan","planned":true},
+    {"date":"2026-09-08","location":"Jakarta","note":"Maurice, Mathias & Jens sluiten aan (groep van 9)","planned":true},
+    {"date":"2026-09-11","location":"Malang → Tumpak Sewu","note":"Met de jongens, zonder Matthew","planned":true},
+    {"date":"2026-09-12","location":"Bromo","note":"Afsluiter van de jongens-trip","planned":true},
+    {"date":"2026-09-13","location":"Denpasar (Bali)","note":"Vlucht van Java naar Bali met Kamiel","planned":true},
+    {"date":"2026-09-20","location":"Onderweg naar huis","note":"Terugvlucht van Bali naar Jakarta/huis met Kamiel","planned":true}
+  ]},
+  "jens": { "name": "Jens", "color": "#6B4E9C", "log": [
+    {"date":"2026-09-08","location":"Jakarta","note":"Aankomst, sluit aan bij de groep (samen met Maurice & Mathias)","planned":true},
+    {"date":"2026-09-11","location":"Malang → Tumpak Sewu","note":"Met de jongens, zonder Matthew","planned":true},
+    {"date":"2026-09-12","location":"Bromo","note":"Afsluiter van de jongens-trip","planned":true},
+    {"date":"2026-09-13","location":"Onderweg naar huis","note":"Terugvlucht naar huis","planned":true}
+  ] },
+  "kamiel": { "name": "Kamiel", "color": "#4A8B3B", "log": [
+    {"date":"2026-08-31","location":"Medan → Ketambe","note":"Ontmoet de jongens in Medan, taxi naar Ketambe","planned":true},
+    {"date":"2026-09-02","location":"Ketambe","note":"Jungle trekking (5d/4n) — groep van 6 (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)","planned":true},
+    {"date":"2026-09-07","location":"Jakarta","note":"Terug via Medan","planned":true},
+    {"date":"2026-09-08","location":"Jakarta","note":"Maurice, Mathias & Jens sluiten aan (groep van 9)","planned":true},
+    {"date":"2026-09-11","location":"Malang → Tumpak Sewu","note":"Met de jongens, zonder Matthew","planned":true},
+    {"date":"2026-09-12","location":"Bromo","note":"Afsluiter van de jongens-trip","planned":true},
+    {"date":"2026-09-13","location":"Denpasar (Bali)","note":"Vlucht van Java naar Bali met Eliott","planned":true},
+    {"date":"2026-09-20","location":"Onderweg naar huis","note":"Terugvlucht van Bali naar Jakarta/huis met Eliott","planned":true}
+  ] },
+  "maurice": { "name": "Maurice", "color": "#C8932B", "log": [
+    {"date":"2026-09-08","location":"Jakarta","note":"Aankomst, sluit aan bij de groep (samen met Mathias & Jens)","planned":true},
+    {"date":"2026-09-11","location":"Malang → Tumpak Sewu","note":"Met de jongens, zonder Matthew","planned":true},
+    {"date":"2026-09-12","location":"Bromo","note":"Afsluiter van de jongens-trip — verder nog onbekend","planned":true}
+  ]},
+  "willem": { "name": "Willem", "color": "#C75D3A", "log": [
+    {"date":"2026-08-30","location":"Jakarta","note":"Aankomst 09:55 — dag acclimatiseren","planned":true},
+    {"date":"2026-08-31","location":"Jakarta","note":"Stad verkennen","planned":true},
+    {"date":"2026-09-01","location":"Ketambe","note":"Vroege vlucht Jakarta → Medan (~220€), taxi 07:00 Medan → Ketambe (7-8u) — alle 6 man samen","planned":true},
+    {"date":"2026-09-02","location":"Ketambe","note":"Start jungle trekking (5d/4n) — groep van 6 (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)","planned":true},
+    {"date":"2026-09-07","location":"Jakarta","note":"Terug via Medan — avond in Jakarta","planned":true},
+    {"date":"2026-09-08","location":"Jakarta","note":"Maurice & Mathias komen toe (08:25), groep compleet","planned":true},
+    {"date":"2026-09-09","location":"Yogyakarta","note":"Trein Jakarta → Yogyakarta, Prambanan tempel, Malioboro","planned":true},
+    {"date":"2026-09-10","location":"Malang","note":"Borobudur vroeg, nachttrein Yogyakarta → Malang","planned":true},
+    {"date":"2026-09-11","location":"Tumpak Sewu → Combu Lawang","note":"Waterval Tumpak Sewu (2,5u rijden), dan naar Combu Lawang","planned":true},
+    {"date":"2026-09-12","location":"Bromo → Banyuwangi","note":"3u 's nachts op voor Mount Bromo, taxi → Banyuwangi","planned":true},
+    {"date":"2026-09-13","location":"Bali","note":"1u 's nachts op voor Kawah Ijen, ferry Ketapang → Bali","planned":true},
+    {"date":"2026-09-20","location":"Vertrek Bali","note":"Terugvlucht vanuit Bali naar huis","planned":true}
+  ]},
+  "kasper": { "name": "Kasper", "color": "#8A6D3B", "log": [
+    {"date":"2026-08-31","location":"Medan → Ketambe","note":"Ontmoet de jongens in Medan, taxi naar Ketambe","planned":true},
+    {"date":"2026-09-02","location":"Ketambe","note":"Jungle trekking (5d/4n) — groep van 6 (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)","planned":true},
+    {"date":"2026-09-07","location":"Jakarta","note":"Terug via Medan","planned":true},
+    {"date":"2026-09-08","location":"Jakarta","note":"Maurice, Mathias & Jens sluiten aan (groep van 9)","planned":true},
+    {"date":"2026-09-11","location":"Malang → Tumpak Sewu","note":"Met de jongens, zonder Matthew","planned":true},
+    {"date":"2026-09-12","location":"Bromo","note":"Afsluiter van de jongens-trip — verder nog onbekend","planned":true}
+  ]}
+}
+</script>
+
+<script>
+const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
+let DATA = null;
+
+const VIEW_MODES = ["volledig","huidig","verborgen"];
+const VIEW_LABELS = {volledig:"Volledig", huidig:"Alleen locatie", verborgen:"Verborgen"};
+
+const PTS = {
+  singapore:  { x: 304, y: 112, label: "Singapore", dx: 9, dy: 3, anchor: "start" },
+  medan:      { x: 143, y: 61,  label: "Medan", dx: 9, dy: 3, anchor: "start" },
+  ketambe:    { x: 112, y: 58,  label: "Ketambe", dx: -9, dy: 3, anchor: "end" },
+  jakarta:    { x: 399, y: 285, label: "Jakarta", dx: 9, dy: 3, anchor: "start" },
+  yogya:      { x: 508, y: 321, label: "Yogyakarta", dx: -9, dy: 10, anchor: "end" },
+  malang:     { x: 579, y: 325, label: "Malang", dx: 9, dy: 14, anchor: "start" },
+  surabaya:   { x: 583, y: 309, label: "Surabaya", dx: 9, dy: -6, anchor: "start" },
+  banyuwangi: { x: 634, y: 331, label: "Banyuwangi", dx: 9, dy: -6, anchor: "start" },
+  bali:       { x: 660, y: 341, label: "Bali (Denpasar)", dx: 9, dy: 6, anchor: "start" },
+  labuanbajo: { x: 806, y: 337, label: "Labuan Bajo", dx: -9, dy: -6, anchor: "end" },
+  ruteng:     { x: 824, y: 340, label: "Ruteng", dx: 9, dy: 8, anchor: "start" }
+};
+
+// Simulation Range Setup
+const T0 = new Date('2026-08-28T00:00:00');
+const TEND = new Date('2026-09-29T00:00:00');
+const TotalDaysRange = 33; // 0 to 32 days
+let controlMode = 'sim'; // 'live' or 'sim'
+let simulatedDayIndex = 0;
+let simulationDateStr = '2026-08-28';
+let clockTimer = null;
+
+function setControlMode(mode) {
+  controlMode = mode;
+  document.getElementById('mode-live').classList.toggle('active', mode === 'live');
+  document.getElementById('mode-sim').classList.toggle('active', mode === 'sim');
+  
+  const slider = document.getElementById('sim-slider');
+  const prevBtn = document.getElementById('btn-prev-day');
+  const nextBtn = document.getElementById('btn-next-day');
+  
+  if (mode === 'live') {
+    const today = new Date();
+    // For demo purposes, if user selects live but current date is out of range, fallback
+    if (today < T0 || today > TEND) {
+      document.getElementById('live-warning').style.display = 'block';
+      // fallback to Day 0
+      simulatedDayIndex = 0;
+    } else {
+      document.getElementById('live-warning').style.display = 'none';
+      const diffTime = Math.abs(today - T0);
+      simulatedDayIndex = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    }
+    slider.disabled = true;
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+  } else {
+    document.getElementById('live-warning').style.display = 'none';
+    slider.disabled = false;
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
+  }
+  
+  onSliderChange(simulatedDayIndex);
+}
+
+function adjustDay(delta) {
+  if (controlMode === 'live') return;
+  let val = parseInt(document.getElementById('sim-slider').value) + delta;
+  if (val >= 0 && val < TotalDaysRange) {
+    document.getElementById('sim-slider').value = val;
+    onSliderChange(val);
+  }
+}
+
+function onSliderChange(value) {
+  simulatedDayIndex = parseInt(value);
+  const targetDate = new Date(T0);
+  targetDate.setDate(T0.getDate() + simulatedDayIndex);
+  
+  // Format simulated date label
+  const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+  const dStr = targetDate.toLocaleDateString('nl-NL', options);
+  document.getElementById('sim-date-label').textContent = `${dStr} (Dag ${simulatedDayIndex + 1})`;
+  
+  // Update current simulatedDateStr for filtering logs
+  simulationDateStr = targetDate.toISOString().slice(0, 10);
+  
+  renderAll();
+}
+
+function getViewMode(key){ return localStorage.getItem("viewMode_"+key) || "volledig"; }
+function setViewMode(key, mode){ localStorage.setItem("viewMode_"+key, mode); renderAll(); }
+
+function loadData(){
+  const local = localStorage.getItem("tripLiveData");
+  if (local) { try { return JSON.parse(local); } catch(e) {} }
+  return JSON.parse(document.getElementById("seed-data").textContent);
+}
+function saveData(){ localStorage.setItem("tripLiveData", JSON.stringify(DATA)); }
+
+function resetToSeed(){
+  if (!confirm("Alle lokale wijzigingen wissen en teruggaan naar de originele planning?")) return;
+  localStorage.removeItem("tripLiveData");
+  DATA = loadData();
+  renderAll();
+}
+
+function fmtDate(d){
+  if (!d) return "";
+  const dt = new Date(d+"T00:00:00");
+  const months=["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+  return dt.getDate()+" "+months[dt.getMonth()];
+}
+
+let activeTab = "overzicht";
+
+// Helper: Get status details of traveler on simulated date
+function getStatusOnSimulatedDate(key) {
+  const p = DATA[key];
+  let currentLog = null;
+  
+  // Find the last log entry that occurred on or before simulationDateStr
+  for (let i = 0; i < p.log.length; i++) {
+    if (p.log[i].date <= simulationDateStr) {
+      if (!currentLog || p.log[i].date >= currentLog.date) {
+        currentLog = p.log[i];
+      }
+    }
+  }
+  return currentLog;
+}
+
+function renderOverview(){
+  const el = document.getElementById("overview");
+  el.innerHTML = PERSON_ORDER.map(key => {
+    const p = DATA[key];
+    const mode = getViewMode(key);
+    const last = getStatusOnSimulatedDate(key);
+    
+    let tag = `<span class="tag empty">Thuis / nog niet vertrokken</span>`;
+    if (last) {
+      tag = last.planned ? `<span class="tag planned">gepland</span>` : `<span class="tag live">live status</span>`;
+    }
+    const hiddenClass = mode === "verborgen" ? " hidden-person" : "";
+    return `<div class="p-card${hiddenClass}" onclick="switchTab('${key}')">
+      <div class="top"><span class="dot" style="color:${p.color}; background:${p.color}"></span><span class="nm">${p.name}</span></div>
+      <div class="loc" style="font-size:15px; font-weight:700;">${last ? last.location : "Thuis"}</div>
+      <div class="when">${last ? fmtDate(last.date) : ""}</div>
+      <div style="font-size:11.5px; opacity:0.8; margin-top:4px; max-height:36px; overflow:hidden; text-overflow:ellipsis;">
+        ${last && last.note ? last.note : ""}
+      </div>
+      <div style="margin-top:auto; padding-top:8px;">
+        ${mode !== "verborgen" ? tag : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderTabs(){
+  const el = document.getElementById("tabs");
+  let html = `<button class="${activeTab==='overzicht'?'active':''}" onclick="switchTab('overzicht')">📋 Overzicht</button>`;
+  html += PERSON_ORDER.map(key => {
+    const p = DATA[key];
+    const mode = getViewMode(key);
+    const dimStyle = mode === "verborgen" ? " opacity:.4" : "";
+    return `<button class="${activeTab===key?'active':''}" style="${dimStyle}" onclick="switchTab('${key}')"><span class="dot" style="color:${p.color}; background:${p.color}"></span>${p.name}</button>`;
+  }).join("");
+  el.innerHTML = html;
+}
+
+function switchTab(key){ activeTab = key; renderAll(); }
+
+// Timezone clock function
+function updateLiveClocks() {
+  const elements = document.querySelectorAll('[data-timezone]');
+  elements.forEach(element => {
+    const tz = element.getAttribute('data-timezone');
+    const now = new Date();
+    // Compute UTC time
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    // Offset for Indonesian Zones
+    let offset = 1; // Default UTC+1 (Western Europe winter time approximation)
+    if (tz === 'WIB') offset = 7;
+    else if (tz === 'WITA') offset = 8;
+    else if (tz === 'SGP') offset = 8;
+    
+    const tzDate = new Date(utc + (3600000 * offset));
+    const timeStr = tzDate.toTimeString().split(' ')[0].substring(0, 5);
+    element.textContent = `🕒 Lokale tijd: ${timeStr} (${tz})`;
+  });
+}
+
+function addPresetUpdate(key, presetText) {
+  const p = DATA[key];
+  const last = getStatusOnSimulatedDate(key);
+  const location = last ? last.location : "Brussel";
+  
+  p.log.push({
+    date: simulationDateStr,
+    location: location,
+    note: presetText,
+    planned: false
+  });
+  
+  // Sort log entries chronologically by date
+  p.log.sort((a, b) => a.date.localeCompare(b.date));
+  
+  saveData();
+  renderAll();
+}
+
+function renderPanels(){
+  const el = document.getElementById("panels");
+  if (activeTab === "overzicht") {
+    el.innerHTML = `<section class="panel"><h2 style="margin-top:0; font-size:15px; border-bottom:none; padding-bottom:0;">📋 Klik op een persoon hierboven of kies een tabblad om live updates toe te voegen en logbestanden te beheren.</h2></section>`;
+    return;
+  }
+  const key = activeTab;
+  const p = DATA[key];
+  const last = getStatusOnSimulatedDate(key);
+  const mode = getViewMode(key);
+
+  const toggleHtml = `<div class="view-toggle">
+    ${VIEW_MODES.map(m => `<button class="${mode===m?'active':''}" onclick="setViewMode('${key}','${m}')">${VIEW_LABELS[m]}</button>`).join("")}
+  </div>`;
+
+  // Compute timezone based on current location
+  let tz = "Thuis";
+  let tzLabel = "Thuisfront (Brussel)";
+  if (last) {
+    const loc = last.location.toLowerCase();
+    if (loc.includes("singapore")) {
+      tz = "SGP";
+      tzLabel = "Singapore (UTC+8)";
+    } else if (loc.includes("bali") || loc.includes("bajo") || loc.includes("ruteng") || loc.includes("komodo") || loc.includes("denpasar")) {
+      tz = "WITA";
+      tzLabel = "Centraal Indonesië (UTC+8)";
+    } else if (loc.includes("medan") || loc.includes("ketambe") || loc.includes("jakarta") || loc.includes("yogya") || loc.includes("malang") || loc.includes("surabaya") || loc.includes("banyuwangi") || loc.includes("java")) {
+      tz = "WIB";
+      tzLabel = "West-Indonesië (UTC+7)";
+    }
+  }
+
+  // Progress Bar Details
+  // Find start and end date of this specific traveler
+  const schedDates = p.log.map(e => e.date);
+  const earliestDate = schedDates.length > 0 ? new Date(schedDates[0]) : T0;
+  const latestDate = schedDates.length > 0 ? new Date(schedDates[schedDates.length-1]) : TEND;
+  const currentSimDate = new Date(simulationDateStr);
+  
+  let progressPct = 0;
+  if (currentSimDate >= earliestDate) {
+    if (currentSimDate > latestDate) {
+      progressPct = 100;
+    } else {
+      const totalSpan = latestDate - earliestDate;
+      const currentSpan = currentSimDate - earliestDate;
+      progressPct = totalSpan > 0 ? Math.round((currentSpan / totalSpan) * 100) : 100;
+    }
+  }
+
+  const currentBox = `<div class="current-box">
+    <div class="label">Status op deze dag (${fmtDate(simulationDateStr)})</div>
+    <div class="place">${last ? last.location : "Nog in Brussel (Thuis)"}</div>
+    <div class="meta">${last ? fmtDate(last.date) + (last.note ? " — "+last.note : "") + (last.planned ? " (gepland)" : " (live update)") : "Nog niet vertrokken."}</div>
+  </div>`;
+
+  const widgetSection = `
+    <div class="status-widget">
+      <div class="widget-box">
+        <span class="widget-label">Tijdzone &amp; Klok</span>
+        <span class="widget-value" id="tz-clock-${key}" data-timezone="${tz}">Laden...</span>
+        <span style="font-size:11px; opacity:0.7; margin-top:2px;">${tzLabel}</span>
+      </div>
+      <div class="widget-box">
+        <span class="widget-label">Voortgang Reis</span>
+        <span class="widget-value">${progressPct}%</span>
+        <div class="progress-container">
+          <div class="progress-bar" style="width:${progressPct}%"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const presetUpdates = [
+    "✈️ Vertraagd (Vlucht heeft lichte vertraging)",
+    "🌴 Jungle in (Tijdelijk geen bereik)",
+    "🏖️ Strand relaxmodus geactiveerd",
+    "🍜 Lokaal eten proberen (Warung check-in)",
+    "🚂 In de trein onderweg naar volgende bestemming",
+    "⛰️ Op weg naar vulkaan sunrise trekking"
+  ];
+
+  const presetsHtml = `
+    <div class="presets-section">
+      <div class="presets-title">Snel live-status update presets</div>
+      <div class="presets-grid">
+        ${presetUpdates.map(preset => `
+          <button class="preset-btn" onclick="addPresetUpdate('${key}', '${preset}')">${preset.split(' ')[0]} ${preset.split(' ').slice(1).join(' ')}</button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  const formHtml = `<form class="update" onsubmit="addUpdate(event,'${key}')">
+    <label>Datum van update</label>
+    <input type="date" id="date-${key}" value="${simulationDateStr}" required>
+    <label>Locatie</label>
+    <input type="text" id="loc-${key}" value="${last ? last.location : ""}" placeholder="bv. Ketambe" required>
+    <label>Notitie (optioneel)</label>
+    <textarea id="note-${key}" placeholder="bv. net ingecheckt in het guesthouse..."></textarea>
+    <div class="submit-row"><button type="submit" class="btn primary">+ Update handmatig toevoegen</button></div>
+  </form>`;
+
+  // Filter history: show all logs up to simulated/simulationDateStr
+  const historyList = p.log.slice().reverse().filter(h => h.date <= simulationDateStr);
+
+  const historyHtml = `<ul class="history">
+    ${historyList.map((h, i) => {
+      // Find original index in entire logs array
+      const realIdx = p.log.indexOf(h);
+      return `<li>
+        <div class="hdate">${fmtDate(h.date)}</div>
+        <div class="hbody">
+          <div class="hloc">${h.location} ${h.planned ? '<span class="tag planned">gepland</span>' : '<span class="tag live">live</span>'}</div>
+          ${h.note ? `<div class="hnote">${h.note}</div>` : ""}
+        </div>
+        <button class="hdel" onclick="deleteUpdate('${key}',${realIdx})" title="Verwijderen">✕</button>
+      </li>`;
+    }).join("") || `<li><div class="hbody"><div class="hnote" style="color:var(--text-soft)">Nog geen log-updates aanwezig voor deze dag.</div></div></li>`}
+  </ul>`;
+
+  el.innerHTML = `
+    <section class="panel">
+      <div class="person-head">
+        <span class="dot" style="color:${p.color}; background:${p.color}"></span>
+        <h2>${p.name}</h2>
+        ${toggleHtml}
+      </div>
+      ${widgetSection}
+      ${currentBox}
+      ${mode === "volledig" ? presetsHtml + formHtml + historyHtml : ""}
+    </section>
+  `;
+  
+  updateLiveClocks();
+}
+
+function addUpdate(evt, key){
+  evt.preventDefault();
+  const date = document.getElementById("date-"+key).value;
+  const location = document.getElementById("loc-"+key).value.trim();
+  const note = document.getElementById("note-"+key).value.trim();
+  if (!location) return;
+  DATA[key].log.push({date, location, note, planned:false});
+  // Sort logs chronologically
+  DATA[key].log.sort((a, b) => a.date.localeCompare(b.date));
+  saveData();
+  renderAll();
+}
+
+function deleteUpdate(key, idx){
+  DATA[key].log.splice(idx,1);
+  saveData();
+  renderAll();
+}
+
+// Map Rendering Logic
+function renderMapNodes() {
+  const layerNodes = document.getElementById("map-nodes-layer");
+  const layerAvatars = document.getElementById("map-avatars-layer");
+  if (!layerNodes || !layerAvatars) return;
+  
+  layerNodes.innerHTML = "";
+  layerAvatars.innerHTML = "";
+  
+  // Determine who is at what node coordinates currently
+  const positions = {};
+  PERSON_ORDER.forEach(key => {
+    const last = getStatusOnSimulatedDate(key);
+    if (last) {
+      // Find matching coordinate node
+      const locName = last.location.toLowerCase();
+      let matchedKey = null;
+      for (const nodeKey in PTS) {
+        if (locName.includes(nodeKey) || (nodeKey === "bali" && locName.includes("denpasar"))) {
+          matchedKey = nodeKey;
+          break;
+        }
+      }
+      
+      if (matchedKey) {
+        if (!positions[matchedKey]) positions[matchedKey] = [];
+        positions[matchedKey].push(key);
+      }
+    }
+  });
+
+  // Render Map Nodes
+  let currentActiveRegion = "Thuis / Onbekend";
+  
+  for (const nodeKey in PTS) {
+    const pt = PTS[nodeKey];
+    const hasTravelers = positions[nodeKey] && positions[nodeKey].length > 0;
+    
+    // Check if travelers visited
+    const isVisited = hasTravelers;
+    
+    const nodeCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    nodeCircle.setAttribute("cx", pt.x);
+    nodeCircle.setAttribute("cy", pt.y);
+    nodeCircle.setAttribute("r", 6);
+    nodeCircle.setAttribute("class", `map-node ${isVisited ? 'visited' : ''}`);
+    nodeCircle.setAttribute("title", pt.label);
+    nodeCircle.onclick = () => {
+      // Highlight region in header
+      document.getElementById('map-region-indicator').textContent = pt.label;
+    };
+    layerNodes.appendChild(nodeCircle);
+    
+    const nodeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    nodeText.setAttribute("x", pt.x + (pt.dx !== undefined ? pt.dx : 10));
+    nodeText.setAttribute("y", pt.y + (pt.dy !== undefined ? pt.dy : 4));
+    nodeText.setAttribute("text-anchor", pt.anchor || "start");
+    nodeText.setAttribute("class", `map-node-label ${isVisited ? 'active' : ''}`);
+    nodeText.textContent = pt.label;
+    layerNodes.appendChild(nodeText);
+    
+    // Draw clustered traveler avatar bubbles
+    if (hasTravelers) {
+      currentActiveRegion = pt.label;
+      const travelers = positions[nodeKey];
+      travelers.forEach((pKey, idx) => {
+        const p = DATA[pKey];
+        // Calculate offset if multiple people at same node to create a small row/cluster
+        const offsetMultiplier = 12;
+        const offsetX = (idx % 3) * offsetMultiplier - ((Math.min(travelers.length, 3) - 1) * offsetMultiplier / 2);
+        const offsetY = Math.floor(idx / 3) * offsetMultiplier + 14;
+        
+        const avatarGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        avatarGroup.setAttribute("class", "cluster-dot");
+        avatarGroup.onclick = () => switchTab(pKey);
+        
+        const avHalo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        avHalo.setAttribute("cx", pt.x + offsetX);
+        avHalo.setAttribute("cy", pt.y + offsetY);
+        avHalo.setAttribute("r", 7.5);
+        avHalo.setAttribute("fill", p.color);
+        avHalo.setAttribute("stroke", "#07090e");
+        avHalo.setAttribute("stroke-width", "1");
+        avatarGroup.appendChild(avHalo);
+        
+        const avText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        avText.setAttribute("x", pt.x + offsetX);
+        avText.setAttribute("y", pt.y + offsetY + 2.5);
+        avText.setAttribute("font-size", "7px");
+        avText.setAttribute("fill", "#fff");
+        avText.setAttribute("font-weight", "bold");
+        avText.setAttribute("text-anchor", "middle");
+        avText.textContent = p.name.substring(0,2).toUpperCase();
+        avatarGroup.appendChild(avText);
+        
+        layerAvatars.appendChild(avatarGroup);
+      });
+    }
+  }
+  
+  document.getElementById('map-region-indicator').textContent = currentActiveRegion;
+}
+
+// Group composition builder
+function renderGroupComposition() {
+  const container = document.getElementById("groups-container");
+  if (!container) return;
+  
+  // Map locations on this day
+  const locMap = {};
+  
+  PERSON_ORDER.forEach(key => {
+    const p = DATA[key];
+    const last = getStatusOnSimulatedDate(key);
+    const loc = last ? last.location : "Brussel / Thuis";
+    
+    if (!locMap[loc]) locMap[loc] = [];
+    locMap[loc].push({ key, name: p.name, color: p.color });
+  });
+  
+  let html = "";
+  for (const loc in locMap) {
+    const members = locMap[loc];
+    let icon = "📍";
+    if (loc.includes("Jungle") || loc.includes("Ketambe")) icon = "🌴";
+    else if (loc.includes("Vliegtuig") || loc.includes("Brussel") || loc.includes("Singapore")) icon = "✈️";
+    else if (loc.includes("Trein") || loc.includes("Nachttrein")) icon = "🚂";
+    else if (loc.includes("Bajo") || loc.includes("Ruteng") || loc.includes("Flores")) icon = "🌋";
+    else if (loc.includes("Bali")) icon = "🏖️";
+    
+    html += `
+      <div class="group-item">
+        <div class="group-loc-header">
+          <span class="group-loc-name">${icon} ${loc}</span>
+          <span class="group-count">${members.length} personen</span>
+        </div>
+        <div class="group-avatars">
+          ${members.map(m => `
+            <div class="avatar-bubble" style="background:${m.color};" onclick="switchTab('${m.key}')" title="${m.name}">
+              ${m.name.substring(0, 2).toUpperCase()}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html;
+}
+
+function renderAll(){
+  renderOverview();
+  renderTabs();
+  renderPanels();
+  renderMapNodes();
+  renderGroupComposition();
+}
+
+function downloadUpdatedSite(){
+  const clone = document.documentElement.cloneNode(true);
+  const seed = clone.querySelector("#seed-data");
+  seed.textContent = JSON.stringify(DATA, null, 2);
+  const html = "<!DOCTYPE html>\n" + clone.outerHTML;
+  const blob = new Blob([html], {type:"text/html"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().slice(0,10);
+  a.download = "indonesia-live-"+stamp+".html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// Start timers and load data
+DATA = loadData();
+renderAll();
+
+// Start timezone clocks updater
+if (clockTimer) clearInterval(clockTimer);
+clockTimer = setInterval(updateLiveClocks, 1000);
+
+// Initialize slider position
+onSliderChange(0);
+</script>
+</body>
+</html>
