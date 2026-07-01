@@ -6,389 +6,432 @@
 <title>Indonesië — Transport &amp; Vluchten</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* Page specific style overrides for Transport */
+  /* ── TRANSPORT GRID ── */
   .transport-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: 20px;
     margin-bottom: 24px;
   }
-  
-  .col-4 { grid-column: span 4; }
-  .col-5 { grid-column: span 5; }
-  .col-6 { grid-column: span 6; }
-  .col-7 { grid-column: span 7; }
-  .col-8 { grid-column: span 8; }
+  .col-4  { grid-column: span 4; }
+  .col-5  { grid-column: span 5; }
+  .col-6  { grid-column: span 6; }
+  .col-7  { grid-column: span 7; }
+  .col-8  { grid-column: span 8; }
   .col-12 { grid-column: span 12; }
-  
   @media (max-width: 1024px) {
-    .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 12; }
+    .col-4,.col-5,.col-6,.col-7,.col-8 { grid-column: span 12; }
   }
 
-  /* Scraper styling */
-  .scraper-input-group {
+  /* ── TICKETS SCROLL ── */
+  .tickets-scroll {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 14px;
+    overflow-x: auto;
+    padding: 4px 2px 14px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
-  .scraper-input-group input {
-    flex: 1;
-    font-size: 15px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .scraper-input-group button {
-    background: var(--teal);
-    color: #000;
-    font-weight: 700;
-    border: none;
-    border-radius: 8px;
-    padding: 0 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .scraper-input-group button:hover {
-    box-shadow: 0 0 15px var(--teal-glow);
-    transform: scale(1.02);
-  }
+  .tickets-scroll::-webkit-scrollbar { height: 4px; }
+  .tickets-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  .quick-search-labels {
-    font-size: 11px;
-    color: var(--text-soft);
-    margin-bottom: 15px;
-  }
-  .quick-search-labels span {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
-    padding: 2px 6px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 4px;
-    display: inline-block;
-    margin-bottom: 4px;
-    transition: all 0.15s ease;
-  }
-  .quick-search-labels span:hover {
-    border-color: var(--teal);
-    color: #fff;
-  }
-
-  /* Cyber Console Log */
-  .console-wrapper {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-family: monospace;
-    font-size: 11px;
-    height: 100px;
-    overflow-y: auto;
-    color: var(--text-soft);
-    margin-bottom: 15px;
-  }
-  .console-line {
-    margin-bottom: 4px;
-    white-space: pre-wrap;
-  }
-  .console-line.success {
-    color: #4ad66d;
-  }
-  .console-line.working {
-    color: var(--teal);
-  }
-
-  /* Scrape Result Board */
-  .flight-telemetry-board {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 15px;
-  }
-  @media (max-width: 500px) {
-    .flight-telemetry-board {
-      grid-template-columns: 1fr;
-    }
-  }
-  .telemetry-card {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-  }
-  .telemetry-card.highlight {
-    border-color: var(--teal-soft);
-    background: rgba(0, 180, 216, 0.04);
-  }
-  .telemetry-label {
-    font-size: 9px;
-    text-transform: uppercase;
-    color: var(--text-soft);
-    letter-spacing: 0.05em;
-    margin-bottom: 2px;
-  }
-  .telemetry-value {
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
-  }
-  .telemetry-value.live-alert {
-    color: #ff4d4d;
-    animation: flash 1.5s infinite;
-  }
-
-  @keyframes flash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  /* Radar visualizer */
-  .radar-container {
-    width: 100%;
-    height: 180px;
-    background: radial-gradient(circle, #0e1d2c 0%, #07090e 100%);
-    border: 1px solid rgba(0, 180, 216, 0.2);
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .radar-sweep {
-    position: absolute;
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    background: conic-gradient(from 0deg, rgba(0, 180, 216, 0.15) 0deg, transparent 90deg, transparent 360deg);
-    animation: rotate-radar 4s linear infinite;
-  }
-  .radar-grid {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px dashed rgba(0, 180, 216, 0.15);
-  }
-  .radar-grid-1 { width: 50px; height: 50px; }
-  .radar-grid-2 { width: 110px; height: 110px; }
-  .radar-grid-3 { width: 170px; height: 170px; }
-  
-  .radar-axis-h {
-    position: absolute;
-    width: 90%;
-    height: 1px;
-    background: rgba(0, 180, 216, 0.08);
-  }
-  .radar-axis-v {
-    position: absolute;
-    width: 1px;
-    height: 90%;
-    background: rgba(0, 180, 216, 0.08);
-  }
-  
-  .radar-blip {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: #00f5d4;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #00f5d4, 0 0 20px #00f5d4;
-    animation: pulse-blip 1.5s infinite;
-  }
-
-  @keyframes rotate-radar {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  @keyframes pulse-blip {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.4); opacity: 0.5; }
-  }
-
-  /* Interactive Airport Tab */
-  .airport-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 15px;
-    background: rgba(0, 0, 0, 0.15);
-    padding: 4px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-  }
-  .airport-tab-btn {
-    flex: 1;
-    min-width: 60px;
-    border: none;
-    background: transparent;
-    color: var(--text-soft);
-    padding: 6px 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  .airport-tab-btn.active {
-    background: var(--teal-soft);
-    color: #fff;
-    border: 1px solid rgba(0, 180, 216, 0.15);
-  }
-  .airport-content-card {
-    background: rgba(0,0,0,0.15);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    min-height: 180px;
-  }
-
-  /* Baggage Tag Styling */
-  .baggage-tag-container {
-    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
-    border-radius: 12px;
-    padding: 20px;
+  /* ── BOARDING PASS ── */
+  .boarding-pass {
+    flex: 0 0 300px;
+    border-radius: 14px;
     color: #0f172a;
     font-family: 'Outfit', sans-serif;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    position: relative;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+    position: relative;
   }
-  .baggage-tag-header {
+  .boarding-pass.int-vlucht {
+    background: linear-gradient(160deg,#ebf8ff 0%,#dbeafe 100%);
+    border-top: 4px solid #4cc9f0;
+  }
+  .boarding-pass.bin-vlucht {
+    background: linear-gradient(160deg,#f0fdff 0%,#cffafe 100%);
+    border-top: 4px solid #00b4d8;
+  }
+  .boarding-pass.trein {
+    background: linear-gradient(160deg,#faf5ff 0%,#ede9fe 100%);
+    border-top: 4px solid #9d4edd;
+  }
+  .boarding-pass.bus-auto {
+    background: linear-gradient(160deg,#f0fdf4 0%,#dcfce7 100%);
+    border-top: 4px solid #4ad66d;
+  }
+  .bp-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px dashed #94a3b8;
-    padding-bottom: 10px;
-    margin-bottom: 12px;
+    padding: 12px 14px 9px;
+    border-bottom: 1.5px dashed #94a3b8;
   }
-  .baggage-tag-title {
-    font-size: 13px;
+  .bp-airline {
+    font-size: 10px;
     font-weight: 800;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    color: #334155;
   }
-  .baggage-tag-logo {
-    font-size: 18px;
-  }
-  .baggage-tag-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 10px;
-    font-size: 12px;
-    margin-bottom: 12px;
-  }
-  .baggage-tag-field {
-    display: flex;
-    flex-direction: column;
-  }
-  .baggage-tag-label {
+  .bp-type-badge {
     font-size: 8px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .bp-type-badge.int-vlucht { background:rgba(76,201,240,.18); color:#0284c7; }
+  .bp-type-badge.bin-vlucht { background:rgba(0,180,216,.18); color:#0369a1; }
+  .bp-type-badge.trein      { background:rgba(157,78,221,.15); color:#7c3aed; }
+  .bp-type-badge.bus-auto   { background:rgba(74,214,109,.15); color:#16a34a; }
+  .bp-route {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px 8px;
+    gap: 6px;
+  }
+  .bp-city { flex: 1; }
+  .bp-iata {
+    font-size: 26px;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .bp-city-name {
+    font-size: 8px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .bp-arrow { font-size: 18px; color: #94a3b8; flex-shrink: 0; }
+  .bp-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 6px 14px 10px;
+    border-bottom: 1.5px dashed #94a3b8;
+    gap: 4px 0;
+  }
+  .bp-field { display: flex; flex-direction: column; }
+  .bp-label {
+    font-size: 7px;
     text-transform: uppercase;
     color: #64748b;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
   }
-  .baggage-tag-value {
+  .bp-value {
+    font-size: 11.5px;
     font-weight: 800;
-    font-size: 14px;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .baggage-barcode {
+  .bp-value.tbd { color: #b45309; }
+  .bp-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.45);
+  }
+  .bp-qr-wrap { flex-shrink: 0; }
+  .bp-barcode-area { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .bp-barcode-stripes {
+    height: 34px;
+    background-image: repeating-linear-gradient(90deg,
+      #000,#000 2px,transparent 2px,transparent 4px,
+      #000 4px,#000 7px,transparent 7px,transparent 8px,
+      #000 8px,#000 9px,transparent 9px,transparent 12px
+    );
+    border-radius: 1px;
+  }
+  .bp-barcode-num {
+    font-family: monospace;
+    font-size: 7.5px;
+    color: #475569;
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+  .bp-note-strip {
+    background: rgba(0,0,0,0.06);
+    padding: 5px 14px;
+    font-size: 9px;
+    color: #475569;
+    font-style: italic;
+  }
+
+  /* ── TRANSPORT BLOCK VIEW ── */
+  .transport-block-list {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+  }
+  .transport-block-item {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px dashed #94a3b8;
+    gap: 12px;
+    background: rgba(0,0,0,0.15);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: default;
   }
-  .barcode-stripes {
-    width: 100%;
-    height: 38px;
-    background-image: repeating-linear-gradient(90deg, 
-      #000, #000 2px, 
-      transparent 2px, transparent 4px,
-      #000 4px, #000 7px,
-      transparent 7px, transparent 8px,
-      #000 8px, #000 9px,
-      transparent 9px, transparent 12px
-    );
+  .transport-block-item:hover {
+    border-color: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03);
   }
-  .barcode-number {
-    font-family: monospace;
-    font-size: 11px;
-    margin-top: 4px;
-    letter-spacing: 0.15em;
-    font-weight: 600;
-  }
-
-  /* Carbon Footprint Offset Game */
-  .carbon-bar-container {
-    background: rgba(255,255,255,0.06);
+  .tbi-icon {
+    width: 44px; height: 44px;
     border-radius: 10px;
-    height: 10px;
-    margin: 8px 0;
-    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
   }
-  .carbon-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #4ad66d 0%, #00f5d4 100%);
-    width: 0%;
-    transition: width 0.5s ease-out;
+  .tbi-icon.int-vlucht { background: rgba(76,201,240,0.12); }
+  .tbi-icon.bin-vlucht { background: rgba(0,180,216,0.12); }
+  .tbi-icon.trein      { background: rgba(157,78,221,0.12); }
+  .tbi-icon.bus-auto   { background: rgba(74,214,109,0.12); }
+  .tbi-date {
+    flex-shrink: 0;
+    width: 48px;
+    text-align: center;
   }
+  .tbi-date .day   { font-size: 19px; font-weight: 800; color: #fff; line-height: 1; }
+  .tbi-date .month { font-size: 9.5px; color: var(--text-soft); font-weight: 600; text-transform: uppercase; }
+  .tbi-sep {
+    width: 1px;
+    background: var(--border);
+    align-self: stretch;
+    flex-shrink: 0;
+    min-height: 36px;
+  }
+  .tbi-info { flex: 1; min-width: 0; }
+  .tbi-title {
+    font-size: 13.5px; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 2px;
+  }
+  .tbi-sub {
+    font-size: 11.5px; color: var(--text-soft);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 5px;
+  }
+  .tbi-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .tbi-tag {
+    font-size: 9.5px; font-weight: 600;
+    padding: 2px 7px; border-radius: 5px; border: 1px solid;
+  }
+  .tbi-tag.int-vlucht { color:#4cc9f0; border-color:rgba(76,201,240,.3); background:rgba(76,201,240,.07); }
+  .tbi-tag.bin-vlucht { color:#00b4d8; border-color:rgba(0,180,216,.3); background:rgba(0,180,216,.07); }
+  .tbi-tag.trein      { color:#c084fc; border-color:rgba(192,132,252,.3); background:rgba(157,78,221,.07); }
+  .tbi-tag.bus-auto   { color:#4ad66d; border-color:rgba(74,214,109,.3); background:rgba(74,214,109,.07); }
+  .tbi-cost {
+    text-align: right;
+    flex-shrink: 0;
+    min-width: 64px;
+  }
+  .tbi-cost .amt  { font-size: 16px; font-weight: 800; color: var(--teal); }
+  .tbi-cost .tbd  { font-size: 11px; color: #f59e0b; font-weight: 600; }
+  .tbi-cost .none { font-size: 11px; color: var(--text-soft); }
 
-  /* Transport routes SVG mini map */
+  /* ── ROUTE MAP ── */
   .route-map-wrap {
     background: rgba(0,0,0,0.25);
     border-radius: 16px;
-    padding: 16px;
+    padding: 14px;
     border: 1px solid var(--border);
-    margin-bottom: 20px;
+    margin-bottom: 14px;
   }
-  .route-map-svg {
-    width: 100%;
-    height: auto;
-    display: block;
+  .route-map-svg { width: 100%; height: auto; display: block; }
+  .map-route-line { fill: none; stroke-linecap: round; }
+  .map-route-line.int-vlucht {
+    stroke: #4cc9f0; stroke-width: 2.2;
+    stroke-dasharray: 9 5;
+    animation: dash-int 28s linear infinite;
   }
-  .map-route-line {
-    fill: none;
-    stroke-linecap: round;
+  .map-route-line.bin-vlucht {
+    stroke: #00b4d8; stroke-width: 1.9;
+    stroke-dasharray: 5 4;
+    animation: dash-bin 20s linear infinite;
   }
-  .map-route-line.flight {
-    stroke: var(--c-heen);
-    stroke-width: 1.5;
-    stroke-dasharray: 4 6;
-    animation: dash 30s linear infinite;
+  .map-route-line.trein {
+    stroke: #9d4edd; stroke-width: 2.6;
+    stroke-dasharray: 10 3;
+    animation: dash-trein 12s linear infinite;
   }
-  .map-route-line.train {
-    stroke: var(--c-java);
-    stroke-width: 2.2;
-    stroke-dasharray: 6 3;
-    animation: dash-train 15s linear infinite;
+  .map-route-line.bus-auto {
+    stroke: #4ad66d; stroke-width: 1.8;
+    stroke-dasharray: 3 5;
   }
-  .map-route-line.local {
-    stroke: var(--c-sumatra);
-    stroke-width: 1.8;
-  }
+  @keyframes dash-int   { to { stroke-dashoffset: -1400; } }
+  @keyframes dash-bin   { to { stroke-dashoffset: -900; } }
+  @keyframes dash-trein { to { stroke-dashoffset: -600; } }
   .map-port-label {
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 9px; font-weight: 700;
     fill: var(--text-soft);
     paint-order: stroke fill;
-    stroke: #07090e;
-    stroke-width: 3px;
-    stroke-linejoin: round;
+    stroke: #07090e; stroke-width: 3px; stroke-linejoin: round;
   }
-  
-  @keyframes dash {
-    to {
-      stroke-dashoffset: -1000;
-    }
+  .map-legend-transport {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    justify-content: center;
+    font-size: 11.5px; color: var(--text-soft);
   }
-  @keyframes dash-train {
-    to {
-      stroke-dashoffset: -500;
-    }
+  .map-legend-transport .leg-item {
+    display: flex; align-items: center; gap: 7px;
   }
+  .leg-line {
+    width: 24px; height: 3px; border-radius: 2px; flex-shrink: 0;
+  }
+
+  /* ── EXISTING: FLIGHT SCRAPER ── */
+  .scraper-input-group {
+    display: flex; gap: 10px; margin-bottom: 15px;
+  }
+  .scraper-input-group input {
+    flex: 1; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .scraper-input-group button {
+    background: var(--teal); color: #000; font-weight: 700;
+    border: none; border-radius: 8px; padding: 0 20px;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+  }
+  .scraper-input-group button:hover { box-shadow: 0 0 15px var(--teal-glow); transform: scale(1.02); }
+  .quick-search-labels { font-size: 11px; color: var(--text-soft); margin-bottom: 15px; }
+  .quick-search-labels span {
+    background: rgba(255,255,255,.05); border: 1px solid var(--border);
+    padding: 2px 6px; border-radius: 4px; cursor: pointer;
+    margin-right: 4px; display: inline-block; margin-bottom: 4px;
+    transition: all 0.15s;
+  }
+  .quick-search-labels span:hover { border-color: var(--teal); color: #fff; }
+  .console-wrapper {
+    background: rgba(0,0,0,.4); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; font-family: monospace; font-size: 11px;
+    height: 100px; overflow-y: auto; color: var(--text-soft); margin-bottom: 15px;
+  }
+  .console-line { margin-bottom: 4px; white-space: pre-wrap; }
+  .console-line.success { color: #4ad66d; }
+  .flight-telemetry-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+  @media (max-width:500px) { .flight-telemetry-board { grid-template-columns: 1fr; } }
+  .telemetry-card {
+    background: rgba(0,0,0,.2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+  }
+  .telemetry-card.highlight { border-color: var(--teal-soft); background: rgba(0,180,216,.04); }
+  .telemetry-label { font-size: 9px; text-transform: uppercase; color: var(--text-soft); letter-spacing:.05em; margin-bottom:2px; }
+  .telemetry-value { font-size: 15px; font-weight: 700; color: #fff; }
+  .telemetry-value.live-alert { color: #ff4d4d; animation: flash 1.5s infinite; }
+  @keyframes flash { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .radar-container {
+    width:100%; height:180px;
+    background: radial-gradient(circle,#0e1d2c 0%,#07090e 100%);
+    border:1px solid rgba(0,180,216,.2); border-radius:12px;
+    position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  }
+  .radar-sweep {
+    position:absolute; width:250px; height:250px; border-radius:50%;
+    background: conic-gradient(from 0deg, rgba(0,180,216,.15) 0deg, transparent 90deg, transparent 360deg);
+    animation: rotate-radar 4s linear infinite;
+  }
+  .radar-grid { position:absolute; border-radius:50%; border:1px dashed rgba(0,180,216,.15); }
+  .radar-grid-1 { width:50px; height:50px; }
+  .radar-grid-2 { width:110px; height:110px; }
+  .radar-grid-3 { width:170px; height:170px; }
+  .radar-axis-h { position:absolute; width:90%; height:1px; background:rgba(0,180,216,.08); }
+  .radar-axis-v { position:absolute; width:1px; height:90%; background:rgba(0,180,216,.08); }
+  .radar-blip {
+    position:absolute; width:8px; height:8px; background:#00f5d4; border-radius:50%;
+    box-shadow:0 0 10px #00f5d4,0 0 20px #00f5d4; animation:pulse-blip 1.5s infinite;
+  }
+  @keyframes rotate-radar { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes pulse-blip { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:.5} }
+  .airport-tabs {
+    display:flex; flex-wrap:wrap; gap:5px; margin-bottom:15px;
+    background:rgba(0,0,0,.15); padding:4px; border-radius:10px; border:1px solid var(--border);
+  }
+  .airport-tab-btn {
+    flex:1; min-width:60px; border:none; background:transparent; color:var(--text-soft);
+    padding:6px 8px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;
+    transition:all 0.2s; font-family:inherit;
+  }
+  .airport-tab-btn.active { background:var(--teal-soft); color:#fff; border:1px solid rgba(0,180,216,.15); }
+  .airport-content-card {
+    background:rgba(0,0,0,.15); border:1px solid var(--border); border-radius:12px; padding:16px; min-height:180px;
+  }
+  .baggage-tag-container {
+    background:linear-gradient(180deg,#f8fafc 0%,#e2e8f0 100%); border-radius:12px;
+    padding:20px; color:#0f172a; font-family:'Outfit',sans-serif;
+    border:1px solid rgba(255,255,255,.1); box-shadow:0 4px 15px rgba(0,0,0,.4);
+  }
+  .baggage-tag-header {
+    display:flex; justify-content:space-between; align-items:center;
+    border-bottom:2px dashed #94a3b8; padding-bottom:10px; margin-bottom:12px;
+  }
+  .baggage-tag-title { font-size:13px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+  .baggage-tag-grid { display:grid; grid-template-columns:2fr 1fr; gap:10px; font-size:12px; margin-bottom:12px; }
+  .baggage-tag-field { display:flex; flex-direction:column; }
+  .baggage-tag-label { font-size:8px; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:.05em; }
+  .baggage-tag-value { font-weight:800; font-size:14px; }
+  .baggage-barcode { display:flex; flex-direction:column; align-items:center; margin-top:15px; padding-top:10px; border-top:1px dashed #94a3b8; }
+  .barcode-stripes {
+    width:100%; height:38px;
+    background-image:repeating-linear-gradient(90deg,
+      #000,#000 2px,transparent 2px,transparent 4px,
+      #000 4px,#000 7px,transparent 7px,transparent 8px,
+      #000 8px,#000 9px,transparent 9px,transparent 12px
+    );
+  }
+  .barcode-number { font-family:monospace; font-size:11px; margin-top:4px; letter-spacing:.15em; font-weight:600; }
+  .carbon-bar-container { background:rgba(255,255,255,.06); border-radius:10px; height:10px; margin:8px 0; overflow:hidden; }
+  .carbon-bar { height:100%; background:linear-gradient(90deg,#4ad66d 0%,#00f5d4 100%); transition:width 0.5s; }
+  .preset-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-soft);
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.18s;
+    text-align: left;
+  }
+  .preset-btn:hover {
+    border-color: rgba(255,255,255,0.15);
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* ── MAP TOOLTIP ── */
+  .map-tooltip {
+    position: fixed;
+    background: rgba(7,9,14,0.95);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 11px;
+    padding: 11px 15px;
+    pointer-events: none;
+    max-width: 250px;
+    z-index: 300;
+    display: none;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.65);
+    line-height: 1.5;
+  }
+  .map-tooltip-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+  .map-tooltip-sub   { font-size: 11px; color: var(--text-soft); margin-bottom: 6px; }
+  .map-tooltip-row   { font-size: 11.5px; color: #cbd5e1; display: flex; gap: 6px; align-items: baseline; }
+  .map-tooltip-row + .map-tooltip-row { margin-top: 3px; }
+  .map-tooltip-dur   { font-weight: 800; color: #4ad66d; }
 </style>
 </head>
 <body>
@@ -401,7 +444,7 @@
       <div class="sub">28 aug – 29 sep 2026</div>
     </div>
     <nav class="app-nav">
-      <a class="app-nav-link" href="indonesia-tracker.html">📊 Dashboard</a>
+      <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
       <a class="app-nav-link" href="indonesia-timeline.html">📅 Reisschema</a>
       <a class="app-nav-link" href="indonesia-map.html">🗺️ Reiskaart</a>
       <a class="app-nav-link" href="indonesia-live.html">📍 Live Tracker</a>
@@ -410,23 +453,86 @@
     </nav>
   </header>
 
-  <!-- MAIN TRANSPORT CONTAINER -->
+  <!-- PERSON SELECTOR -->
+  <div class="person-selector-container" id="personSelector"></div>
+
   <div class="transport-grid">
-    
-    <!-- LEFT PANEL: Flight scraper panel -->
+
+    <!-- ══════════════════════════════════════════════════
+         1. TICKETS & QR CODES (bovenaan, breed)
+         ══════════════════════════════════════════════════ -->
+    <section class="panel col-12" id="ticketsSection">
+      <h2>🎫 Tickets &amp; Instapkaarten <span id="ticketCount" class="tbd-pill" style="margin-left:6px;"></span></h2>
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px;">
+        Alle instapkaarten, vouchers en treintickets voor de geselecteerde reiziger. Scroll horizontaal om alle tickets te zien.
+      </p>
+      <div class="tickets-scroll" id="ticketsScroll"></div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         2. TRANSPORT ROUTE KAART (gefilterd per persoon, 4 types)
+         ══════════════════════════════════════════════════ -->
+    <section class="panel col-12">
+      <h2>🗺️ Actieve Transport Route Kaart</h2>
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px;">
+        Toont enkel de routes die de geselecteerde reiziger neemt. Gebruik de legende om het type vervoer te onderscheiden.
+      </p>
+      <div class="route-map-wrap">
+        <svg id="transportRouteSVG" class="route-map-svg" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="tgrid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.012)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#tgrid)"/>
+          <!-- Dynamisch gegenereerd door JS -->
+        </svg>
+      </div>
+      <div class="map-legend-transport">
+        <div class="leg-item">
+          <div class="leg-line" style="background:#4cc9f0;border-top:2px dashed rgba(76,201,240,0.6);"></div>
+          <span>Internationale vluchten</span>
+        </div>
+        <div class="leg-item">
+          <div class="leg-line" style="background:#00b4d8;border-top:2px dashed rgba(0,180,216,0.6);"></div>
+          <span>Binnenlandse vluchten</span>
+        </div>
+        <div class="leg-item">
+          <div class="leg-line" style="background:#9d4edd;"></div>
+          <span>Treinen (KAI)</span>
+        </div>
+        <div class="leg-item">
+          <div class="leg-line" style="background:#4ad66d;border-top:2px dotted rgba(74,214,109,0.6);"></div>
+          <span>Bus / Auto / Lokaal</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         3. TRANSPORT BLOK OVERZICHT
+         ══════════════════════════════════════════════════ -->
+    <section class="panel col-12">
+      <h2>🗂️ Transport Overzicht — Blokweergave</h2>
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px;">
+        Chronologisch overzicht van alle verplaatsingen voor de geselecteerde reiziger.
+      </p>
+      <div class="transport-block-list" id="transportBlockList"></div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════
+         4. FLIGHT SCRAPER SIMULATOR
+         ══════════════════════════════════════════════════ -->
     <section class="panel col-7">
       <h2>✈️ Live Flight Scraper Simulator</h2>
-      <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 15px;">
-        Voer een vluchtnummer in om live telemetrie, ADS-B status, terminal/gate en bagage-informatie te "scrapen" van het luchtruim.
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:15px;">
+        Voer een vluchtnummer in om live telemetrie, ADS-B status, terminal/gate en bagage-informatie te "scrapen".
       </p>
-
       <div class="scraper-input-group">
         <input type="text" id="flightInput" placeholder="Bv. TG935, TR220, QZ120..." value="TG935">
         <button onclick="simulateScraper()">Scrape Vlucht</button>
       </div>
-
       <div class="quick-search-labels">
-        Aanbevolen vluchten: 
+        Aanbevolen:
         <span onclick="setFlightSearch('TG935')">TG935 (BRU→BKK)</span>
         <span onclick="setFlightSearch('TG403')">TG403 (BKK→SIN)</span>
         <span onclick="setFlightSearch('TR220')">TR220 (SIN→KNO)</span>
@@ -435,60 +541,34 @@
         <span onclick="setFlightSearch('QZ503')">QZ503 (LBJ→DPS)</span>
         <span onclick="setFlightSearch('QR959')">QR959 (DPS→DOH)</span>
       </div>
-
       <div class="console-wrapper" id="consoleLogs">
         <div class="console-line">[Systeem] Console gereed. Voer vluchtnummer in en druk op 'Scrape Vlucht'.</div>
       </div>
-
-      <!-- Scrape Result Panel -->
       <div id="telemetryResult" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px; margin-bottom:12px;">
-          <h3 id="resFlightName" style="font-size: 16px; color:#fff;">TG935 Details</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:8px;margin-bottom:12px;">
+          <h3 id="resFlightName" style="font-size:16px;color:#fff;">TG935 Details</h3>
           <span class="badge gepland" id="resFlightStatus">En Route</span>
         </div>
-
         <div class="flight-telemetry-board">
-          <div class="telemetry-card highlight">
-            <div class="telemetry-label">Luchtvaartmaatschappij</div>
-            <div class="telemetry-value" id="resAirline">Thai Airways</div>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-label">Vliegtuigtype</div>
-            <div class="telemetry-value" id="resAircraft">Boeing 777-300ER</div>
-          </div>
-          <div class="telemetry-card highlight">
-            <div class="telemetry-label">Huidige Telemetrie</div>
-            <div class="telemetry-value" id="resAltitude">35,992 ft @ 895 km/h</div>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-label">Vliegduur / Resterend</div>
-            <div class="telemetry-value" id="resDuration">10u 45m (Nog 2u 10m)</div>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-label">Terminal &amp; Gate</div>
-            <div class="telemetry-value" id="resGate">Terminal 1, Gate B34</div>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-label">Baggage claim Carousel</div>
-            <div class="telemetry-value" id="resBaggage">Carousel 8 (Schatting)</div>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-label">Vertrek → Aankomst</div>
-            <div class="telemetry-value" id="resRoute" style="font-size:13.5px;">BRU (Brussels) → BKK (Bangkok)</div>
-          </div>
-          <div class="telemetry-card">
-            <div class="telemetry-label">Delay Risk Factor</div>
-            <div class="telemetry-value live-alert" id="resDelayRisk">Laag (3.2%)</div>
-          </div>
+          <div class="telemetry-card highlight"><div class="telemetry-label">Luchtvaartmaatschappij</div><div class="telemetry-value" id="resAirline">Thai Airways</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Vliegtuigtype</div><div class="telemetry-value" id="resAircraft">Boeing 777-300ER</div></div>
+          <div class="telemetry-card highlight"><div class="telemetry-label">Huidige Telemetrie</div><div class="telemetry-value" id="resAltitude">35,992 ft @ 895 km/h</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Vliegduur / Resterend</div><div class="telemetry-value" id="resDuration">10u 45m</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Terminal &amp; Gate</div><div class="telemetry-value" id="resGate">Terminal 1, Gate B34</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Baggage Carousel</div><div class="telemetry-value" id="resBaggage">Carousel 8</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Vertrek → Aankomst</div><div class="telemetry-value" id="resRoute" style="font-size:13.5px;">BRU → BKK</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Delay Risk Factor</div><div class="telemetry-value live-alert" id="resDelayRisk">Laag (3.2%)</div></div>
         </div>
       </div>
     </section>
 
-    <!-- RIGHT PANEL: Radar & Telemetry Display -->
-    <section class="panel col-5" style="display:flex; flex-direction:column; justify-content:space-between;">
+    <!-- ══════════════════════════════════════════════════
+         5. RADAR
+         ══════════════════════════════════════════════════ -->
+    <section class="panel col-5" style="display:flex;flex-direction:column;justify-content:space-between;">
       <div>
         <h2>📡 Live Luchtruim Radar</h2>
-        <p style="font-size:12px; color:var(--text-soft); margin-bottom:12px;">Simulatie van ADS-B transpondersignalen in de regio.</p>
+        <p style="font-size:12px;color:var(--text-soft);margin-bottom:12px;">Simulatie van ADS-B transpondersignalen in de regio.</p>
         <div class="radar-container">
           <div class="radar-sweep"></div>
           <div class="radar-grid radar-grid-1"></div>
@@ -496,109 +576,36 @@
           <div class="radar-grid radar-grid-3"></div>
           <div class="radar-axis-h"></div>
           <div class="radar-axis-v"></div>
-          <div class="radar-blip" id="radarBlip" style="top: 80px; left: 160px;"></div>
+          <div class="radar-blip" id="radarBlip" style="top:80px;left:160px;"></div>
         </div>
       </div>
-      
-      <div style="margin-top: 15px; background: rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.04); border-radius:10px; padding:12px 14px;">
+      <div style="margin-top:15px;background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.04);border-radius:10px;padding:12px 14px;">
         <span class="telemetry-label">Ontvangen Telemetrieberichten</span>
-        <div style="font-size:11px; font-family:monospace; color:#4ad66d; margin-top:4px;" id="liveHexLog">
+        <div style="font-size:11px;font-family:monospace;color:#4ad66d;margin-top:4px;" id="liveHexLog">
           MSG4 ID:THAI935 LAT:13.681 LON:100.750 ALT:32000 SQ:4012
         </div>
       </div>
     </section>
 
-    <!-- FULL ROW: Active route map layout -->
-    <section class="panel col-12">
-      <h2>🗺️ Actieve Transport Route Kaart</h2>
-      <p style="font-size:13px; color:var(--text-soft); margin-bottom:15px;">Visueel overzicht van alle vluchten en spoortrajecten van de groepsreis.</p>
-      
-      <div class="route-map-wrap">
-        <svg class="route-map-svg" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.01)" stroke-width="1"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#gridPattern)" />
-          
-          <!-- Route connections -->
-          <!-- BRU to BKK/SIN -->
-          <path class="map-route-line flight" d="M 50 120 Q 150 50 304 112" />
-          <!-- SIN to Medan -->
-          <path class="map-route-line flight" d="M 304 112 Q 220 80 143 61" stroke="var(--c-sg)" />
-          <!-- Medan to Jakarta -->
-          <path class="map-route-line flight" d="M 143 61 Q 250 160 399 285" />
-          <!-- Trains on Java -->
-          <path class="map-route-line train" d="M 399 285 L 508 321 L 579 325 L 583 309 L 634 331" />
-          <!-- Java to Flores -->
-          <path class="map-route-line flight" d="M 634 331 Q 720 310 806 337" />
-          <!-- Labuan Bajo to Bali -->
-          <path class="map-route-line flight" d="M 806 337 Q 730 320 660 341" />
-          <!-- Return to BRU -->
-          <path class="map-route-line flight" d="M 660 341 Q 400 180 50 120" />
-          
-          <!-- Nodes -->
-          <circle cx="50" cy="120" r="5" fill="#fff" />
-          <text x="50" y="110" class="map-port-label" text-anchor="middle">BRU (Brussel)</text>
-
-          <circle cx="304" cy="112" r="5" fill="var(--c-sg)" />
-          <text x="304" y="102" class="map-port-label" text-anchor="middle">SIN (Changi)</text>
-
-          <circle cx="143" cy="61" r="5" fill="var(--c-sumatra)" />
-          <text x="143" y="52" class="map-port-label" text-anchor="middle">KNO (Medan)</text>
-
-          <circle cx="399" cy="285" r="5" fill="var(--c-jakarta)" />
-          <text x="399" y="275" class="map-port-label" text-anchor="middle">CGK (Jakarta)</text>
-
-          <circle cx="508" cy="321" r="4" fill="var(--c-java)" />
-          <text x="508" y="336" class="map-port-label" text-anchor="middle">YK (Yogya)</text>
-
-          <circle cx="579" cy="325" r="4" fill="var(--c-java)" />
-          <text x="579" y="340" class="map-port-label" text-anchor="middle">ML (Malang)</text>
-
-          <circle cx="634" cy="331" r="4" fill="var(--c-java)" />
-          <text x="634" y="322" class="map-port-label" text-anchor="middle">BWI (Banyuwangi)</text>
-
-          <circle cx="660" cy="341" r="5" fill="var(--c-bali)" />
-          <text x="660" y="356" class="map-port-label" text-anchor="middle">DPS (Bali)</text>
-
-          <circle cx="806" cy="337" r="5" fill="var(--c-flores)" />
-          <text x="806" y="327" class="map-port-label" text-anchor="middle">LBJ (Labuan Bajo)</text>
-        </svg>
-      </div>
-
-      <!-- Legend -->
-      <div style="display:flex; flex-wrap:wrap; gap:16px; font-size:12px; color:var(--text-soft); justify-content:center;">
-        <span><i style="display:inline-block; width:12px; height:2px; background:var(--c-heen); border-top:1px dashed #fff; margin-right:6px; vertical-align:middle;"></i>Internationale &amp; Binnenlandse Vluchten</span>
-        <span><i style="display:inline-block; width:12px; height:3px; background:var(--c-java); border-top:1px dashed #fff; margin-right:6px; vertical-align:middle;"></i>Java Spoornetwerk (Treinen)</span>
-      </div>
-    </section>
-
-    <!-- BOTTOM ROW - TWO PANELS: Baggage Tracker & Carbon Offset -->
-    <!-- BAGGAGE TRACKER -->
+    <!-- ══════════════════════════════════════════════════
+         6. BAGGAGE TAG
+         ══════════════════════════════════════════════════ -->
     <section class="panel col-6">
       <h2>🧳 Baggage Tag &amp; Limieten</h2>
-      <p style="font-size:13px; color:var(--text-soft); margin-bottom:15px;">Persoonlijke checked bagage tags en limieten per type transport.</p>
-      
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:15px;">
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:15px;">Persoonlijke bagage tags en limieten per type transport.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:15px;">
         <div>
-          <label style="font-size:11px; text-transform:uppercase; color:var(--text-soft); margin-bottom:4px; display:block;">Selecteer Reiziger</label>
+          <label style="font-size:11px;text-transform:uppercase;color:var(--text-soft);margin-bottom:4px;display:block;">Reiziger</label>
           <select id="baggagePerson" onchange="updateBaggageTag()" style="width:100%;">
-            <option value="matthew">Matthew</option>
-            <option value="hinke">Hinke</option>
-            <option value="arne">Arne</option>
-            <option value="eliott">Eliott</option>
-            <option value="jens">Jens</option>
-            <option value="kamiel">Kamiel</option>
-            <option value="maurice">Maurice</option>
-            <option value="mathias">Mathias</option>
-            <option value="willem">Willem</option>
-            <option value="kasper">Kasper</option>
+            <option value="matthew">Matthew</option><option value="hinke">Hinke</option>
+            <option value="arne">Arne</option><option value="eliott">Eliott</option>
+            <option value="jens">Jens</option><option value="kamiel">Kamiel</option>
+            <option value="maurice">Maurice</option><option value="mathias">Mathias</option>
+            <option value="willem">Willem</option><option value="kasper">Kasper</option>
           </select>
         </div>
         <div>
-          <label style="font-size:11px; text-transform:uppercase; color:var(--text-soft); margin-bottom:4px; display:block;">Actieve Vlucht Etap</label>
+          <label style="font-size:11px;text-transform:uppercase;color:var(--text-soft);margin-bottom:4px;display:block;">Actieve Vlucht Etap</label>
           <select id="baggageFlight" onchange="updateBaggageTag()" style="width:100%;">
             <option value="TG935">TG935 (BRU→BKK)</option>
             <option value="TR220">TR220 (SIN→KNO)</option>
@@ -608,495 +615,879 @@
           </select>
         </div>
       </div>
-
-      <!-- Real interactive tag -->
       <div class="baggage-tag-container">
         <div class="baggage-tag-header">
           <span class="baggage-tag-title" id="tagAirlineCode">TG - THAI AIRWAYS</span>
-          <span class="baggage-tag-logo">✈️</span>
+          <span style="font-size:18px;">✈️</span>
         </div>
         <div class="baggage-tag-grid">
-          <div class="baggage-tag-field">
-            <span class="baggage-tag-label">Passagier</span>
-            <span class="baggage-tag-value" id="tagPassenger">MATTHEW</span>
-          </div>
-          <div class="baggage-tag-field">
-            <span class="baggage-tag-label">Vluchtnr.</span>
-            <span class="baggage-tag-value" id="tagFlightNumber">TG935</span>
-          </div>
-          <div class="baggage-tag-field">
-            <span class="baggage-tag-label">Van → Naar</span>
-            <span class="baggage-tag-value" id="tagRoute">BRU → BKK</span>
-          </div>
-          <div class="baggage-tag-field">
-            <span class="baggage-tag-label">Bagage Limiet</span>
-            <span class="baggage-tag-value" id="tagLimit" style="color:#b91c1c;">30 KG Checked</span>
-          </div>
+          <div class="baggage-tag-field"><span class="baggage-tag-label">Passagier</span><span class="baggage-tag-value" id="tagPassenger">MATTHEW</span></div>
+          <div class="baggage-tag-field"><span class="baggage-tag-label">Vluchtnr.</span><span class="baggage-tag-value" id="tagFlightNumber">TG935</span></div>
+          <div class="baggage-tag-field"><span class="baggage-tag-label">Van → Naar</span><span class="baggage-tag-value" id="tagRoute">BRU → BKK</span></div>
+          <div class="baggage-tag-field"><span class="baggage-tag-label">Bagage Limiet</span><span class="baggage-tag-value" id="tagLimit" style="color:#b91c1c;">30 KG</span></div>
         </div>
         <div class="baggage-barcode">
           <div class="barcode-stripes"></div>
           <div class="barcode-number" id="tagBarcodeNumber">TG 935 - 849302</div>
         </div>
       </div>
-
-      <!-- Quick alert info -->
-      <div style="font-size:11px; color:#ffb703; background:rgba(255, 183, 3, 0.08); border:1px solid rgba(255, 183, 3, 0.2); border-radius:8px; padding:10px; margin-top:12px;">
-        ⚠️ <strong>Let op:</strong> Binnenlandse vluchten (Wings Air / Scoot / Lion Air) hanteren vaak limieten van 10kg tot 20kg. Zorg dat je ruimbagage niet te zwaar is!
+      <div style="font-size:11px;color:#ffb703;background:rgba(255,183,3,.08);border:1px solid rgba(255,183,3,.2);border-radius:8px;padding:10px;margin-top:12px;">
+        ⚠️ <strong>Let op:</strong> Binnenlandse vluchten (Scoot / AirAsia / Wings Air) hanteren vaak limieten van 10–20 kg voor handbagage!
       </div>
     </section>
 
-    <!-- CARBON CALCULATOR -->
-    <section class="panel col-6" style="display:flex; flex-direction:column; justify-content:space-between;">
+    <!-- ══════════════════════════════════════════════════
+         7. CO₂ CALCULATOR
+         ══════════════════════════════════════════════════ -->
+    <section class="panel col-6" style="display:flex;flex-direction:column;justify-content:space-between;">
       <div>
         <h2>🌱 CO₂ Footprint &amp; Eco-compensatie</h2>
-        <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
-          Bereken de CO₂-uitstoot van de reizen en bekijk hoe je deze kunt compenseren via lokale initiatieven in Indonesië.
-        </p>
-
-        <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:15px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-            <span style="font-size:13px; color:var(--text-soft);">Totale vluchtkilometers pp:</span>
+        <p style="font-size:13px;color:var(--text-soft);margin-bottom:12px;">CO₂-uitstoot van alle vluchten en hoe je die compenseert via Indonesische initiatieven.</p>
+        <div style="background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:15px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;color:var(--text-soft);">Totale vluchtkilometers pp:</span>
             <strong style="color:#fff;" id="carbonKm">24,450 km</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-            <span style="font-size:13px; color:var(--text-soft);">Berekende CO₂-uitstoot pp:</span>
-            <strong style="color:#ff4d4d;" id="carbonTons">4.82 Metrische Ton</strong>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;color:var(--text-soft);">Berekende CO₂-uitstoot pp:</span>
+            <strong style="color:#ff4d4d;" id="carbonTons">4.82 Ton</strong>
           </div>
-          <div style="display:flex; justify-content:space-between; border-top:1px dashed rgba(255,255,255,0.06); padding-top:8px; margin-top:8px;">
-            <span style="font-size:13px; color:var(--text-soft); font-weight:600;">Vereiste Mangrovebomen:</span>
+          <div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(255,255,255,.06);padding-top:8px;margin-top:8px;">
+            <span style="font-size:13px;color:var(--text-soft);font-weight:600;">Vereiste Mangrovebomen:</span>
             <strong style="color:#4ad66d;" id="carbonMangroves">24 Bomen</strong>
           </div>
         </div>
-
-        <h4 style="font-size:12px; text-transform:uppercase; color:var(--text-soft); margin-bottom:8px; font-weight:600;">Eco-compensatie Voortgang</h4>
-        <div class="carbon-bar-container">
-          <div class="carbon-bar" id="carbonBar" style="width: 25%;"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-soft); margin-bottom:15px;">
+        <h4 style="font-size:12px;text-transform:uppercase;color:var(--text-soft);margin-bottom:8px;font-weight:600;">Eco-compensatie Voortgang</h4>
+        <div class="carbon-bar-container"><div class="carbon-bar" id="carbonBar" style="width:25%;"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-soft);margin-bottom:15px;">
           <span id="offsetProgressLabel">6 van de 24 bomen geplant</span>
           <span>25% Gecompenseerd</span>
         </div>
       </div>
-
-      <!-- Offset items list -->
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <button class="preset-btn" onclick="offsetMangrove(2)" style="width:100%; display:flex; justify-content:space-between; align-items:center;">
-          <span>🌱 Plant 2 Mangroves in Noord-Sumatra</span>
-          <strong>Sponsor €10</strong>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="preset-btn" onclick="offsetMangrove(2)" style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+          <span>🌱 Plant 2 Mangroves in Noord-Sumatra</span><strong>Sponsor €10</strong>
         </button>
-        <button class="preset-btn" onclick="offsetMangrove(5)" style="width:100%; display:flex; justify-content:space-between; align-items:center; background:rgba(74, 214, 109, 0.1); border-color:rgba(74, 214, 109, 0.2); color:#4ad66d;">
-          <span>🌳 Plant 5 Bomen in Komodo National Park</span>
-          <strong>Sponsor €25</strong>
+        <button class="preset-btn" onclick="offsetMangrove(5)" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:rgba(74,214,109,.1);border-color:rgba(74,214,109,.2);color:#4ad66d;">
+          <span>🌳 Plant 5 Bomen in Komodo National Park</span><strong>Sponsor €25</strong>
         </button>
       </div>
     </section>
 
-    <!-- AIRPORT HUB TRANSIT GUIDES -->
+    <!-- ══════════════════════════════════════════════════
+         8. AIRPORT HUBS & TRANSIT GUIDE
+         ══════════════════════════════════════════════════ -->
     <section class="panel col-12">
       <h2>🏢 Transit Airport Hubs &amp; Taxi Advies</h2>
-      <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 15px;">
-        Wissel van luchthaven om belangrijke details te bekijken over layovers, wifi, terminals en het vermijden van taxi-scams bij aankomst.
-      </p>
-
-      <!-- Airport Tabs -->
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:15px;">Wissel van luchthaven om details te bekijken over layovers, wifi, terminals en het vermijden van taxi-scams.</p>
       <div class="airport-tabs">
-        <button class="airport-tab-btn active" onclick="switchAirportTab('BRU')">BRU (Brussel)</button>
-        <button class="airport-tab-btn" onclick="switchAirportTab('BKK')">BKK (Bangkok)</button>
-        <button class="airport-tab-btn" onclick="switchAirportTab('SIN')">SIN (Singapore)</button>
-        <button class="airport-tab-btn" onclick="switchAirportTab('KNO')">KNO (Medan)</button>
-        <button class="airport-tab-btn" onclick="switchAirportTab('CGK')">CGK (Jakarta)</button>
-        <button class="airport-tab-btn" onclick="switchAirportTab('DPS')">DPS (Bali)</button>
-        <button class="airport-tab-btn" onclick="switchAirportTab('LBJ')">LBJ (L. Bajo)</button>
+        <button class="airport-tab-btn active" onclick="switchAirportTab('BRU',event)">BRU (Brussel)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('BKK',event)">BKK (Bangkok)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('SIN',event)">SIN (Singapore)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('KNO',event)">KNO (Medan)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('CGK',event)">CGK (Jakarta)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('DPS',event)">DPS (Bali)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('LBJ',event)">LBJ (L. Bajo)</button>
       </div>
-
-      <div class="airport-content-card" id="airportContentCard">
-        <!-- Content will be swapped by JS -->
-      </div>
+      <div class="airport-content-card" id="airportContentCard"></div>
     </section>
 
   </div>
-  
-  <footer class="note">Vluchtscraper is een educatieve en interactieve simulatie die gebruik maakt van reisschemadetails voor 2026.</footer>
+
+  <footer class="note">Transport-data gebaseerd op geboekte vluchten aug–sep 2026. Tijden en gates zijn indicatief en kunnen wijzigen.</footer>
 </div>
+<div id="mapTooltip" class="map-tooltip"></div>
 
 <script>
-  /* ================================================================
-     FLIGHT DATABASE & SIMULATOR DATA
-     ================================================================ */
-  const FLIGHT_DB = {
-    TG935: {
-      flight: "TG935",
-      airline: "Thai Airways",
-      aircraft: "Boeing 777-300ER (HS-TKK)",
-      altitude: "36,000 ft",
-      speed: "905 km/h",
-      duration: "11u 15m",
-      route: "BRU (Brussel Airport) → BKK (Suvarnabhumi Airport)",
-      gate: "Pier B, Gate B20",
-      baggage: "Baggage Hall 3, Band 4",
-      risk: "Laag (2.5%)",
-      status: "Scheduled",
-      blipPos: { top: 60, left: 120 },
-      lat: 50.901, lon: 4.484
-    },
-    TG403: {
-      flight: "TG403",
-      airline: "Thai Airways",
-      aircraft: "Airbus A350-900 (HS-THC)",
-      altitude: "38,000 ft",
-      speed: "840 km/h",
-      duration: "2u 25m",
-      route: "BKK (Suvarnabhumi Airport) → SIN (Singapore Changi)",
-      gate: "Concourse D, Gate D5",
-      baggage: "Terminal 1, Belt 18",
-      risk: "Gemiddeld (12.4%)",
-      status: "Scheduled",
-      blipPos: { top: 120, left: 240 },
-      lat: 13.69, lon: 100.75
-    },
-    TR220: {
-      flight: "TR220",
-      airline: "Scoot",
-      aircraft: "Airbus A320-neo (9V-TNC)",
-      altitude: "28,000 ft",
-      speed: "710 km/h",
-      duration: "1u 30m",
-      route: "SIN (Singapore Changi) → KNO (Medan Kualanamu)",
-      gate: "Terminal 2, Gate F38",
-      baggage: "Main Hall, Belt 2",
-      risk: "Laag (1.8%)",
-      status: "Scheduled",
-      blipPos: { top: 80, left: 160 },
-      lat: 1.364, lon: 103.991
-    },
-    QZ120: {
-      flight: "QZ120",
-      airline: "Indonesia AirAsia",
-      aircraft: "Airbus A320-200 (PK-AZA)",
-      altitude: "32,000 ft",
-      speed: "780 km/h",
-      duration: "2u 15m",
-      route: "KNO (Medan Kualanamu) → CGK (Jakarta Soekarno-Hatta)",
-      gate: "Terminal 2D, Gate 4",
-      baggage: "Terminal 2D, Band 3",
-      risk: "Gemiddeld (8.5%)",
-      status: "Scheduled",
-      blipPos: { top: 150, left: 380 },
-      lat: 3.64, lon: 98.88
-    },
-    GA402: {
-      flight: "GA402",
-      airline: "Garuda Indonesia",
-      aircraft: "Boeing 737-800 (PK-GFM)",
-      altitude: "34,000 ft",
-      speed: "810 km/h",
-      duration: "1u 45m",
-      route: "SUB (Surabaya Juanda) → LBJ (Labuan Bajo Komodo)",
-      gate: "Terminal 1, Gate 5",
-      baggage: "Arrival Hall, Belt A",
-      risk: "Zeer Laag (0.5%)",
-      status: "Scheduled",
-      blipPos: { top: 165, left: 550 },
-      lat: -7.38, lon: 112.78
-    },
-    QZ503: {
-      flight: "QZ503",
-      airline: "Indonesia AirAsia",
-      aircraft: "Airbus A320-200 (PK-AXV)",
-      altitude: "24,000 ft",
-      speed: "680 km/h",
-      duration: "1u 10m",
-      route: "LBJ (Labuan Bajo Komodo) → DPS (Bali Denpasar)",
-      gate: "Gate 2 (Lopen naar platform)",
-      baggage: "Domestic Arrivals, Belt 1",
-      risk: "Gemiddeld (14.2%)",
-      status: "Scheduled",
-      blipPos: { top: 172, left: 630 },
-      lat: -8.48, lon: 119.88
-    },
-    QR959: {
-      flight: "QR959",
-      airline: "Qatar Airways",
-      aircraft: "Boeing 777-300ER (A7-BEP)",
-      altitude: "33,000 ft",
-      speed: "890 km/h",
-      duration: "9u 35m",
-      route: "DPS (Bali Denpasar) → DOH (Hamad Airport Qatar)",
-      gate: "International Pier, Gate 15",
-      baggage: "N/A - Transit",
-      risk: "Laag (4.1%)",
-      status: "Scheduled",
-      blipPos: { top: 180, left: 660 },
-      lat: -8.74, lon: 115.16
+/* ══════════════════════════════════════════════════════════
+   GEDEELDE DATA (gesynchroniseerd met tracker)
+   ══════════════════════════════════════════════════════════ */
+const PERSONS = {
+  matthew: { name:"Matthew", color:"#0F6B5C" },
+  hinke:   { name:"Hinke",   color:"#C8567D" },
+  arne:    { name:"Arne",    color:"#5B7FB5" },
+  eliott:  { name:"Eliott",  color:"#D97A2B" },
+  jens:    { name:"Jens",    color:"#6B4E9C" },
+  kamiel:  { name:"Kamiel",  color:"#4A8B3B" },
+  maurice: { name:"Maurice", color:"#C8932B" },
+  mathias: { name:"Mathias", color:"#1C8AA0" },
+  willem:  { name:"Willem",  color:"#C75D3A" },
+  kasper:  { name:"Kasper",  color:"#8A6D3B" }
+};
+const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
+
+const COSTS = {
+  c1:  { label:"Vlucht BRU → Bangkok → Singapore (THAI)", amount:464.23 },
+  c2:  { label:"Vlucht Singapore → Medan (Scoot)",         amount:71 },
+  c3:  { label:"Taxi/minibus Medan → Ketambe",             amount:20 },
+  c5:  { label:"Taxi/minibus Ketambe → Medan",             amount:20 },
+  c6:  { label:"Vlucht Medan → Jakarta",                   amount:220 },
+  c7:  { label:"Trein Jakarta → Yogyakarta",               amount:20 },
+  c8:  { label:"Nachttrein Yogyakarta → Malang",           amount:15 },
+  c11: { label:"Vlucht Java → Denpasar → Labuan Bajo",     amount:null },
+  c15: { label:"Vlucht Labuan Bajo → Bali",                amount:null },
+  c17: { label:"Terugvlucht Bali → huis",                  amount:null },
+  c21: { label:"Bromo + Tumpak Sewu (jeep-tour)",          amount:25 },
+  c22: { label:"Kawah Ijen (entree + gids)",               amount:18 },
+};
+
+/* PTS met BRU erbij (coördinaten voor SVG viewBox 900×400) */
+const PTS = {
+  bru:        { x:50,  y:120, label:"BRU",           dx:5,  dy:-10, anchor:"middle" },
+  singapore:  { x:304, y:112, label:"SIN (Changi)",  dx:9,  dy:3,   anchor:"start"  },
+  medan:      { x:143, y:61,  label:"KNO (Medan)",   dx:9,  dy:3,   anchor:"start"  },
+  ketambe:    { x:112, y:58,  label:"Ketambe",       dx:-9, dy:3,   anchor:"end"    },
+  jakarta:    { x:399, y:285, label:"CGK (Jakarta)", dx:9,  dy:3,   anchor:"start"  },
+  yogya:      { x:508, y:321, label:"Yogyakarta",    dx:-9, dy:10,  anchor:"end"    },
+  malang:     { x:579, y:325, label:"Malang",        dx:9,  dy:14,  anchor:"start"  },
+  surabaya:   { x:583, y:309, label:"Surabaya",      dx:9,  dy:-6,  anchor:"start"  },
+  banyuwangi: { x:634, y:331, label:"Banyuwangi",    dx:9,  dy:-6,  anchor:"start"  },
+  bali:       { x:660, y:341, label:"DPS (Bali)",    dx:9,  dy:6,   anchor:"start"  },
+  labuanbajo: { x:806, y:337, label:"LBJ (L.Bajo)",  dx:-9, dy:-6,  anchor:"end"    },
+  ruteng:     { x:824, y:340, label:"Ruteng",        dx:9,  dy:8,   anchor:"start"  }
+};
+
+/* ══════════════════════════════════════════════════════════
+   TRANSPORT LEGS — kern data voor kaart, blokweergave en tickets
+   ══════════════════════════════════════════════════════════ */
+const TRANSPORT_LEGS = [
+  {
+    id:"tl1", type:"int_vlucht", icon:"✈️",
+    date:"2026-08-28", dateD:"28", dateM:"aug",
+    fromIATA:"BRU", toIATA:"SIN",
+    fromLabel:"Brussel Airport", toLabel:"Singapore Changi",
+    title:"Brussel → Singapore (via Bangkok)",
+    sub:"Thai Airways · TG935 (BRU→BKK) + TG403 (BKK→SIN)",
+    operator:"Thai Airways", flightNum:"TG935 + TG403",
+    terminal:"Pier B, Gate B20 → Concourse D Gate D5",
+    times:"21:15 → 09:30+1", cost_id:"c1", ref:"RNHBT4",
+    fromPt:"bru", toPt:"singapore", qx:150, qy:45,
+    persons:["matthew","arne"]
+  },
+  {
+    id:"tl19", type:"int_vlucht", icon:"✈️",
+    date:"2026-08-29", dateD:"29", dateM:"aug",
+    fromIATA:"BRU", toIATA:"SIN",
+    fromLabel:"Brussel Airport", toLabel:"Singapore Changi",
+    title:"Brussel → Singapore (Eliott, Kamiel, Willem, Kasper)",
+    sub:"Diverse airlines · vlucht details TBD · ±12–14u",
+    operator:"Diverse airlines", flightNum:"—",
+    terminal:null,
+    times:"TBD", cost_id:null, ref:null,
+    fromPt:"bru", toPt:"singapore", qx:150, qy:45,
+    persons:["eliott","kamiel","willem","kasper"]
+  },
+  {
+    id:"tl2", type:"int_vlucht", icon:"✈️",
+    date:"2026-08-31", dateD:"31", dateM:"aug",
+    fromIATA:"SIN", toIATA:"KNO",
+    fromLabel:"Singapore Changi T2", toLabel:"Medan Kualanamu",
+    title:"Singapore → Medan",
+    sub:"Scoot · TR220 · ±1u 30m",
+    operator:"Scoot", flightNum:"TR220",
+    terminal:"Terminal 2, Gate F38",
+    times:"08:15 → 09:45", cost_id:"c2", ref:"SC7F4X",
+    fromPt:"singapore", toPt:"medan", qx:220, qy:68,
+    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
+  },
+  {
+    id:"tl3", type:"bus_auto", icon:"🚌",
+    date:"2026-09-01", dateD:"01", dateM:"sep",
+    fromIATA:"MED", toIATA:"KTB",
+    fromLabel:"Medan Kualanamu", toLabel:"Ketambe Guesthouse",
+    title:"Medan → Ketambe (privé minibus)",
+    sub:"Lokaal vervoer · ±7–8u rit door Sumatra",
+    operator:"Privé minibus", flightNum:null,
+    terminal:null, times:"07:00 → ±15:00", cost_id:"c3", ref:"MVK-0901",
+    fromPt:"medan", toPt:"ketambe", qx:null, qy:null,
+    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
+  },
+  {
+    id:"tl4", type:"bus_auto", icon:"🚌",
+    date:"2026-09-07", dateD:"07", dateM:"sep",
+    fromIATA:"KTB", toIATA:"MED",
+    fromLabel:"Ketambe", toLabel:"Medan Kualanamu",
+    title:"Ketambe → Medan (taxi retour)",
+    sub:"Privé taxi · ±7–8u",
+    operator:"Lokale chauffeur", flightNum:null,
+    terminal:null, times:"06:00 → ±14:00", cost_id:"c5", ref:"MVK-0907R",
+    fromPt:"ketambe", toPt:"medan", qx:null, qy:null,
+    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
+  },
+  {
+    id:"tl5", type:"bin_vlucht", icon:"✈️",
+    date:"2026-09-07", dateD:"07", dateM:"sep",
+    fromIATA:"KNO", toIATA:"CGK",
+    fromLabel:"Medan Kualanamu", toLabel:"Jakarta Soekarno-Hatta",
+    title:"Medan → Jakarta",
+    sub:"Indonesia AirAsia · QZ120 · ±2u 15m",
+    operator:"Indonesia AirAsia", flightNum:"QZ120",
+    terminal:"Terminal 2D, Gate 4",
+    times:"16:00 → 18:15", cost_id:"c6", ref:"QZJK9A",
+    fromPt:"medan", toPt:"jakarta", qx:250, qy:130,
+    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
+  },
+  {
+    id:"tl6", type:"trein", icon:"🚂",
+    date:"2026-09-09", dateD:"09", dateM:"sep",
+    fromIATA:"JKT", toIATA:"YOG",
+    fromLabel:"Jakarta Gambir", toLabel:"Yogyakarta Tugu",
+    title:"Jakarta → Yogyakarta (Argo Bromo Anggrek)",
+    sub:"KAI · Argo Bromo Anggrek · ±8u",
+    operator:"KAI (Kereta Api Indonesia)", flightNum:"Argo Bromo Anggrek",
+    terminal:"Spoor 5, Gambir Station",
+    times:"06:00 → 14:00", cost_id:"c7", ref:"KAI-AG0909",
+    fromPt:"jakarta", toPt:"yogya", qx:null, qy:null,
+    persons:["matthew","arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
+  },
+  {
+    id:"tl7", type:"trein", icon:"🚂",
+    date:"2026-09-10", dateD:"10", dateM:"sep",
+    fromIATA:"YOG", toIATA:"MLG",
+    fromLabel:"Yogyakarta Tugu", toLabel:"Malang Kotalama",
+    title:"Yogyakarta → Malang (nachttrein)",
+    sub:"KAI · Malioboro Express · ±7u 's nachts",
+    operator:"KAI", flightNum:"Malioboro Express",
+    terminal:"Spoor 2, Yogyakarta Tugu",
+    times:"21:30 → 04:30+1", cost_id:"c8", ref:"KAI-ML1009",
+    fromPt:"yogya", toPt:"malang", qx:null, qy:null,
+    persons:["matthew","arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
+  },
+  {
+    id:"tl8", type:"bus_auto", icon:"🚖",
+    date:"2026-09-11", dateD:"11", dateM:"sep",
+    fromIATA:"MLG", toIATA:"SUB",
+    fromLabel:"Malang", toLabel:"Surabaya",
+    title:"Malang → Surabaya (taxi, Matthew apart)",
+    sub:"Lokale taxi · ±2u · Matthew splitst af van de groep",
+    operator:"Lokale taxi", flightNum:null,
+    terminal:null, times:"Ochtend", cost_id:null, ref:null,
+    fromPt:"malang", toPt:"surabaya", qx:null, qy:null,
+    persons:["matthew"],
+    note:"De overige jongens gaan door naar Tumpak Sewu & Bromo."
+  },
+  {
+    id:"tl9", type:"bus_auto", icon:"🚐",
+    date:"2026-09-16", dateD:"16", dateM:"sep",
+    fromIATA:"SUB", toIATA:"BWX",
+    fromLabel:"Surabaya", toLabel:"Bromo / Banyuwangi",
+    title:"Surabaya → Bromo + Banyuwangi (jeep-tour)",
+    sub:"Jeep-tour organisatie · Dag-trip met Hinke",
+    operator:"Jeep-tour", flightNum:null,
+    terminal:null, times:"Vroeg ochtend", cost_id:"c21", ref:"JEP-1609",
+    fromPt:"surabaya", toPt:"banyuwangi", qx:null, qy:null,
+    persons:["matthew","hinke"]
+  },
+  {
+    id:"tl10", type:"bin_vlucht", icon:"✈️",
+    date:"2026-09-18", dateD:"18", dateM:"sep",
+    fromIATA:"SUB", toIATA:"LBJ",
+    fromLabel:"Surabaya/Banyuwangi → Denpasar", toLabel:"Labuan Bajo Komodo",
+    title:"Java → Denpasar → Labuan Bajo",
+    sub:"Garuda / Wings Air · GA402 (via DPS) · TBD",
+    operator:"Garuda Indonesia / Wings Air", flightNum:"GA402",
+    terminal:"Terminal 1, Gate 5",
+    times:"TBD", cost_id:"c11", ref:"TBD",
+    fromPt:"banyuwangi", toPt:"labuanbajo", qx:720, qy:302,
+    persons:["matthew","hinke"]
+  },
+  {
+    id:"tl11", type:"bus_auto", icon:"🚗",
+    date:"2026-09-21", dateD:"21", dateM:"sep",
+    fromIATA:"LBJ", toIATA:"RTG",
+    fromLabel:"Labuan Bajo", toLabel:"Ruteng",
+    title:"Labuan Bajo → Ruteng (bergrit ±3u)",
+    sub:"Privé wagen · slingerende bergwegen van Flores",
+    operator:"Lokaal vervoer", flightNum:null,
+    terminal:null, times:"Vroeg vertrek", cost_id:null, ref:null,
+    fromPt:"labuanbajo", toPt:"ruteng", qx:null, qy:null,
+    persons:["matthew","hinke"]
+  },
+  {
+    id:"tl12", type:"bus_auto", icon:"🚗",
+    date:"2026-09-23", dateD:"23", dateM:"sep",
+    fromIATA:"RTG", toIATA:"LBJ",
+    fromLabel:"Ruteng", toLabel:"Labuan Bajo",
+    title:"Ruteng → Labuan Bajo (terugrit ±3u)",
+    sub:"Privé wagen · retour voor Komodo boottour",
+    operator:"Lokaal vervoer", flightNum:null,
+    terminal:null, times:"Ochtend", cost_id:null, ref:null,
+    fromPt:"ruteng", toPt:"labuanbajo", qx:null, qy:null,
+    persons:["matthew","hinke"]
+  },
+  {
+    id:"tl13", type:"bin_vlucht", icon:"✈️",
+    date:"2026-09-26", dateD:"26", dateM:"sep",
+    fromIATA:"LBJ", toIATA:"DPS",
+    fromLabel:"Labuan Bajo Komodo", toLabel:"Bali Denpasar",
+    title:"Labuan Bajo → Bali",
+    sub:"Indonesia AirAsia / Wings Air · QZ503 · ±1u",
+    operator:"AirAsia Indonesia", flightNum:"QZ503",
+    terminal:"Gate 2 (platformloopbrug)",
+    times:"TBD", cost_id:"c15", ref:"TBD",
+    fromPt:"labuanbajo", toPt:"bali", qx:730, qy:318,
+    persons:["matthew","hinke"]
+  },
+  {
+    id:"tl14", type:"int_vlucht", icon:"✈️",
+    date:"2026-09-29", dateD:"29", dateM:"sep",
+    fromIATA:"DPS", toIATA:"BRU",
+    fromLabel:"Bali Denpasar", toLabel:"Brussel (via Doha)",
+    title:"Bali → Brussel (terugvlucht via Doha)",
+    sub:"Qatar Airways · QR959 (DPS→DOH) + aansluiting →BRU",
+    operator:"Qatar Airways", flightNum:"QR959",
+    terminal:"International Pier, Gate 15",
+    times:"TBD", cost_id:"c17", ref:"TBD",
+    fromPt:"bali", toPt:"bru", qx:350, qy:55,
+    persons:["matthew","hinke"]
+  },
+  /* ── Jongens-specifieke trajecten ── */
+  {
+    id:"tl15", type:"bus_auto", icon:"🚌",
+    date:"2026-09-11", dateD:"11", dateM:"sep",
+    fromIATA:"MLG", toIATA:"BRM",
+    fromLabel:"Malang", toLabel:"Tumpak Sewu + Bromo",
+    title:"Malang → Tumpak Sewu → Bromo (jongens)",
+    sub:"Jeep + lokaal transport · volledige dag",
+    operator:"Lokaal vervoer", flightNum:null,
+    terminal:null, times:"03:00 vertrek", cost_id:null, ref:null,
+    fromPt:"malang", toPt:"banyuwangi", qx:null, qy:null,
+    persons:["arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
+  },
+  {
+    id:"tl16", type:"bus_auto", icon:"⛴️",
+    date:"2026-09-13", dateD:"13", dateM:"sep",
+    fromIATA:"BWX", toIATA:"DPS",
+    fromLabel:"Banyuwangi (Ketapang)", toLabel:"Bali Gilimanuk → Kuta",
+    title:"Banyuwangi → Bali (ferry + bus, Eliott & Kamiel)",
+    sub:"Ferry Ketapang→Gilimanuk + bus naar Bali centrum",
+    operator:"ASDP Ferry + Bus", flightNum:null,
+    terminal:null, times:"Middag", cost_id:null, ref:null,
+    fromPt:"banyuwangi", toPt:"bali", qx:null, qy:null,
+    persons:["eliott","kamiel","willem"]
+  },
+  {
+    id:"tl17", type:"int_vlucht", icon:"✈️",
+    date:"2026-09-13", dateD:"13", dateM:"sep",
+    fromIATA:"SUB", toIATA:"BRU",
+    fromLabel:"Surabaya / Banyuwangi", toLabel:"Brussel (thuis)",
+    title:"Terugvlucht jongens naar huis",
+    sub:"Diverse airlines · Arne, Jens, Maurice, Mathias, Kasper",
+    operator:"Diverse airlines", flightNum:"—",
+    terminal:null, times:"TBD", cost_id:null, ref:null,
+    fromPt:"banyuwangi", toPt:"bru", qx:340, qy:80,
+    persons:["arne","jens","maurice","mathias","kasper"]
+  },
+  {
+    id:"tl18", type:"int_vlucht", icon:"✈️",
+    date:"2026-09-20", dateD:"20", dateM:"sep",
+    fromIATA:"DPS", toIATA:"BRU",
+    fromLabel:"Bali Denpasar", toLabel:"Brussel (thuis)",
+    title:"Bali → Brussel (terugvlucht Eliott, Kamiel & Willem)",
+    sub:"Diverse airlines · na week Bali",
+    operator:"Diverse airlines", flightNum:"—",
+    terminal:null, times:"TBD", cost_id:null, ref:null,
+    fromPt:"bali", toPt:"bru", qx:350, qy:55,
+    persons:["eliott","kamiel","willem"]
+  }
+];
+
+/* ══════════════════════════════════════════════════════════
+   BESTAANDE DATA (flight scraper / baggage / airports)
+   ══════════════════════════════════════════════════════════ */
+const FLIGHT_DB = {
+  TG935:{flight:"TG935",airline:"Thai Airways",aircraft:"Boeing 777-300ER (HS-TKK)",altitude:"36,000 ft",speed:"905 km/h",duration:"11u 15m",route:"BRU (Brussel Airport) → BKK (Suvarnabhumi Airport)",gate:"Pier B, Gate B20",baggage:"Baggage Hall 3, Band 4",risk:"Laag (2.5%)",status:"Scheduled",blipPos:{top:60,left:120}},
+  TG403:{flight:"TG403",airline:"Thai Airways",aircraft:"Airbus A350-900 (HS-THC)",altitude:"38,000 ft",speed:"840 km/h",duration:"2u 25m",route:"BKK (Suvarnabhumi Airport) → SIN (Singapore Changi)",gate:"Concourse D, Gate D5",baggage:"Terminal 1, Belt 18",risk:"Gemiddeld (12.4%)",status:"Scheduled",blipPos:{top:120,left:240}},
+  TR220:{flight:"TR220",airline:"Scoot",aircraft:"Airbus A320-neo (9V-TNC)",altitude:"28,000 ft",speed:"710 km/h",duration:"1u 30m",route:"SIN (Singapore Changi) → KNO (Medan Kualanamu)",gate:"Terminal 2, Gate F38",baggage:"Main Hall, Belt 2",risk:"Laag (1.8%)",status:"Scheduled",blipPos:{top:80,left:160}},
+  QZ120:{flight:"QZ120",airline:"Indonesia AirAsia",aircraft:"Airbus A320-200 (PK-AZA)",altitude:"32,000 ft",speed:"780 km/h",duration:"2u 15m",route:"KNO (Medan Kualanamu) → CGK (Jakarta Soekarno-Hatta)",gate:"Terminal 2D, Gate 4",baggage:"Terminal 2D, Band 3",risk:"Gemiddeld (8.5%)",status:"Scheduled",blipPos:{top:150,left:380}},
+  GA402:{flight:"GA402",airline:"Garuda Indonesia",aircraft:"Boeing 737-800 (PK-GFM)",altitude:"34,000 ft",speed:"810 km/h",duration:"1u 45m",route:"SUB (Surabaya Juanda) → LBJ (Labuan Bajo Komodo)",gate:"Terminal 1, Gate 5",baggage:"Arrival Hall, Belt A",risk:"Zeer Laag (0.5%)",status:"Scheduled",blipPos:{top:165,left:550}},
+  QZ503:{flight:"QZ503",airline:"Indonesia AirAsia",aircraft:"Airbus A320-200 (PK-AXV)",altitude:"24,000 ft",speed:"680 km/h",duration:"1u 10m",route:"LBJ (Labuan Bajo Komodo) → DPS (Bali Denpasar)",gate:"Gate 2 (Platformloopbrug)",baggage:"Domestic Arrivals, Belt 1",risk:"Gemiddeld (14.2%)",status:"Scheduled",blipPos:{top:172,left:630}},
+  QR959:{flight:"QR959",airline:"Qatar Airways",aircraft:"Boeing 777-300ER (A7-BEP)",altitude:"33,000 ft",speed:"890 km/h",duration:"9u 35m",route:"DPS (Bali Denpasar) → DOH (Hamad Airport Qatar)",gate:"International Pier, Gate 15",baggage:"N/A - Transit",risk:"Laag (4.1%)",status:"Scheduled",blipPos:{top:180,left:660}}
+};
+
+const AIRPORTS_DB = {
+  BRU:{title:"Brussels Airport (Zaventem)",layover:"N/A — Vertrekpunt van de reis.",wifi:"🆓 Free Unlimited Wi-Fi ('Airport_Free_Wifi')",tips:"Prachtige Belgische bierbarren in de A & B terminals. Minstens 3 uur van tevoren aanwezig zijn voor internationale check-in naar Bangkok.",taxis:"N/A — Vertrek vanuit België."},
+  BKK:{title:"Suvarnabhumi Airport (Bangkok)",layover:"Korte transit (2u 25m) voor Matthew & Arne richting Singapore.",wifi:"🆓 Free 2 uur via registratie ('@AirportTrueFreeWiFi')",tips:"Drukke transit corridors. Volg direct de borden 'International Transfer'. Geen schoenen uittrekken — dit is geen Europese security, maar de loopafstanden zijn enorm.",taxis:"N/A — Alleen transit. Geen uitgang nodig."},
+  SIN:{title:"Changi Airport (Singapore)",layover:"Eerste verblijfplaats (2 nachten). 's Werelds beste luchthaven.",wifi:"#WiFi@Changi (Extreem snel, geen registratie)",tips:"Bezoek zeker 'The Jewel Changi' voor de indoor waterval (RAIN VORTEX). Terminal 1 t/m 4 zijn verbonden met de gratis Skytrain. Er is een bioscoopzaal, zwembad (T1) en tal van foodcourts.",taxis:"🚕 Grab of BlueSG zijn super efficiënt. Volg borden naar 'Ride-hailing pickup point'. Nooit naar 'random' taxichauffeurs in de hal gaan."},
+  KNO:{title:"Kualanamu International Airport (Medan, Sumatra)",layover:"Aankomst voor de Sumatra jungle-etappe.",wifi:"🆓 Gratis airport Wi-Fi (Soms onstabiel)",tips:"Direct na bagageclaim geld wisselen of pinnen! Weinig ATM's in Ketambe. Koop direct een Telkomsel SIM-kaart bij de officiële stand. Ketambe heeft amper bereik, maar het aansluitende Blangkejeren wel.",taxis:"🚨 NOOIT onofficiële taxi's in de hal. Neem officiële Bluebird Taxi of boek Grab. De trein (Railink) naar Medan-stad is ook een goede optie."},
+  CGK:{title:"Soekarno-Hatta International Airport (Jakarta)",layover:"Samenkomst met de Java-groep. Terminal 3 is nieuwste en meest modern.",wifi:"🆓 Gratis airport WiFi in alle terminals.",tips:"Jakarta heeft 3 grote terminals. Terminal 3 = meest modern. Er vaart een gratis SkyTrain tussen de terminals. Beruchte files buiten de luchthaven — reken ruim de tijd.",taxis:"🚕 Kies Bluebird of Silverbird (Mercedes). Betrouwbaar, met meter. Grab/Gojek hebben eigen lounges voor pick-up — NOOIT met niet-officiële chauffeurs meegaan."},
+  DPS:{title:"Ngurah Rai International Airport (Denpasar, Bali)",layover:"Aankomst voor de Bali villa chill-fase.",wifi:"🆓 Free airport Wi-Fi ('@NgurahRaiAirport')",tips:"Bij aankomst extreem chaotisch met taxi's die je proberen aan te klampen. Blijf rustig, loop door en zoek de Grab Lounge buiten.",taxis:"🚨 Loop DIRECT naar de officiële Grab Lounge (buiten bij parkeergarage) of regel vooraf een transfer via hotel. Lokale luchthavenaxi's zonder meter rekenen woekerprijzen!"},
+  LBJ:{title:"Komodo Airport (Labuan Bajo, Flores)",layover:"Toegangspoort tot Flores en Komodo National Park.",wifi:"Niet beschikbaar of zeer zwak op de luchthaven.",tips:"Kleine luchthaven, loopbrug naar platform. Geweldig uitzicht op de bergen bij het landen. Het is letterlijk een miniatuur-terminal — verwacht niets.",taxis:"🚕 Geen Grab/Gojek actief vanaf de luchthaven. Onderhandel vooraf een vaste prijs (richtprijs centrum = IDR 50.000–100.000). Via het hotel is makkelijker."}
+};
+
+const BAGGAGE_LIMITS = {
+  matthew:{name:"MATTHEW",allowances:{international:"30 KG",domestic:"20 KG"}},
+  hinke:  {name:"HINKE",  allowances:{international:"30 KG",domestic:"20 KG"}},
+  arne:   {name:"ARNE",   allowances:{international:"30 KG",domestic:"20 KG"}},
+  eliott: {name:"ELIOTT", allowances:{international:"30-23 KG",domestic:"15 KG"}},
+  jens:   {name:"JENS",   allowances:{international:"23 KG",domestic:"15 KG"}},
+  kamiel: {name:"KAMIEL", allowances:{international:"30 KG",domestic:"20 KG"}},
+  maurice:{name:"MAURICE",allowances:{international:"23 KG",domestic:"15 KG"}},
+  mathias:{name:"MATHIAS",allowances:{international:"23 KG",domestic:"15 KG"}},
+  willem: {name:"WILLEM", allowances:{international:"30 KG",domestic:"20 KG"}},
+  kasper: {name:"KASPER", allowances:{international:"30 KG",domestic:"20 KG"}}
+};
+
+/* ══════════════════════════════════════════════════════════
+   HELPERS
+   ══════════════════════════════════════════════════════════ */
+function ls_get(key,fallback){try{const v=localStorage.getItem(key);return v===null?fallback:JSON.parse(v);}catch(e){return fallback;}}
+function ls_set(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+
+function typeClass(t){ return t.replace("_","-"); }
+
+function typeLabel(t){
+  const m={int_vlucht:"Internationale vlucht",bin_vlucht:"Binnenlandse vlucht",trein:"Trein",bus_auto:"Bus / Auto / Lokaal"};
+  return m[t]||t;
+}
+
+function typeIcon(t){
+  const m={int_vlucht:"✈️",bin_vlucht:"✈️",trein:"🚂",bus_auto:"🚌"};
+  return m[t]||"🚗";
+}
+
+/* Deterministische nep-QR code als SVG-string (visueel, niet scanbaar) */
+function genQR(seed, px=4){
+  let h=5381;
+  for(let i=0;i<seed.length;i++) h=((h<<5)-h+seed.charCodeAt(i))>>>0;
+  const N=17, W=N*px;
+  function fin(r,c,or,oc){
+    const dr=r-or,dc=c-oc;
+    if(dr<0||dr>6||dc<0||dc>6)return null;
+    if(dr===0||dr===6||dc===0||dc===6)return true;
+    if(dr>=2&&dr<=4&&dc>=2&&dc<=4)return true;
+    return false;
+  }
+  let rects="";
+  for(let r=0;r<N;r++){
+    for(let c=0;c<N;c++){
+      let dark=fin(r,c,0,0);
+      if(dark===null)dark=fin(r,c,0,N-7);
+      if(dark===null)dark=fin(r,c,N-7,0);
+      if(dark===null){
+        const idx=r*N+c;
+        dark=(((h^(h>>>(idx%29)))*(idx+1))&1)===1;
+      }
+      if(dark) rects+=`<rect x="${c*px}" y="${r*px}" width="${px}" height="${px}" fill="#1e293b"/>`;
     }
-  };
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${W}" viewBox="0 0 ${W} ${W}" style="border-radius:3px;display:block;flex-shrink:0;"><rect width="${W}" height="${W}" fill="#fff"/>${rects}</svg>`;
+}
 
-  const AIRPORTS_DB = {
-    BRU: {
-      title: "Brussels Airport (Zaventem)",
-      layover: "N/A - Vertrekpunt van de reis.",
-      wifi: "🆓 Free Unlimited Wi-Fi ('Airport_Free_Wifi')",
-      tips: "Prachtige Belgische bierbarren in de A & B terminals. Zorg dat je minstens 3 uur van tevoren aanwezig bent voor internationale check-in naar Bangkok.",
-      taxis: "N/A — Vertrek vanuit België."
-    },
-    BKK: {
-      title: "Suvarnabhumi Airport (Bangkok)",
-      layover: "Transit etappe voor de vlucht van Matthew & Arne (2u 25m overstap).",
-      wifi: "🆓 Free 2 hours via registration ('@ AirportTrueFreeWiFi')",
-      tips: "Drukke transit corridors. Volg direct de borden 'International Transfer / Flight Connection' en ga door de security screening. De wandelafstanden zijn enorm, dus loop direct door naar de juiste gate.",
-      taxis: "N/A — Alleen transit."
-    },
-    SIN: {
-      title: "Changi Airport (Singapore)",
-      layover: "Eerste verblijfplaats (2 nachten). Internationaal geprezen als beste luchthaven ter world.",
-      wifi: "#WiFi@Changi (Zeer snel)",
-      tips: "Breng zeker een bezoek aan 'The Jewel Changi' om de gigantische indoor waterval te zien. Terminal 1 t/m 4 zijn uitstekend verbonden met de gratis Skytrain.",
-      taxis: "🚕 **BlueSG of Grab** zijn super efficiënt. Volg de borden naar de 'Taxi Stand' (altijd op meter) of bestel een Grab via de app bij het specifieke 'Ride-hailing pickup point'."
-    },
-    KNO: {
-      title: "Kualanamu International Airport (Medan, Sumatra)",
-      layover: "Aankomst voor de Sumatra jungle-etappe.",
-      wifi: "🆓 Free airport Wi-Fi (Soms onstabiel)",
-      tips: "Direct na bagageclaim geld wisselen of pinnen! Er zijn weinig ATM's die buitenlandse kaarten accepteren in Ketambe. Koop direct een lokale SIM-kaart (Telkomsel) bij de officiële stand in de aankomsthal.",
-      taxis: "🚨 **Waarschuwing:** Neem NOOIT onofficiële taxi's die je aanspreken in de hal. Neem de officiële **Bluebird Taxi** stand of boek een Grab. De trein (Railink) naar Medan-stad is ook een zeer moderne en veilige optie."
-    },
-    CGK: {
-      title: "Soekarno-Hatta International Airport (Jakarta)",
-      layover: "Aansluiting van Maurice, Mathias & Jens. Vertrekpunt van de Java-etappe.",
-      wifi: "🆓 Free Airport WiFi available in all terminals.",
-      tips: "Jakarta heeft 3 grote terminals. Terminal 3 is de nieuwste en meest moderne. Er vaart een gratis SkyTrain tussen de terminals. Zorg dat je op tijd bent, het verkeer rondom de luchthaven is berucht voor files.",
-      taxis: "🚕 Zoek direct naar de stand van **Bluebird** of de luxere **Silverbird** (Mercedes taxi's). Betrouwbaar, met meter, veilig. Grab/Gojek hebben eigen lounges voor pick-up."
-    },
-    DPS: {
-      title: "Ngurah Rai International Airport (Denpasar, Bali)",
-      layover: "Aankomstpunt voor de Bali villa chill-fase.",
-      wifi: "🆓 Free airport Wi-Fi ('@ NgurahRaiAirport')",
-      tips: "Bij aankomst is het extreem chaotisch met taxichauffeurs die je proberen aan te klampen. Blijf rustig en loop door.",
-      taxis: "🚨 **Cruciale tip:** Loop direct naar de officiële **Grab Lounge** (buiten bij de parkeergarage) of regel vooraf een transfer via je hotel. Lokale luchthaventaxi's zonder meter rekenen woekerprijzen."
-    },
-    LBJ: {
-      title: "Komodo Airport (Labuan Bajo, Flores)",
-      layover: "Toegangspoort tot Flores en Komodo National Park.",
-      wifi: "Niet beschikbaar of zeer zwak.",
-      tips: "Kleine luchthaven, wandeling naar het terminalgebouw over het platform. Geweldig uitzicht op de omringende bergen direct bij het landen.",
-      taxis: "🚕 Er zijn hier geen Grab/Gojek rideshare diensten actief vanaf de luchthaven. Onderhandel vooraf een vaste prijs met een lokale taxichauffeur (richtprijs naar het centrum is ca. IDR 50.000 tot 100.000)."
-    }
-  };
+function fakeSeat(type,seed){
+  let h=0;
+  for(let i=0;i<seed.length;i++)h=(Math.imul(h,31)+seed.charCodeAt(i))|0;
+  h>>>=0;
+  if(type.includes("vlucht")){
+    const row=15+(h%18);
+    const col="ABCDEF"[h%6];
+    return `${row}${col}`;
+  }
+  return `Wg.${2+(h%6)} / ${10+(h%88)}`;
+}
 
-  const BAGGAGE_LIMITS = {
-    matthew: { name: "MATTHEW", allowances: { international: "30 KG", domestic: "20 KG" } },
-    hinke: { name: "HINKE", allowances: { international: "30 KG", domestic: "20 KG" } },
-    arne: { name: "ARNE", allowances: { international: "30 KG", domestic: "20 KG" } },
-    eliott: { name: "ELIOTT", allowances: { international: "30-23 KG", domestic: "15 KG" } },
-    jens: { name: "JENS", allowances: { international: "23 KG", domestic: "15 KG" } },
-    kamiel: { name: "KAMIEL", allowances: { international: "30 KG", domestic: "20 KG" } },
-    maurice: { name: "MAURICE", allowances: { international: "23 KG", domestic: "15 KG" } },
-    mathias: { name: "MATHIAS", allowances: { international: "23 KG", domestic: "15 KG" } },
-    willem: { name: "WILLEM", allowances: { international: "30 KG", domestic: "20 KG" } },
-    kasper: { name: "KASPER", allowances: { international: "30 KG", domestic: "20 KG" } }
-  };
+function fakeRef(seed){
+  if(!seed||seed==="TBD"||seed==="—") return null;
+  return seed;
+}
 
-  /* ================================================================
-     FLIGHT SCRAPER LOGIC & SIMULATOR
-     ================================================================ */
-  let scrapeTimer = null;
+function costLabel(cost_id){
+  if(!cost_id) return null;
+  const c=COSTS[cost_id];
+  if(!c) return null;
+  if(c.amount===null) return "TBD";
+  return `€ ${c.amount.toFixed(0)}`;
+}
 
-  function setFlightSearch(flightNum) {
-    document.getElementById('flightInput').value = flightNum;
+/* ══════════════════════════════════════════════════════════
+   PERSON SELECTOR
+   ══════════════════════════════════════════════════════════ */
+function renderPersonSelector(){
+  const el=document.getElementById("personSelector");
+  if(!el)return;
+  const active=ls_get("selected_person","matthew");
+  let html=`<span class="person-selector-label">Bekijk weergave van:</span><div class="person-grid">`;
+  html+=PERSON_ORDER.map(key=>{
+    const p=PERSONS[key];
+    const isA=key===active;
+    return `<button class="person-card ${isA?"active":""}" onclick="selectPerson('${key}')">
+      <div class="person-card-avatar" style="border-color:${p.color}">
+        <span class="avatar-initials" style="color:${p.color}">${p.name.substring(0,2)}</span>
+      </div>
+      <span class="person-card-name">${p.name}</span>
+    </button>`;
+  }).join("");
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+function selectPerson(key){
+  ls_set("selected_person",key);
+  renderPersonSelector();
+  renderTickets();
+  renderTransportMap();
+  renderBlockView();
+  // Sync baggage tag dropdown
+  const bp=document.getElementById("baggagePerson");
+  if(bp){ bp.value=key; updateBaggageTag(); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   TICKETS & BOARDING PASSES
+   ══════════════════════════════════════════════════════════ */
+function makeBoardingPass(leg, personKey){
+  const cls=typeClass(leg.type);
+  const pName=PERSONS[personKey].name.toUpperCase();
+  const seat=leg.flightNum&&leg.flightNum!=="—" ? fakeSeat(leg.type,leg.id+personKey) : null;
+  const barcode=`${leg.fromIATA||"---"} ${leg.toIATA||"---"} ${(Math.abs(leg.id.split("").reduce((a,c)=>a+c.charCodeAt(0),0)*797+personKey.length*331)%900000+100000)}`;
+  const ref=fakeRef(leg.ref);
+  const costTxt=costLabel(leg.cost_id);
+  const showQR=(leg.type==="int_vlucht"||leg.type==="bin_vlucht"||leg.type==="trein");
+
+  const noteHtml=leg.note
+    ? `<div class="bp-note-strip">📎 ${leg.note}</div>`
+    : "";
+
+  const qrHtml=showQR
+    ? `<div class="bp-qr-wrap">${genQR(leg.id+personKey)}</div>`
+    : `<div style="width:68px;height:68px;background:rgba(0,0,0,.07);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${leg.icon}</div>`;
+
+  return `<div class="boarding-pass ${cls}">
+    <div class="bp-header">
+      <span class="bp-airline">${leg.operator.toUpperCase()}</span>
+      <span class="bp-type-badge ${cls}">${typeLabel(leg.type)}</span>
+    </div>
+    <div class="bp-route">
+      <div class="bp-city">
+        <div class="bp-iata">${leg.fromIATA||"—"}</div>
+        <div class="bp-city-name">${leg.fromLabel.length>18?leg.fromLabel.substring(0,18)+"…":leg.fromLabel}</div>
+      </div>
+      <div class="bp-arrow">→</div>
+      <div class="bp-city" style="text-align:right;">
+        <div class="bp-iata">${leg.toIATA||"—"}</div>
+        <div class="bp-city-name">${leg.toLabel.length>18?leg.toLabel.substring(0,18)+"…":leg.toLabel}</div>
+      </div>
+    </div>
+    <div class="bp-fields">
+      <div class="bp-field"><span class="bp-label">Passagier</span><span class="bp-value">${pName}</span></div>
+      <div class="bp-field"><span class="bp-label">${leg.flightNum?"Vlucht / Trein":"Datum"}</span><span class="bp-value">${leg.flightNum&&leg.flightNum!=="—"?leg.flightNum:leg.dateD+" "+leg.dateM}</span></div>
+      <div class="bp-field"><span class="bp-label">${seat?"Stoel / Seat":"Datum"}</span><span class="bp-value">${seat||leg.dateD+" "+leg.dateM}</span></div>
+      <div class="bp-field"><span class="bp-label">Vertrektijd</span><span class="bp-value ${leg.times==="TBD"?"tbd":""}">${leg.times}</span></div>
+      <div class="bp-field"><span class="bp-label">${leg.terminal?"Gate / Spoor":"Operator"}</span><span class="bp-value" style="font-size:10px;">${leg.terminal||leg.operator}</span></div>
+      <div class="bp-field"><span class="bp-label">Kosten pp</span><span class="bp-value ${costTxt==="TBD"?"tbd":""}">${costTxt||"—"}</span></div>
+    </div>
+    <div class="bp-footer">
+      ${qrHtml}
+      <div class="bp-barcode-area">
+        <div class="bp-barcode-stripes"></div>
+        <div class="bp-barcode-num">${barcode}</div>
+        ${ref?`<div style="font-size:8px;color:#64748b;text-align:center;margin-top:2px;">REF: <strong>${ref}</strong></div>`:""}
+      </div>
+    </div>
+    ${noteHtml}
+  </div>`;
+}
+
+function renderTickets(){
+  const personKey=ls_get("selected_person","matthew");
+  const myLegs=TRANSPORT_LEGS.filter(l=>l.persons.includes(personKey));
+  const scroll=document.getElementById("ticketsScroll");
+  const countEl=document.getElementById("ticketCount");
+  if(!scroll)return;
+
+  if(myLegs.length===0){
+    scroll.innerHTML=`<div style="color:var(--text-soft);font-size:13px;padding:20px 0;">Geen tickets beschikbaar voor ${PERSONS[personKey].name}.</div>`;
+    if(countEl) countEl.textContent="";
+    return;
   }
 
-  function simulateScraper() {
-    const flightNum = document.getElementById('flightInput').value.trim().toUpperCase().replace(/\s/g, '');
-    const logsContainer = document.getElementById('consoleLogs');
-    const resultPanel = document.getElementById('telemetryResult');
-    
-    // Clear logs
-    logsContainer.innerHTML = '';
-    resultPanel.style.display = 'none';
+  scroll.innerHTML=myLegs.map(l=>makeBoardingPass(l,personKey)).join("");
+  if(countEl) countEl.textContent=`${myLegs.length} tickets`;
+}
 
-    if (!flightNum) {
-      logsContainer.innerHTML = `<div class="console-line">[Fout] Geen vluchtnummer opgegeven.</div>`;
-      return;
+/* ══════════════════════════════════════════════════════════
+   TRANSPORT ROUTE KAART (gefilterd per persoon, 4 types)
+   ══════════════════════════════════════════════════════════ */
+function renderTransportMap(){
+  const svg=document.getElementById("transportRouteSVG");
+  if(!svg)return;
+  const personKey=ls_get("selected_person","matthew");
+  const myLegs=TRANSPORT_LEGS.filter(l=>l.persons.includes(personKey));
+
+  // Collect visited nodes
+  const visitedPts=new Set();
+  for(const leg of myLegs){
+    if(leg.fromPt) visitedPts.add(leg.fromPt);
+    if(leg.toPt) visitedPts.add(leg.toPt);
+  }
+
+  let out="";
+
+  // 1. Draw grid background (kept from original)
+  out+=`<rect width="100%" height="100%" fill="url(#tgrid)"/>`;
+
+  // 2. Draw route lines
+  for(const leg of myLegs){
+    const fp=PTS[leg.fromPt];
+    const tp=PTS[leg.toPt];
+    if(!fp||!tp)continue;
+    const cls=typeClass(leg.type);
+    let d;
+    if(leg.qx!==null && leg.qy!==null){
+      d=`M ${fp.x} ${fp.y} Q ${leg.qx} ${leg.qy} ${tp.x} ${tp.y}`;
+    } else {
+      d=`M ${fp.x} ${fp.y} L ${tp.x} ${tp.y}`;
     }
+    out+=`<g>
+      <path class="map-route-line ${cls}" d="${d}"/>
+      <path fill="none" stroke="transparent" stroke-width="16" d="${d}" data-legid="${leg.id}" style="cursor:pointer;"/>
+    </g>`;
+  }
 
-    const steps = [
-      `[info] Initialiseren van ADS-B transponder dataverzoek...`,
-      `[info] Zoeken naar transpondersignalen in de buurt van actieve corridors...`,
-      `[info] Verbinding maken met FlightAware API & FlightRadar24 databases...`,
-      `[info] Ontvangen ruwe hex-data via ADS-B ground station (1090 MHz)...`
-    ];
+  // 3. Draw nodes (only visited)
+  for(const key in PTS){
+    if(!visitedPts.has(key))continue;
+    const p=PTS[key];
+    // Find color from first leg using this node
+    const leg=myLegs.find(l=>l.fromPt===key||l.toPt===key);
+    const personColor=PERSONS[personKey].color;
+    const ax=p.x+(p.dx||9);
+    const ay=p.y+(p.dy||3);
+    out+=`<g>
+      <circle cx="${p.x}" cy="${p.y}" r="8" fill="${personColor}" opacity="0.15"/>
+      <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="${personColor}" stroke="#07090e" stroke-width="1.5"/>
+      <text x="${ax}" y="${ay}" text-anchor="${p.anchor||'start'}" class="map-port-label">${p.label}</text>
+    </g>`;
+  }
 
-    let i = 0;
-    
-    function logNext() {
-      if (i < steps.length) {
-        logsContainer.innerHTML += `<div class="console-line">${steps[i]}</div>`;
-        logsContainer.scrollTop = logsContainer.scrollHeight;
-        i++;
-        scrapeTimer = setTimeout(logNext, 500);
+  // Preserve defs
+  const defs=svg.querySelector("defs");
+  svg.innerHTML="";
+  if(defs) svg.appendChild(defs);
+  svg.insertAdjacentHTML("beforeend",out);
+
+  // Tooltip events
+  const tooltip=document.getElementById("mapTooltip");
+  svg.addEventListener("mousemove",function(e){
+    const hit=e.target.closest("[data-legid]");
+    if(!hit){tooltip.style.display="none";return;}
+    const leg=TRANSPORT_LEGS.find(l=>l.id===hit.dataset.legid);
+    if(!leg){tooltip.style.display="none";return;}
+    renderLegTooltip(tooltip,leg,e.clientX,e.clientY);
+  });
+  svg.addEventListener("mouseleave",()=>{tooltip.style.display="none";});
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAP TOOLTIP
+   ══════════════════════════════════════════════════════════ */
+function renderLegTooltip(tooltip, leg, cx, cy){
+  const durMatch=leg.sub.match(/[±~]?\d+\s*[–-]\s*\d+\s*u(?:\s*\d+\s*m)?|[±~]?\d+u\s*\d+m|[±~]?\d+\s*u\b|\bdag-trip\b/i);
+  const durStr=durMatch?durMatch[0].trim():null;
+  const hasTime=leg.times&&leg.times!=="TBD"&&leg.times!=="Ochtend"&&leg.times!=="Vroeg ochtend"&&leg.times!=="Vroeg vertrek"&&leg.times!=="Middag";
+  tooltip.innerHTML=`
+    <div class="map-tooltip-title">${leg.icon} ${leg.title}</div>
+    <div class="map-tooltip-sub">${leg.sub}</div>
+    ${hasTime?`<div class="map-tooltip-row">🕐 <span>${leg.times}</span></div>`:""}
+    ${durStr?`<div class="map-tooltip-row">⏱ <span class="map-tooltip-dur">${durStr}</span></div>`:`<div class="map-tooltip-row"><span class="map-tooltip-dur">${leg.times||"Zie blokweergave"}</span></div>`}
+  `;
+  tooltip.style.display="block";
+  const pad=16;
+  let tx=cx+pad;
+  let ty=cy-tooltip.offsetHeight-pad;
+  if(tx+tooltip.offsetWidth>window.innerWidth-8) tx=cx-tooltip.offsetWidth-pad;
+  if(ty<8) ty=cy+pad;
+  tooltip.style.left=tx+"px";
+  tooltip.style.top=ty+"px";
+}
+
+/* ══════════════════════════════════════════════════════════
+   TRANSPORT BLOK OVERZICHT
+   ══════════════════════════════════════════════════════════ */
+function renderBlockView(){
+  const personKey=ls_get("selected_person","matthew");
+  const myLegs=TRANSPORT_LEGS.filter(l=>l.persons.includes(personKey));
+  const list=document.getElementById("transportBlockList");
+  if(!list)return;
+
+  if(myLegs.length===0){
+    list.innerHTML=`<div style="color:var(--text-soft);font-size:13px;padding:12px 0;">Geen transport beschikbaar voor ${PERSONS[personKey].name}.</div>`;
+    return;
+  }
+
+  list.innerHTML=myLegs.map(leg=>{
+    const cls=typeClass(leg.type);
+    const costTxt=costLabel(leg.cost_id);
+    const costHtml=costTxt===null
+      ? `<span class="none">—</span>`
+      : costTxt==="TBD"
+        ? `<span class="tbd">TBD</span>`
+        : `<span class="amt">${costTxt}</span>`;
+
+    const noteHtml=leg.note
+      ? `<div style="margin-top:4px;font-size:11px;color:#f59e0b;opacity:0.85;">📎 ${leg.note}</div>`
+      : "";
+
+    return `<div class="transport-block-item">
+      <div class="tbi-icon ${cls}">${leg.icon}</div>
+      <div class="tbi-date">
+        <div class="day">${leg.dateD}</div>
+        <div class="month">${leg.dateM}</div>
+      </div>
+      <div class="tbi-sep"></div>
+      <div class="tbi-info">
+        <div class="tbi-title">${leg.title}</div>
+        <div class="tbi-sub">${leg.sub}</div>
+        <div class="tbi-tags">
+          <span class="tbi-tag ${cls}">${typeLabel(leg.type)}</span>
+          ${leg.flightNum&&leg.flightNum!=="—"?`<span class="tbi-tag ${cls}">${leg.flightNum}</span>`:""}
+          ${leg.times?`<span style="font-size:10px;color:var(--text-soft);">🕐 ${leg.times}</span>`:""}
+        </div>
+        ${noteHtml}
+      </div>
+      <div class="tbi-cost">${costHtml}</div>
+    </div>`;
+  }).join("");
+}
+
+/* ══════════════════════════════════════════════════════════
+   FLIGHT SCRAPER SIMULATOR (bestaand)
+   ══════════════════════════════════════════════════════════ */
+let scrapeTimer=null;
+function setFlightSearch(fn){document.getElementById("flightInput").value=fn;}
+
+function simulateScraper(){
+  const fn=document.getElementById("flightInput").value.trim().toUpperCase().replace(/\s/g,"");
+  const logs=document.getElementById("consoleLogs");
+  const result=document.getElementById("telemetryResult");
+  logs.innerHTML="";
+  result.style.display="none";
+  if(!fn){logs.innerHTML=`<div class="console-line">[Fout] Geen vluchtnummer opgegeven.</div>`;return;}
+  const steps=[
+    `[info] Initialiseren van ADS-B transponder dataverzoek...`,
+    `[info] Zoeken naar transpondersignalen in actieve corridors...`,
+    `[info] Verbinding maken met FlightAware API & FlightRadar24...`,
+    `[info] Ontvangen ruwe hex-data via ADS-B ground station (1090 MHz)...`
+  ];
+  let i=0;
+  function logNext(){
+    if(i<steps.length){
+      logs.innerHTML+=`<div class="console-line">${steps[i]}</div>`;
+      logs.scrollTop=logs.scrollHeight;
+      i++;
+      scrapeTimer=setTimeout(logNext,500);
+    } else {
+      const data=FLIGHT_DB[fn];
+      if(data){
+        logs.innerHTML+=`<div class="console-line success">[Succes] Vlucht ${fn} gevonden! Decoderen telemetrie...</div>`;
+        setTimeout(()=>showScrapedData(data),300);
       } else {
-        // Complete scrape
-        const data = FLIGHT_DB[flightNum];
-        if (data) {
-          logsContainer.innerHTML += `<div class="console-line success">[Succes] Vlucht ${flightNum} gevonden in database! Decoderen telemetry...</div>`;
-          showScrapedData(data);
-        } else {
-          logsContainer.innerHTML += `<div class="console-line">[Fout] Vlucht ${flightNum} niet gevonden in actieve luchtvaartregisters. Genereren van gesimuleerde proxy-data...</div>`;
-          
-          // Generate realistic mock flight
-          const generatedMock = {
-            flight: flightNum,
-            airline: "Indonesia Charter / Garuda Proxy",
-            aircraft: "Boeing 737-800 NextGen",
-            altitude: "31,000 ft",
-            speed: "790 km/h",
-            duration: "1u 45m",
-            route: "Binnenlandse vlucht (Indonesië corridor)",
-            gate: "Terminal 2, Gate C12",
-            baggage: "Carousel 4",
-            risk: "Laag (5.0%)",
-            status: "En Route",
-            blipPos: { top: 100, left: 200 }
-          };
-          scrapeTimer = setTimeout(() => showScrapedData(generatedMock), 400);
-        }
+        logs.innerHTML+=`<div class="console-line">[Fout] ${fn} niet gevonden. Genereren proxy-data...</div>`;
+        setTimeout(()=>showScrapedData({flight:fn,airline:"Indonesisch proxy charter",aircraft:"Boeing 737-800",altitude:"31,000 ft",speed:"790 km/h",duration:"1u 45m",route:"Binnenlandse corridor",gate:"Terminal 2, Gate C12",baggage:"Carousel 4",risk:"Laag (5.0%)",status:"En Route",blipPos:{top:100,left:200}}),400);
       }
     }
-    
-    logNext();
   }
+  logNext();
+}
 
-  function showScrapedData(data) {
-    const resultPanel = document.getElementById('telemetryResult');
-    
-    document.getElementById('resFlightName').textContent = `${data.flight} Live Status`;
-    document.getElementById('resFlightStatus').textContent = data.status || "En Route";
-    document.getElementById('resAirline').textContent = data.airline;
-    document.getElementById('resAircraft').textContent = data.aircraft;
-    document.getElementById('resAltitude').textContent = `${data.altitude} @ ${data.speed}`;
-    document.getElementById('resDuration').textContent = data.duration;
-    document.getElementById('resGate').textContent = data.gate;
-    document.getElementById('resBaggage').textContent = data.baggage;
-    document.getElementById('resRoute').textContent = data.route;
-    document.getElementById('resDelayRisk').textContent = data.risk;
+function showScrapedData(data){
+  document.getElementById("resFlightName").textContent=`${data.flight} Live Status`;
+  document.getElementById("resFlightStatus").textContent=data.status||"En Route";
+  document.getElementById("resAirline").textContent=data.airline;
+  document.getElementById("resAircraft").textContent=data.aircraft;
+  document.getElementById("resAltitude").textContent=`${data.altitude} @ ${data.speed}`;
+  document.getElementById("resDuration").textContent=data.duration;
+  document.getElementById("resGate").textContent=data.gate;
+  document.getElementById("resBaggage").textContent=data.baggage;
+  document.getElementById("resRoute").textContent=data.route;
+  document.getElementById("resDelayRisk").textContent=data.risk;
+  const blip=document.getElementById("radarBlip");
+  if(data.blipPos){blip.style.top=`${data.blipPos.top}px`;blip.style.left=`${data.blipPos.left}px`;}
+  document.getElementById("liveHexLog").textContent=`MSG4 ID:${data.flight} ALTI:${data.altitude.replace(/[^0-9]/g,"")} SPD:${data.speed.replace(/[^0-9]/g,"")} GAT:${data.gate.substring(0,8)}`;
+  document.getElementById("telemetryResult").style.display="block";
+}
 
-    // Move radar blip
-    const blip = document.getElementById('radarBlip');
-    if (data.blipPos) {
-      blip.style.top = `${data.blipPos.top}px`;
-      blip.style.left = `${data.blipPos.left}px`;
-      blip.style.display = 'block';
-    }
+/* ══════════════════════════════════════════════════════════
+   BAGGAGE TAG (bestaand)
+   ══════════════════════════════════════════════════════════ */
+function updateBaggageTag(){
+  const personKey=document.getElementById("baggagePerson").value;
+  const flightNum=document.getElementById("baggageFlight").value;
+  const bl=BAGGAGE_LIMITS[personKey];
+  const flight=FLIGHT_DB[flightNum];
+  const isDomestic=flightNum!=="TG935"&&flightNum!=="QR959";
+  const weightLimit=isDomestic?bl.allowances.domestic:bl.allowances.international;
+  document.getElementById("tagAirlineCode").textContent=`${flightNum.substring(0,2)} - ${flight.airline.toUpperCase()}`;
+  document.getElementById("tagPassenger").textContent=bl.name;
+  document.getElementById("tagFlightNumber").textContent=flightNum;
+  const rCode=flight.route.split("→");
+  document.getElementById("tagRoute").textContent=`${rCode[0].trim().substring(0,3)} → ${rCode[1].trim().substring(0,3)}`;
+  document.getElementById("tagLimit").textContent=`${weightLimit} Checked Limit`;
+  document.getElementById("tagBarcodeNumber").textContent=`${flightNum.substring(0,2)} ${Math.floor(100000+Math.random()*900000)}`;
+}
 
-    // Trigger hex log representation
-    const hexLog = document.getElementById('liveHexLog');
-    const hexString = `MSG4 ID:${data.flight} ALTI:${data.altitude.replace(/[^0-9]/g, '')} SPD:${data.speed.replace(/[^0-9]/g, '')} GAT:${data.gate.substring(0,6)}`;
-    hexLog.textContent = hexString;
+/* ══════════════════════════════════════════════════════════
+   CARBON CALCULATOR (bestaand)
+   ══════════════════════════════════════════════════════════ */
+let currentPlanted=6;
+const targetMangroves=24;
+function offsetMangrove(count){
+  currentPlanted=Math.min(currentPlanted+count,targetMangroves);
+  const pct=Math.round((currentPlanted/targetMangroves)*100);
+  document.getElementById("carbonBar").style.width=`${pct}%`;
+  document.getElementById("offsetProgressLabel").textContent=`${currentPlanted} van de ${targetMangroves} bomen geplant`;
+  alert(`🌳 Bedankt! Je hebt ${count} extra eco-bomen toegezegd. Compensatie staat nu op ${pct}%.`);
+}
 
-    resultPanel.style.display = 'block';
+/* ══════════════════════════════════════════════════════════
+   AIRPORT HUB TABS (bestaand)
+   ══════════════════════════════════════════════════════════ */
+function switchAirportTab(key,event){
+  document.querySelectorAll(".airport-tab-btn").forEach(b=>b.classList.remove("active"));
+  if(event&&event.currentTarget) event.currentTarget.classList.add("active");
+  else {
+    document.querySelectorAll(".airport-tab-btn").forEach(b=>{
+      if(b.textContent.startsWith(key)) b.classList.add("active");
+    });
   }
-
-  /* ================================================================
-     BAGGAGE TAG UPDATER
-     ================================================================ */
-  function updateBaggageTag() {
-    const personKey = document.getElementById('baggagePerson').value;
-    const flightNum = document.getElementById('baggageFlight').value;
-    
-    const passengerName = BAGGAGE_LIMITS[personKey].name;
-    const flight = FLIGHT_DB[flightNum];
-    
-    let isDomestic = flightNum !== 'TG935' && flightNum !== 'QR959';
-    let weightLimit = isDomestic 
-      ? BAGGAGE_LIMITS[personKey].allowances.domestic 
-      : BAGGAGE_LIMITS[personKey].allowances.international;
-
-    // Update HTML
-    document.getElementById('tagAirlineCode').textContent = `${flightNum.substring(0,2)} - ${flight.airline.toUpperCase()}`;
-    document.getElementById('tagPassenger').textContent = passengerName;
-    document.getElementById('tagFlightNumber').textContent = flightNum;
-    
-    const rCode = flight.route.split('→');
-    const routeStr = `${rCode[0].trim().substring(0,3)} → ${rCode[1].trim().substring(0,3)}`;
-    document.getElementById('tagRoute').textContent = routeStr;
-    document.getElementById('tagLimit').textContent = `${weightLimit} Checked Limit`;
-    
-    const barcodeNum = `${flightNum.substring(0,2)} ${Math.floor(100000 + Math.random() * 900000)}`;
-    document.getElementById('tagBarcodeNumber').textContent = barcodeNum;
-  }
-
-  /* ================================================================
-     CARBON CALCULATOR & eco-OFFSET GAME
-     ================================================================ */
-  let currentPlanted = 6;
-  const targetMangroves = 24;
-
-  function offsetMangrove(count) {
-    currentPlanted += count;
-    if (currentPlanted > targetMangroves) {
-      currentPlanted = targetMangroves;
-    }
-    
-    const progressPercent = Math.round((currentPlanted / targetMangroves) * 100);
-    
-    // Update progress bar
-    document.getElementById('carbonBar').style.width = `${progressPercent}%`;
-    document.getElementById('offsetProgressLabel').textContent = `${currentPlanted} van de ${targetMangroves} bomen geplant`;
-    
-    alert(`🌳 Bedankt! Je hebt ${count} extra eco-bomen toegezegd. Jouw huidige reiscompensatie staat nu op ${progressPercent}%.`);
-  }
-
-  /* ================================================================
-     AIRPORT TRANITS GUIDES tabs
-     ================================================================ */
-  function switchAirportTab(airportKey) {
-    // Remove active class
-    const buttons = document.querySelectorAll('.airport-tab-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    
-    // Find target button and add active class
-    event.currentTarget.classList.add('active');
-
-    // Load content
-    const ap = AIRPORTS_DB[airportKey];
-    const container = document.getElementById('airportContentCard');
-
-    container.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:10px; margin-bottom:12px;">
-        <h3 style="color:#fff; font-size:16px;">🏢 ${ap.title}</h3>
-        <span style="font-size:11.5px; font-weight:700; color:var(--teal); background:var(--teal-soft); border:1px solid rgba(0, 180, 216, 0.2); padding:3.5px 10px; border-radius:6px;">
-          ${airportKey} Hub
-        </span>
+  const ap=AIRPORTS_DB[key];
+  document.getElementById("airportContentCard").innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:10px;margin-bottom:12px;">
+      <h3 style="color:#fff;font-size:16px;">🏢 ${ap.title}</h3>
+      <span style="font-size:11.5px;font-weight:700;color:var(--teal);background:var(--teal-soft);border:1px solid rgba(0,180,216,.2);padding:3.5px 10px;border-radius:6px;">${key} Hub</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <h4 style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:4px;">⏱️ Layover &amp; Transit</h4>
+        <p style="font-size:13px;color:#cbd5e1;line-height:1.5;">${ap.layover}</p>
+        <h4 style="font-size:13px;font-weight:700;color:var(--teal);margin-top:12px;margin-bottom:4px;">📶 Wi-Fi</h4>
+        <p style="font-size:13px;color:#cbd5e1;line-height:1.5;">${ap.wifi}</p>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-        <div>
-          <h4 style="font-size:13px; font-weight:700; color:var(--teal); margin-bottom:4px;">⏱️ Layover &amp; Transit Info</h4>
-          <p style="font-size:13px; color:#cbd5e1; line-height:1.4;">${ap.layover}</p>
-          
-          <h4 style="font-size:13px; font-weight:700; color:var(--teal); margin-top:12px; margin-bottom:4px;">📶 Wi-Fi Status</h4>
-          <p style="font-size:13px; color:#cbd5e1; line-height:1.4;">${ap.wifi}</p>
-        </div>
-        <div>
-          <h4 style="font-size:13px; font-weight:700; color:var(--teal); margin-bottom:4px;">💡 Handige Tips</h4>
-          <p style="font-size:13px; color:#cbd5e1; line-height:1.4;">${ap.tips}</p>
-          
-          <h4 style="font-size:13px; font-weight:700; color:var(--teal); margin-top:12px; margin-bottom:4px;">🚕 Aankomst &amp; Taxi Advies</h4>
-          <p style="font-size:13px; color:#cbd5e1; line-height:1.4;">${ap.taxis}</p>
-        </div>
+      <div>
+        <h4 style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:4px;">💡 Tips</h4>
+        <p style="font-size:13px;color:#cbd5e1;line-height:1.5;">${ap.tips}</p>
+        <h4 style="font-size:13px;font-weight:700;color:var(--teal);margin-top:12px;margin-bottom:4px;">🚕 Taxi Advies</h4>
+        <p style="font-size:13px;color:#cbd5e1;line-height:1.5;">${ap.taxis}</p>
       </div>
-    `;
-  }
+    </div>`;
+}
 
-  /* ================================================================
-     INITIALIZATION
-     ================================================================ */
-  window.addEventListener('DOMContentLoaded', () => {
-    // Initial loading
-    switchAirportTab('BRU');
-    updateBaggageTag();
-    simulateScraper();
-  });
+/* ══════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════ */
+window.addEventListener("DOMContentLoaded",()=>{
+  renderPersonSelector();
+  renderTickets();
+  renderTransportMap();
+  renderBlockView();
+  switchAirportTab("BRU",null);
+  updateBaggageTag();
+  simulateScraper();
+  // Sync baggage dropdown with global person
+  const personKey=ls_get("selected_person","matthew");
+  const bp=document.getElementById("baggagePerson");
+  if(bp) bp.value=personKey;
+});
 </script>
-
 </body>
 </html>

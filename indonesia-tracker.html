@@ -17,7 +17,7 @@
       <div class="sub">28 aug – 29 sep 2026</div>
     </div>
     <nav class="app-nav">
-      <a class="app-nav-link active" href="indonesia-tracker.html">📊 Dashboard</a>
+      <a class="app-nav-link active" href="indonesia-tracker.html">🏠 Home</a>
       <a class="app-nav-link" href="indonesia-timeline.html">📅 Reisschema</a>
       <a class="app-nav-link" href="indonesia-map.html">🗺️ Reiskaart</a>
       <a class="app-nav-link" href="indonesia-live.html">📍 Live Tracker</a>
@@ -64,8 +64,15 @@
           <svg id="routemap" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
         <div class="map-legend" id="mapLegend"></div>
+        <div id="lockedPhotosPanel" class="locked-photos-panel" style="display:none"></div>
       </div>
     </div>
+  </section>
+
+  <!-- DESTINATIONS GALLERY -->
+  <section class="panel destinations-panel">
+    <h2>📸 Bestemmingen</h2>
+    <div class="destinations-row" id="destinationsGallery"></div>
   </section>
 
   <footer class="note">Kosten zijn per persoon. Wijzigingen worden lokaal in de browser onthouden en gesynchroniseerd met het reisschema.</footer>
@@ -76,14 +83,25 @@
    DATA & SCHEDULING (SHARED LOGIC)
    ================================================================ */
 const FASES = {
-  heen:    { label: "Vlucht heen",  color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Heenreis vanuit Brussel (overstap in Bangkok) naar Singapore." },
-  sg:      { label: "Singapore",    color: "#00b4d8", soft: "rgba(0, 180, 216, 0.1)", uitleg: "Acclimatiseren, Gardens by the Bay en heerlijk streetfood." },
-  sumatra: { label: "Sumatra",      color: "#4ad66d", soft: "rgba(74, 214, 109, 0.1)", uitleg: "Intense 5-daagse jungle trekking in Ketambe met de hele crew." },
-  jakarta: { label: "Jakarta",      color: "#f77f00", soft: "rgba(247, 127, 0, 0.1)", uitleg: "Aankomst in de hoofdstad en samenkomst van de complete groep van 9." },
-  java:    { label: "Java",         color: "#9d4edd", soft: "rgba(157, 78, 221, 0.1)", uitleg: "Reis langs Yogyakarta, Borobudur, Prambanan en Bromo/Ijen vulkanen." },
-  flores:  { label: "Flores",       color: "#f72585", soft: "rgba(247, 37, 133, 0.1)", uitleg: "Verkenning van het bergachtige Flores, Ruteng en spinnenwebvelden." },
-  komodo:  { label: "Komodo",       color: "#00f5d4", soft: "rgba(0, 245, 212, 0.1)", uitleg: "Boottocht naar Padar Island, Pink Beach en Komodovaranen." },
-  bali:    { label: "Bali",         color: "#ffb703", soft: "rgba(255, 183, 3, 0.1)", uitleg: "Afsluitende ontspanning met luxe villa, strand en gezellig uit eten." },
+  heen:    { label: "Vlucht heen",  color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Heenreis vanuit Brussel (overstap in Bangkok) naar Singapore.", desc: "Matthew en Arne stappen op 28 augustus op het vliegtuig vanuit Brussel richting Bangkok met THAI Airlines. Na een korte overstap vliegen ze door naar Singapore, waar ze op 29 augustus om 11:15 landen. De eerste dag staat in het teken van een zachte aankomst — bijkomen van de tijdzone en uitkijken naar het avontuur dat komen gaat." },
+  sg:      { label: "Singapore",    color: "#00b4d8", soft: "rgba(0, 180, 216, 0.1)", uitleg: "Acclimatiseren, Gardens by the Bay en heerlijk streetfood.", desc: "Eén volle dag Singapore om te acclimatiseren en de stad te verkennen. Op het programma: Gardens by the Bay met de spectaculaire Supertrees, de infinity pool van Marina Bay Sands bewonderen en avondeten bij een van de levendige hawker centres. De perfecte tussenstop voor het echte avontuur in Indonesië begint." },
+  sumatra: { label: "Sumatra",      color: "#4ad66d", soft: "rgba(74, 214, 109, 0.1)", uitleg: "Intense 5-daagse jungle trekking in Ketambe met de hele crew.", desc: "Na een vlucht naar Medan volgt een marathon rit van 7-8 uur de oerwouden in naar Ketambe, diep in het hart van Sumatra. Met 6 man — Matthew, Arne, Kamiel, Eliott, Kasper en Willem — wordt een intensieve 5-daagse all-in jungle trekking gedaan, compleet met orang-oetans, nachtelijke geluiden en jungle overnachtingen. Een van de meest avontuurlijke en onvergetelijke onderdelen van de hele reis." },
+  jakarta: { label: "Jakarta",      color: "#f77f00", soft: "rgba(247, 127, 0, 0.1)", uitleg: "Aankomst in de hoofdstad en samenkomst van de complete groep van 9.", desc: "Na de jungle is het tijd voor de bruisende hoofdstad Jakarta, waar Maurice, Mathias en Jens de groep versterken — nu zijn alle 9 reizigers voor het eerst bij elkaar. Eén nacht in de stad: bijkomen, Kota Tua verkennen en de groep samenvoegen. Het is ook het moment om bij te trekken voor de avontuurlijke Java-etappe die volgt." },
+  java:    { label: "Java",         color: "#9d4edd", soft: "rgba(157, 78, 221, 0.1)", uitleg: "Reis langs Yogyakarta, Borobudur, Prambanan en Bromo/Ijen vulkanen.", desc: "Java biedt een indrukwekkend programma: Yogyakarta, Borobudur en Prambanan, gevolgd door een nachttrein naar Malang. Matthew wacht in Surabaya op Hinke terwijl de jongens Tumpak Sewu en Mount Bromo verkennen. Zodra Hinke landt op 14 september reizen ze samen verder — Kawah Ijen blauwvuur, daarna Flores." },
+  flores:  { label: "Flores",       color: "#f72585", soft: "rgba(247, 37, 133, 0.1)", uitleg: "Verkenning van het bergachtige Flores, Ruteng en spinnenwebvelden.", desc: "Na een vlucht via Bali landen Matthew en Hinke in het betoverende Labuan Bajo aan de westkust van Flores. Een uitstap naar het bergachtige binnenland brengt hen naar Ruteng, bekend om zijn spinnenweb-rijstvelden en mistige berglandschappen. Terug in Labuan Bajo is het rustig wachten op de spectaculaire Komodo-boottocht." },
+  komodo:  { label: "Komodo",       color: "#00f5d4", soft: "rgba(0, 245, 212, 0.1)", uitleg: "Boottocht naar Padar Island, Pink Beach en Komodovaranen.", desc: "Een volle dag boottour naar het wereldberoemde Komodo Nationaal Park: Padar Island met zijn iconische bergsilhouet, roze koraal op Pink Beach en een confrontatie met de machtige Komodovaranen. Als bonus snorkelen bij Manta Point, waar zijdezachte mantaroggen langzij zwemmen. Een van de absolute hoogtepunten van de hele reis." },
+  bali:    { label: "Bali",         color: "#ffb703", soft: "rgba(255, 183, 3, 0.1)", uitleg: "Afsluitende ontspanning met luxe villa, strand en gezellig uit eten.", desc: "Na weken van avontuur is Bali de perfecte afsluiting: een luxe villa, tropische zwembaden en heerlijk eten bij de lokale warongs. Matthew en Hinke genieten van de rust en schoonheid van het eiland na alles wat ze hebben beleefd. Op 29 september is het tijd om afscheid te nemen — met de belofte dat dit niet de laatste keer is." },
+};
+
+const FASE_PHOTOS = {
+  heen:    [],
+  sg:      ["images/singapore_famoushotel.webp", "images/singapore_bigtree.webp", "images/singapore_airport_waterval.jpg"],
+  sumatra: ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", "images/sumatra_Waterval.jpg"],
+  jakarta: ["images/jakartanightskyline.jpg", "images/jakarta.jpg"],
+  java:    ["images/Yogyakartatempel.jpg", "images/mountbromo.webp", "images/Ijen.jpeg", "images/tumpaksewuwaterval.webp", "images/Yogyakartamonument.jpeg", "images/bromo.jpg", "images/bromoblauwvuur.jpeg", "images/Yogyakartahandmonument.jpg"],
+  flores:  ["images/Labuanbajo.jpg", "images/Flores.jpg"],
+  komodo:  ["images/Komodovaraan.jpg", "images/komodo-national-park-1250x488.jpg.webp"],
+  bali:    ["images/balivilla.jpg", "images/bali.jpg", "images/bali2.jpg", "images/bali4.jpg"],
 };
 
 const PERSONS = {
@@ -328,6 +346,8 @@ function costValue(id){
 function isBooked(id){ return ls_get("booked_"+id, false); }
 
 let chartRef = null;
+let lockedTripIds = null;
+let lockedFaseKey = null;
 
 function getCostsForPerson(personKey) {
   const tripIds = PERSON_TRIPS[personKey] || [];
@@ -670,9 +690,64 @@ function renderMap(highlightTripIds = null){
   setMapZoomTarget(targetX, targetY, targetW, targetH);
 }
 
-/* ---------------- STEPPER HOVER & RENDER ---------------- */
+/* ---------------- STEPPER HOVER & LOCK ---------------- */
 function hoverPhaseSteps(tripIds) {
+  if (lockedTripIds !== null) return;
   renderMap(tripIds);
+}
+
+function resetHoverPhase() {
+  if (lockedTripIds !== null) return;
+  renderMap(null);
+}
+
+function toggleLockPhase(tripIds, faseKey) {
+  const isSame = lockedFaseKey === faseKey;
+  lockedTripIds = isSame ? null : tripIds;
+  lockedFaseKey = isSame ? null : faseKey;
+  renderMap(lockedTripIds);
+  updateLockedPhotos(lockedFaseKey, lockedTripIds);
+  document.querySelectorAll(".simple-step").forEach(el => el.classList.remove("locked"));
+  if (lockedFaseKey) {
+    document.querySelectorAll(`.simple-step[data-fase="${lockedFaseKey}"]`).forEach(el => el.classList.add("locked"));
+  }
+}
+
+function setHeroPhoto(src) {
+  const hero = document.getElementById("lockedPhotoHero");
+  if (hero) hero.src = src;
+}
+
+function updateLockedPhotos(faseKey, tripIds) {
+  const panel = document.getElementById("lockedPhotosPanel");
+  if (!panel) return;
+  if (!faseKey) { panel.style.display = "none"; return; }
+
+  const fase = FASES[faseKey];
+  const photos = FASE_PHOTOS[faseKey] || [];
+  const faseTrips = TRIP.filter(i => i.fase === faseKey && (tripIds || []).includes(i.id));
+  const starts = faseTrips.map(i => i.start).sort();
+  const ends = faseTrips.map(i => i.end).sort();
+  const dateStr = starts.length && ends.length ? fmtRange(starts[0], ends[ends.length - 1]) : "";
+
+  const [hero, ...rest] = photos;
+
+  const thumbsHtml = rest.length > 0
+    ? `<div class="locked-photos-thumbs">${rest.map(src => `<img src="${src}" onclick="setHeroPhoto('${src}')" loading="lazy" alt="">`).join("")}</div>`
+    : "";
+
+  panel.innerHTML = `
+    <div class="locked-photo-wrap">
+      ${hero ? `<img id="lockedPhotoHero" src="${hero}" class="locked-photo-hero" loading="lazy" alt="">` : `<div class="locked-photo-placeholder"><span>${fase.label}</span></div>`}
+      ${thumbsHtml}
+    </div>
+    <div class="locked-phase-info">
+      <div class="locked-phase-title" style="color:${fase.color}">${fase.label}</div>
+      ${dateStr ? `<div class="locked-phase-dates">${dateStr}</div>` : ""}
+      <div class="locked-phase-desc-text">${fase.desc || fase.uitleg || ""}</div>
+    </div>
+  `;
+  panel.style.display = "block";
 }
 
 function renderRouteStepper() {
@@ -750,6 +825,11 @@ function renderRouteStepper() {
     const color = p.faseInfo.color;
     const tripIdsJson = JSON.stringify(p.tripIds);
 
+    const stepPhotos = (FASE_PHOTOS[p.faseKey] || []).slice(0, 3);
+    const photoStripHtml = stepPhotos.length > 0
+      ? `<div class="stepper-photos">${stepPhotos.map(src => `<img src="${src}" class="stepper-photo" loading="lazy" alt="">`).join("")}</div>`
+      : "";
+
     let airbnbUrl = null;
     for (const tid of p.tripIds) {
       const item = TRIP.find(i => i.id === tid);
@@ -774,9 +854,10 @@ function renderRouteStepper() {
     }
 
     html += `
-      <div class="simple-step" 
-           onmouseenter='hoverPhaseSteps(${tripIdsJson})' 
-           onmouseleave="hoverPhaseSteps(null)">
+      <div class="simple-step" data-fase="${p.faseKey}"
+           onclick='toggleLockPhase(${tripIdsJson}, "${p.faseKey}")'
+           onmouseenter='hoverPhaseSteps(${tripIdsJson})'
+           onmouseleave="resetHoverPhase()">
         <div class="simple-step-line" style="background: ${color}"></div>
         <div class="simple-step-node" style="color: ${color}"></div>
         <div class="simple-step-content">
@@ -789,6 +870,7 @@ function renderRouteStepper() {
           </div>
           <div class="simple-step-desc">${p.faseInfo.uitleg || ""}</div>
           ${companionsHtml}
+          ${photoStripHtml}
         </div>
       </div>
     `;
@@ -834,11 +916,63 @@ function selectPerson(key) {
   recalcAll();
   renderMap();
   renderRouteStepper();
+  renderDestinationsGallery();
   
   const groupPanel = document.getElementById("groupPanel");
   if (groupPanel) {
     groupPanel.innerHTML = PERSON_GROUP_INFO[key] || "";
   }
+}
+
+/* ---------------- RENDER: destinations gallery ---------------- */
+function renderDestinationsGallery() {
+  const container = document.getElementById("destinationsGallery");
+  if (!container) return;
+
+  const personKey = ls_get("selected_person", "matthew");
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+
+  const phases = [];
+  const seen = new Set();
+  for (const item of personTrips) {
+    if (!seen.has(item.fase)) {
+      seen.add(item.fase);
+      phases.push({ faseKey: item.fase, faseInfo: FASES[item.fase], start: item.start, end: item.end });
+    } else {
+      const p = phases.find(ph => ph.faseKey === item.fase);
+      if (item.start < p.start) p.start = item.start;
+      if (item.end > p.end) p.end = item.end;
+    }
+  }
+
+  let html = "";
+  for (const p of phases) {
+    const photos = FASE_PHOTOS[p.faseKey] || [];
+    if (photos.length === 0) continue;
+    const color = p.faseInfo.color;
+    const main = photos[0];
+    const extras = photos.slice(1, 4);
+
+    const extrasHtml = extras.length > 0
+      ? `<div class="dest-extras">${extras.map(src => `<img src="${src}" loading="lazy" alt="">`).join("")}</div>`
+      : "";
+
+    html += `
+      <div class="dest-card" style="--color: ${color}">
+        <img src="${main}" class="dest-bg" loading="lazy" alt="">
+        <div class="dest-overlay">
+          ${extrasHtml}
+          <div class="dest-info">
+            <div class="dest-name">${p.faseInfo.label}</div>
+            <div class="dest-dates">${fmtRange(p.start, p.end)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
 }
 
 /* ---------------- INIT ---------------- */
@@ -854,6 +988,7 @@ function init() {
   renderMap();
   recalcAll();
   renderRouteStepper();
+  renderDestinationsGallery();
 }
 
 window.addEventListener("DOMContentLoaded", init);

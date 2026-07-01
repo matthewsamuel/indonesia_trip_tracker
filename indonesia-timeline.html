@@ -16,7 +16,7 @@
       <div class="sub">28 aug – 29 sep 2026</div>
     </div>
     <nav class="app-nav">
-      <a class="app-nav-link" href="indonesia-tracker.html">📊 Dashboard</a>
+      <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
       <a class="app-nav-link active" href="indonesia-timeline.html">📅 Reisschema</a>
       <a class="app-nav-link" href="indonesia-map.html">🗺️ Reiskaart</a>
       <a class="app-nav-link" href="indonesia-live.html">📍 Live Tracker</a>
@@ -341,7 +341,43 @@ function renderTimeline(){
 }
 
 /* ---------------- PHOTOS ---------------- */
-function getPhotos(id){ return ls_get("photos_"+id, [null,null,null]); }
+const TRIP_DEFAULT_PHOTOS = {
+  t1:  ["images/singapore_famoushotel.webp", null, null],
+  t2:  ["images/singapore_famoushotel.webp", "images/singapore_bigtree.webp", "images/singapore_airport_waterval.jpg"],
+  t3:  ["images/singapore_bigtree.webp", "images/sumatra_oerangoetang.jpg", null],
+  t4:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
+  t5:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", "images/sumatra_Waterval.jpg"],
+  t6:  ["images/sumatra_Waterval.jpg", "images/jakartanightskyline.jpg", null],
+  t7:  ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
+  t8:  ["images/Yogyakartatempel.jpg", "images/Yogyakartamonument.jpeg", "images/Yogyakartahandmonument.jpg"],
+  t9:  ["images/Yogyakartahandmonument.jpg", "images/mountbromo.webp", null],
+  t10: ["images/Javaeiland.jpg", "images/tumpak-sewu-waterfalls.jpg", null],
+  t11: ["images/Javaeiland.jpg", "images/bromo.jpg", null],
+  t12: ["images/tumpaksewuwaterval.webp", "images/mountbromo.webp", "images/bromo.jpg"],
+  t13: ["images/Ijen.jpeg", "images/bromoblauwvuur.jpeg", null],
+  t14: ["images/Flores.jpg", "images/bali.jpg", "images/Labuanbajo.jpg"],
+  t15: ["images/Labuanbajo.jpg", "images/Flores.jpg", null],
+  t16: ["images/Labuanbajo.jpg", "images/Flores.jpg", null],
+  t17: ["images/Flores.jpg", "images/Labuanbajo.jpg", null],
+  t18: ["images/Labuanbajo.jpg", null, null],
+  t19: ["images/Komodovaraan.jpg", "images/komodo-national-park-1250x488.jpg.webp", "images/Labuanbajo.jpg"],
+  t20: ["images/Labuanbajo.jpg", "images/Komodovaraan.jpg", null],
+  t21: ["images/bali.jpg", "images/balivilla.jpg", null],
+  t22: ["images/balivilla.jpg", "images/bali.jpg", "images/bali2.jpg"],
+  t23: ["images/bali4.jpg", null, null],
+  t24: [null, null, null],
+  t25: ["images/bali.jpg", "images/bali2.jpg", "images/bali4.jpg"],
+  t26: ["images/bali4.jpg", null, null],
+  t27: ["images/singapore_famoushotel.webp", "images/jakarta.jpg", null],
+  t28: ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
+  t29: ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
+};
+
+function getPhotos(id){
+  const stored = ls_get("photos_"+id, null);
+  if (stored !== null) return stored;
+  return TRIP_DEFAULT_PHOTOS[id] || [null, null, null];
+}
 function savePhotos(id, arr){ ls_set("photos_"+id, arr); }
 
 function addPhoto(itemId, idx){
