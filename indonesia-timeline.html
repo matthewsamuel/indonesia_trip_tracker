@@ -288,10 +288,41 @@ function renderPhaseNav(){
 
   nav.innerHTML = Object.entries(FASES).map(([k,f]) => {
     if (!visitedFases.has(k)) return "";
-    return `<button class="fase-nav-btn" onclick="document.getElementById('fase-${k}').scrollIntoView({behavior:'smooth',block:'start'})">
+    return `<button class="fase-nav-btn" onclick="scrollToFase('${k}')">
       <span class="dot" style="background:${f.color}"></span>${f.label}
     </button>`;
   }).join("");
+}
+
+/* ---------------- FLIGHT DETECTION ---------------- */
+function isFlight(item) {
+  if (item.fase === 'heen') return true;
+  if (item.title.toLowerCase().includes('vlucht') || item.title.toLowerCase().includes('vliegen') || item.title.toLowerCase().includes('terugvlucht')) return true;
+  if (item.costs.some(cid => COSTS[cid] && COSTS[cid].cat === 'vlucht')) return true;
+  if (item.details.some(d => d.toLowerCase().includes('vlucht') || d.toLowerCase().includes('vliegen') || d.toLowerCase().includes('vliegtuig'))) return true;
+  return false;
+}
+
+/* ---------------- COLLAPSE PHASE FUNCTION ---------------- */
+function toggleFaseCollapse(faseKey) {
+  const key = "collapsed_fase_" + faseKey;
+  const current = ls_get(key, false);
+  ls_set(key, !current);
+  renderTimeline();
+}
+
+function scrollToFase(faseKey) {
+  // Ensure the phase is expanded so it is visible
+  ls_set("collapsed_fase_" + faseKey, false);
+  renderTimeline();
+  
+  // Wait for rendering to complete, then scroll
+  setTimeout(() => {
+    const el = document.getElementById("fase-" + faseKey);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 50);
 }
 
 /* ---------------- RENDER: timeline ---------------- */
@@ -305,14 +336,51 @@ function renderTimeline(){
   for (const item of TRIP) {
     if (!tripIds.includes(item.id)) continue;
     if (item.fase !== lastFase) {
+      if (lastFase !== null) {
+        html += `</div>`; // Close previous phase items container
+      }
       const f = FASES[item.fase];
-      html += `<div class="fase-header" id="fase-${item.fase}"><span class="dot" style="color:${f.color}; background:${f.color}"></span>${f.label}</div>`;
+      const isCollapsed = ls_get("collapsed_fase_" + item.fase, false);
+      html += `
+      <div class="fase-header collapsible ${isCollapsed ? 'collapsed' : ''}" id="fase-${item.fase}" onclick="toggleFaseCollapse('${item.fase}')">
+        <span class="dot" style="color:${f.color}; background:${f.color}"></span>
+        <span>${f.label}</span>
+        <span class="fase-chevron">▼</span>
+      </div>
+      <div class="fase-items-container" id="fase-container-${item.fase}" style="display: ${isCollapsed ? 'none' : 'block'}">
+      `;
       lastFase = item.fase;
     }
     const st = statusOf(item);
     const note = ls_get("note_"+item.id, "");
     const nDays = Math.round((dateOf(item.end) - dateOf(item.start)) / 86400000) + 1;
     const durStr = nDays > 1 ? `<span class="dur">${nDays} dagen</span>` : "";
+    
+    // Collapsible daily details (bullets)
+    let detailsHtml = "";
+    if (item.details.length) {
+      detailsHtml = `
+      <details class="timeline-details-dropdown">
+        <summary class="timeline-details-summary">
+          <span>📋 Programma &amp; details</span>
+          <span class="summary-badge">${item.details.length} ${item.details.length === 1 ? 'punt' : 'punten'}</span>
+          <span class="summary-chevron">▼</span>
+        </summary>
+        <ul class="details">
+          ${item.details.map(d=>`<li>${d}</li>`).join("")}
+        </ul>
+      </details>
+      `;
+    }
+
+    // Hide note text area if item represents a flight
+    const isFlightItem = isFlight(item);
+    const notesBlockHtml = isFlightItem ? "" : `
+      <div class="item-foot">
+        <textarea class="note" data-item="${item.id}" placeholder="${item.openNote ? 'Nog in te vullen — typ hier de plannen…' : 'Notitie toevoegen…'}">${note}</textarea>
+      </div>
+    `;
+
     html += `
     <div class="timeline-item" id="${item.id}">
       <div class="when">${fmtRange(item.start,item.end)}<span class="yr">2026</span>${durStr}</div>
@@ -322,15 +390,18 @@ function renderTimeline(){
           <h3>${item.title}</h3>
           <span class="badge ${st}">${STATUS_LABEL[st]}</span>
         </div>
-        ${item.details.length ? `<ul class="details">${item.details.map(d=>`<li>${d}</li>`).join("")}</ul>` : ""}
+        ${detailsHtml}
         ${photoStripHtml(item)}
         ${item.costs.length ? `<div class="costs">${item.costs.map(cid => costLineHtml(cid)).join("")}</div>` : ""}
-        <div class="item-foot">
-          <textarea class="note" data-item="${item.id}" placeholder="${item.openNote ? 'Nog in te vullen — typ hier de plannen…' : 'Notitie toevoegen…'}">${note}</textarea>
-        </div>
+        ${notesBlockHtml}
       </div>
     </div>`;
   }
+  
+  if (lastFase !== null) {
+    html += `</div>`; // Close the last phase container
+  }
+  
   el.innerHTML = html;
 
   // Add event listeners to input fields
@@ -423,9 +494,16 @@ function renderPersonSelector() {
   if (!container) return;
   
   const activePerson = ls_get("selected_person", "matthew");
+  const isCollapsed = ls_get("person_selector_collapsed", false);
   
-  let html = `<span class="person-selector-label">Bekijk weergave van:</span>`;
-  html += `<div class="person-grid">`;
+  let html = `
+    <div class="person-selector-header" onclick="togglePersonSelector()" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; width:100%;">
+      <span class="person-selector-label" style="margin-bottom:0;">Bekijk weergave van: <strong style="color:var(--teal); text-transform:none; font-size:12px; margin-left:6px;">${PERSONS[activePerson].name}</strong></span>
+      <span class="person-selector-toggle-arrow" style="font-size:10px; color:var(--text-soft); transition: transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}">▼</span>
+    </div>
+  `;
+  
+  html += `<div class="person-grid" style="${isCollapsed ? 'display:none;' : ''}">`;
   html += PERSON_ORDER.map(key => {
     const p = PERSONS[key];
     const isActive = key === activePerson;
@@ -446,6 +524,12 @@ function renderPersonSelector() {
   html += `</div>`;
   
   container.innerHTML = html;
+}
+
+function togglePersonSelector() {
+  const isCollapsed = ls_get("person_selector_collapsed", false);
+  ls_set("person_selector_collapsed", !isCollapsed);
+  renderPersonSelector();
 }
 
 function selectPerson(key) {

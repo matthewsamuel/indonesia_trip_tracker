@@ -486,25 +486,21 @@ function recalcAll(){
   }
   
   document.getElementById("statRow").innerHTML = `
-    <div>
-      <div class="stat-card">
-        <div class="label">📅 Aftelklok</div>
-        <div class="value">${countdownVal} <small>${countdownLabel}</small></div>
-      </div>
+    <div class="stat-card">
+      <div class="label">📅 Aftelklok</div>
+      <div class="value">${countdownVal} <small>${countdownLabel}</small></div>
     </div>
-    <div class="stat-cards-right">
-      <div class="stat-card">
-        <div class="label">🛫 Periode</div>
-        <div class="value" style="font-size: 19px; padding-top: 4px;">${periodVal}</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">🧗 Etappes Voltooid</div>
-        <div class="value">${doneDays} <small>/ ${totalDays}</small></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">💶 Totaal Overzicht</div>
-        <div class="value">€${total.toFixed(0)} <small>per persoon</small></div>
-      </div>
+    <div class="stat-card">
+      <div class="label">🛫 Periode</div>
+      <div class="value" style="font-size: 18px; padding-top: 4px;">${periodVal}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">🧗 Etappes Voltooid</div>
+      <div class="value">${doneDays} <small>/ ${totalDays}</small></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">💶 Totaal Overzicht</div>
+      <div class="value">€${total.toFixed(0)} <small>per persoon</small></div>
     </div>
   `;
 }
@@ -795,6 +791,13 @@ function updateLockedPhotos(faseKey, tripIds) {
   panel.style.display = "block";
 }
 
+function toggleStepperCollapse(faseKey) {
+  const key = "collapsed_stepper_" + faseKey;
+  const current = ls_get(key, false);
+  ls_set(key, !current);
+  renderRouteStepper();
+}
+
 function renderRouteStepper() {
   const container = document.getElementById("routeStepper");
   const countBadge = document.getElementById("routeStepperCount");
@@ -898,8 +901,10 @@ function renderRouteStepper() {
       `;
     }
 
+    const isStepperCollapsed = ls_get("collapsed_stepper_" + p.faseKey, false);
+
     html += `
-      <div class="simple-step" data-fase="${p.faseKey}"
+      <div class="simple-step ${isStepperCollapsed ? 'collapsed' : ''}" data-fase="${p.faseKey}"
            onclick='toggleLockPhase(${tripIdsJson}, "${p.faseKey}")'
            onmouseenter='hoverPhaseSteps(${tripIdsJson})'
            onmouseleave="resetHoverPhase()">
@@ -908,6 +913,9 @@ function renderRouteStepper() {
         <div class="simple-step-content">
           <div class="simple-step-header">
             <span class="simple-step-title" style="color: ${color}">${p.faseInfo.label}${airbnbHtml}</span>
+            <button class="simple-step-collapse-toggle" onclick="event.stopPropagation(); toggleStepperCollapse('${p.faseKey}')" title="${isStepperCollapsed ? 'Klap open' : 'Klap in'}">
+              ▼
+            </button>
           </div>
           <div class="simple-step-dates">
             <span>${fmtRange(p.start, p.end)}</span>
@@ -930,9 +938,16 @@ function renderPersonSelector() {
   if (!container) return;
   
   const activePerson = ls_get("selected_person", "matthew");
+  const isCollapsed = ls_get("person_selector_collapsed", false);
   
-  let html = `<span class="person-selector-label">Bekijk weergave van:</span>`;
-  html += `<div class="person-grid">`;
+  let html = `
+    <div class="person-selector-header" onclick="togglePersonSelector()" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; width:100%;">
+      <span class="person-selector-label" style="margin-bottom:0;">Bekijk weergave van: <strong style="color:var(--teal); text-transform:none; font-size:12px; margin-left:6px;">${PERSONS[activePerson].name}</strong></span>
+      <span class="person-selector-toggle-arrow" style="font-size:10px; color:var(--text-soft); transition: transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}">▼</span>
+    </div>
+  `;
+  
+  html += `<div class="person-grid" style="${isCollapsed ? 'display:none;' : ''}">`;
   html += PERSON_ORDER.map(key => {
     const p = PERSONS[key];
     const isActive = key === activePerson;
@@ -953,6 +968,12 @@ function renderPersonSelector() {
   html += `</div>`;
   
   container.innerHTML = html;
+}
+
+function togglePersonSelector() {
+  const isCollapsed = ls_get("person_selector_collapsed", false);
+  ls_set("person_selector_collapsed", !isCollapsed);
+  renderPersonSelector();
 }
 
 function selectPerson(key) {

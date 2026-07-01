@@ -167,26 +167,28 @@ body {
 /* ── STATS ROW ── */
 .stat-row {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: 280px repeat(3, 1fr);
   gap: 24px;
   margin-bottom: 24px;
 }
-@media (max-width: 860px) {
+@media (max-width: 680px) {
   .stat-row {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
 }
-
-.stat-cards-right {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-@media (max-width: 860px) {
-  .stat-cards-right {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
+@media (max-width: 480px) {
+  .stat-row {
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 12px 14px !important;
+  }
+  .stat-card .value {
+    font-size: 18px !important;
+  }
+  .stat-card .value small {
+    font-size: 9px !important;
   }
 }
 
@@ -1746,4 +1748,121 @@ ul.history .hdel:hover {
   .tbi-icon { width: 36px; height: 36px; font-size: 16px; }
   .tbi-date { width: 38px; }
 }
+
+/* ── COLLAPSIBLE ELEMENTS FOR TIMELINE & STEPPER ── */
+
+/* Daily details dropdown in indonesia-timeline.html */
+.timeline-details-dropdown {
+  margin: 12px 0 6px 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.01);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.timeline-details-dropdown[open] {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(0, 180, 216, 0.15);
+}
+.timeline-details-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-soft);
+  outline: none;
+}
+.timeline-details-summary::-webkit-details-marker {
+  display: none;
+}
+.timeline-details-summary::marker {
+  display: none;
+}
+.timeline-details-summary:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+.timeline-details-summary .summary-badge {
+  background: rgba(0, 180, 216, 0.08);
+  color: var(--teal);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: auto;
+  margin-right: 12px;
+  font-weight: 600;
+}
+.timeline-details-summary .summary-chevron {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+}
+.timeline-details-dropdown[open] .timeline-details-summary .summary-chevron {
+  transform: rotate(180deg);
+}
+.timeline-details-dropdown .details {
+  padding: 10px 14px 14px;
+  margin: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Collapsible phase headers in indonesia-timeline.html */
+.fase-header.collapsible {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+.fase-header.collapsible:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+.fase-header.collapsible .fase-chevron {
+  font-size: 10px;
+  margin-left: auto;
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+}
+.fase-header.collapsible.collapsed .fase-chevron {
+  transform: rotate(-90deg);
+}
+
+/* Collapsible route stepper steps in dashboard */
+.simple-step .simple-step-collapse-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, color 0.2s;
+  opacity: 0.4;
+  margin-left: auto;
+}
+.simple-step:hover .simple-step-collapse-toggle {
+  opacity: 0.8;
+}
+.simple-step .simple-step-collapse-toggle:hover {
+  color: var(--text);
+  opacity: 1;
+}
+.simple-step.collapsed .simple-step-collapse-toggle {
+  transform: rotate(-90deg);
+}
+.simple-step.collapsed .simple-step-desc,
+.simple-step.collapsed .simple-step-companions-container,
+.simple-step.collapsed .stepper-photos {
+  display: none !important;
+}
+
 

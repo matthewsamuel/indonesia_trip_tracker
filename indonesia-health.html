@@ -854,8 +854,16 @@ function renderPersonSelector() {
   const container = document.getElementById("personSelector");
   if (!container) return;
   
-  let html = `<span class="person-selector-label">Gezondheidsprofiel van:</span>`;
-  html += `<div class="person-grid">`;
+  const isCollapsed = ls_get("person_selector_collapsed", false);
+  
+  let html = `
+    <div class="person-selector-header" onclick="togglePersonSelector()" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; width:100%;">
+      <span class="person-selector-label" style="margin-bottom:0;">Gezondheidsprofiel van: <strong style="color:var(--teal); text-transform:none; font-size:12px; margin-left:6px;">${PERSONS[selectedPerson].name}</strong></span>
+      <span class="person-selector-toggle-arrow" style="font-size:10px; color:var(--text-soft); transition: transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}">▼</span>
+    </div>
+  `;
+  
+  html += `<div class="person-grid" style="${isCollapsed ? 'display:none;' : ''}">`;
   html += PERSON_ORDER.map(key => {
     const p = PERSONS[key];
     const isActive = key === selectedPerson;
@@ -876,6 +884,12 @@ function renderPersonSelector() {
   html += `</div>`;
   
   container.innerHTML = html;
+}
+
+function togglePersonSelector() {
+  const isCollapsed = ls_get("person_selector_collapsed", false);
+  ls_set("person_selector_collapsed", !isCollapsed);
+  renderPersonSelector();
 }
 
 function renderVaccines() {
