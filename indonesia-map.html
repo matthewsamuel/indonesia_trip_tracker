@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Indonesië — Reiskaart</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="style.css">
+<style>
+/* Map specific override styles */
+#map {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Position header relative to map layers */
+.app-header {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 900;
+  margin-bottom: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.tile-btns {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+.tbtn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-soft);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.tbtn:hover {
+  color: #fff;
+}
+.tbtn.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  position: fixed;
+  top: 110px;
+  right: 14px;
+  bottom: 100px;
+  z-index: 900;
+  width: 246px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+#sb-head {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#sb-date {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+#sb-sub {
+  font-size: 11px;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+
+#people-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+#people-list::-webkit-scrollbar {
+  width: 4px;
+}
+#people-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+}
+
+.prow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.prow:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.av {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.15);
+  overflow: hidden;
+  position: relative;
+}
+.av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.av .upload-hint {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+.prow:hover .av .upload-hint {
+  display: flex;
+}
+
+.pinfo {
+  flex: 1;
+  min-width: 0;
+}
+.pname {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ploc {
+  font-size: 11px;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ploc.transit { color: #f59e0b; }
+.ploc.thuis   { opacity: 0.5; }
+
+/* ── PLAYBACK TIMELINE CONTROL BAR ── */
+#tbar {
+  position: fixed;
+  bottom: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 900;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+#btn-play {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: none;
+  color: #000;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: 700;
+}
+#btn-play:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0, 180, 216, 0.4);
+}
+.dlabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#scrubber {
+  flex: 1;
+  accent-color: var(--teal);
+  cursor: pointer;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+}
+.spd-btns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.2);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+.sbtn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-soft);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.sbtn:hover {
+  color: #fff;
+}
+.sbtn.active {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+#route-status {
+  font-size: 11px;
+  color: var(--text-soft);
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* ── MAP AVATAR MARKERS ── */
+.mav {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.mav:hover {
+  transform: scale(1.15) translateY(-2px);
+  z-index: 1000 !important;
+}
+.mav img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mav.thuis {
+  opacity: 0.3;
+}
+.mav.transit {
+  animation: mpulse 1.6s ease-in-out infinite;
+}
+@keyframes mpulse {
+  0%, 100% { box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+  50% { box-shadow: 0 0 20px rgba(245,158,11,0.8), 0 0 0 6px rgba(245,158,11,0.2); }
+}
+
+/* ── LEAFLET POPUP OVERRIDE ── */
+.leaflet-popup-content-wrapper {
+  background: rgba(10, 14, 23, 0.92) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+}
+.leaflet-popup-tip-container {
+  display: none;
+}
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  font-family: 'Outfit', sans-serif !important;
+}
+.leaflet-popup-close-button {
+  color: var(--text-soft) !important;
+  font-size: 16px !important;
+  padding: 6px !important;
+}
+
+.rlabel {
+  background: rgba(10, 14, 23, 0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- NAVIGATION SHELL IN FIXED CONTAINER -->
+<header class="app-header">
+  <div class="app-brand">
+    <h1>🧭 Reiskaart</h1>
+    <div class="sub">Indonesië · 28 aug – 29 sep 2026</div>
+  </div>
+  <nav class="app-nav">
+    <a class="app-nav-link" href="indonesia-tracker.html">📊 Dashboard</a>
+    <a class="app-nav-link" href="indonesia-timeline.html">📅 Reisschema</a>
+    <a class="app-nav-link active" href="indonesia-map.html">🗺️ Reiskaart</a>
+    <a class="app-nav-link" href="indonesia-live.html">📍 Live Tracker</a>
+    <a class="app-nav-link" href="indonesia-health.html">🏥 Gezondheid</a>
+    <a class="app-nav-link" href="indonesia-transport.html">🚇 Transport</a>
+  </nav>
+  <div class="tile-btns" id="tile-btns">
+    <button class="tbtn" data-tile="terrain">Terrein</button>
+    <button class="tbtn active" data-tile="satellite">Satelliet</button>
+    <button class="tbtn" data-tile="street">Straat</button>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="sb-head">
+    <div id="sb-date">28 aug 2026</div>
+    <div id="sb-sub">Dag 1 · klik avatar voor foto</div>
+  </div>
+  <div id="people-list"></div>
+</div>
+
+<!-- TIMELINE CONTROL BAR -->
+<div id="tbar">
+  <button id="btn-play">▶</button>
+  <span class="dlabel">28 aug</span>
+  <input type="range" id="scrubber" min="0" max="32" value="0" step="1">
+  <span class="dlabel">29 sep</span>
+  <div class="spd-btns" id="spd-btns">
+    <button class="sbtn active" data-speed="1">1×</button>
+    <button class="sbtn" data-speed="2">2×</button>
+    <button class="sbtn" data-speed="4">4×</button>
+  </div>
+  <span id="route-status">Routes laden…</span>
+</div>
+
+<!-- Hidden file input for photo upload -->
+<input type="file" id="photo-input" accept="image/*" style="display:none">
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+/* ================================================================
+   DATA & COORDINATES
+   ================================================================ */
+const LOCS = {
+  brussels:   { lat: 50.8503, lng:  4.3517, name: "Brussel" },
+  bangkok:    { lat: 13.7563, lng: 100.5018, name: "Bangkok" },
+  singapore:  { lat:  1.3521, lng: 103.8198, name: "Singapore" },
+  medan:      { lat:  3.5952, lng:  98.6722, name: "Medan" },
+  ketambe:    { lat:  3.6763, lng:  97.6497, name: "Ketambe" },
+  jakarta:    { lat: -6.2088, lng: 106.8456, name: "Jakarta" },
+  yogya:      { lat: -7.7956, lng: 110.3695, name: "Yogyakarta" },
+  malang:     { lat: -7.9797, lng: 112.6304, name: "Malang" },
+  surabaya:   { lat: -7.2575, lng: 112.7521, name: "Surabaya" },
+  banyuwangi: { lat: -8.2191, lng: 114.3691, name: "Banyuwangi" },
+  bali:       { lat: -8.6705, lng: 115.2126, name: "Bali" },
+  labuanbajo: { lat: -8.4539, lng: 119.8842, name: "Labuan Bajo" },
+  ruteng:     { lat: -8.6271, lng: 120.4718, name: "Ruteng" },
+  komodo:     { lat: -8.5503, lng: 119.4880, name: "Komodo" },
+};
+
+const PEOPLE = {
+  matthew: { name: "Matthew",  initials: "M",  color: "#00b4d8" },
+  hinke:   { name: "Hinke",    initials: "H",  color: "#f72585" },
+  arne:    { name: "Arne",     initials: "A",  color: "#4cc9f0" },
+  eliott:  { name: "Eliott",   initials: "E",  color: "#f77f00" },
+  jens:    { name: "Jens",     initials: "J",  color: "#9d4edd" },
+  kamiel:  { name: "Kamiel",   initials: "K",  color: "#4ad66d" },
+  maurice: { name: "Maurice",  initials: "Mo", color: "#ffb703" },
+  mathias: { name: "Mathias",  initials: "Ma", color: "#00f5d4" },
+  willem:  { name: "Willem",   initials: "W",  color: "#e2e8f0" },
+  kasper:  { name: "Kasper",   initials: "Ks", color: "#cbd5e1" },
+};
+
+const SCHED_MATTHEW = [
+  { date: "2026-08-28", loc: "brussels",   transit: true,  to: "singapore" },
+  { date: "2026-08-29", loc: "singapore" },
+  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
+  { date: "2026-09-01", loc: "ketambe" },
+  { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
+  { date: "2026-09-08", loc: "jakarta" },
+  { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
+  { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "surabaya" },
+  { date: "2026-09-12", loc: "surabaya" },
+  { date: "2026-09-16", loc: "surabaya",   transit: true,  to: "banyuwangi" },
+  { date: "2026-09-17", loc: "banyuwangi" },
+  { date: "2026-09-18", loc: "banyuwangi", transit: true,  to: "labuanbajo" },
+  { date: "2026-09-19", loc: "labuanbajo" },
+  { date: "2026-09-21", loc: "labuanbajo", transit: true,  to: "ruteng" },
+  { date: "2026-09-22", loc: "ruteng" },
+  { date: "2026-09-23", loc: "ruteng",     transit: true,  to: "labuanbajo" },
+  { date: "2026-09-24", loc: "labuanbajo" },
+  { date: "2026-09-26", loc: "labuanbajo", transit: true,  to: "bali" },
+  { date: "2026-09-27", loc: "bali" },
+  { date: "2026-09-29", loc: "bali",       transit: true,  to: "brussels" },
+];
+
+const SCHED_HINKE = [
+  { date: "2026-08-28", loc: "brussels" },
+  { date: "2026-09-14", loc: "brussels",   transit: true,  to: "surabaya" },
+  { date: "2026-09-15", loc: "surabaya" },
+  { date: "2026-09-16", loc: "surabaya",   transit: true,  to: "banyuwangi" },
+  { date: "2026-09-17", loc: "banyuwangi" },
+  { date: "2026-09-18", loc: "banyuwangi", transit: true,  to: "labuanbajo" },
+  { date: "2026-09-19", loc: "labuanbajo" },
+  { date: "2026-09-21", loc: "labuanbajo", transit: true,  to: "ruteng" },
+  { date: "2026-09-22", loc: "ruteng" },
+  { date: "2026-09-23", loc: "ruteng",     transit: true,  to: "labuanbajo" },
+  { date: "2026-09-24", loc: "labuanbajo" },
+  { date: "2026-09-26", loc: "labuanbajo", transit: true,  to: "bali" },
+  { date: "2026-09-27", loc: "bali" },
+  { date: "2026-09-29", loc: "bali",       transit: true,  to: "brussels" },
+];
+
+const SCHED_BOYZ = [
+  { date: "2026-08-28", loc: "brussels",   transit: true,  to: "singapore" },
+  { date: "2026-08-29", loc: "singapore" },
+  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
+  { date: "2026-09-01", loc: "ketambe" },
+  { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
+  { date: "2026-09-08", loc: "jakarta" },
+  { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
+  { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
+  { date: "2026-09-12", loc: "banyuwangi" }, 
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "brussels" },  
+];
+
+const SCHED_WILLEM_KASPER = [
+  { date: "2026-08-28", loc: "brussels" },
+  { date: "2026-08-30", loc: "brussels",   transit: true,  to: "singapore" },
+  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
+  { date: "2026-09-01", loc: "ketambe" },
+  { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
+  { date: "2026-09-08", loc: "jakarta" },
+  { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
+  { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
+  { date: "2026-09-12", loc: "banyuwangi" }, 
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "brussels" },
+];
+
+const SCHED_ELIOTT_KAMIEL = [
+  { date: "2026-08-28", loc: "brussels" },
+  { date: "2026-08-30", loc: "brussels",   transit: true,  to: "singapore" },
+  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
+  { date: "2026-09-01", loc: "ketambe" },
+  { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
+  { date: "2026-09-08", loc: "jakarta" },
+  { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
+  { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
+  { date: "2026-09-12", loc: "banyuwangi" }, 
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "bali" },
+  { date: "2026-09-14", loc: "bali" },
+  { date: "2026-09-20", loc: "bali",       transit: true,  to: "brussels" },
+];
+
+const SCHED_JENS_MAURICE_MATHIAS = [
+  { date: "2026-08-28", loc: "brussels" },
+  { date: "2026-09-08", loc: "brussels",   transit: true,  to: "jakarta" },
+  { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
+  { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
+  { date: "2026-09-12", loc: "banyuwangi" },
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "brussels" },
+];
+
+const SCHEDULES = {
+  matthew: SCHED_MATTHEW,
+  hinke:   SCHED_HINKE,
+  arne:    SCHED_BOYZ,
+  eliott:  SCHED_ELIOTT_KAMIEL,
+  jens:    SCHED_JENS_MAURICE_MATHIAS,
+  kamiel:  SCHED_ELIOTT_KAMIEL,
+  maurice: SCHED_JENS_MAURICE_MATHIAS,
+  mathias: SCHED_JENS_MAURICE_MATHIAS,
+  willem:  SCHED_WILLEM_KASPER,
+  kasper:  SCHED_WILLEM_KASPER,
+};
+
+const ROAD_SEGS = [
+  { id: "r1", from: "medan",      to: "ketambe",    color: "#4ad66d", label: "Minibus 7-8u",  icon: "🚐" },
+  { id: "r2", from: "jakarta",    to: "yogya",      color: "#9d4edd", label: "Trein 6u25",    icon: "🚂" },
+  { id: "r3", from: "yogya",      to: "malang",     color: "#9d4edd", label: "Nachttrein",    icon: "🚂" },
+  { id: "r4", from: "malang",     to: "surabaya",   color: "#9d4edd", label: "Bus ~3u",       icon: "🚐" },
+  { id: "r5", from: "surabaya",   to: "banyuwangi", color: "#9d4edd", label: "Trein ~5u",     icon: "🚂" },
+  { id: "r6", from: "labuanbajo", to: "ruteng",     color: "#f72585", label: "Auto ~3u",      icon: "🚗" },
+];
+
+const FLIGHT_ARCS = [
+  { id: "f1", from: "brussels",   to: "singapore",  via: "bangkok",    color: "#4cc9f0", label: "BRU→BKK→SIN" },
+  { id: "f2", from: "singapore",  to: "medan",      color: "#4ad66d", label: "SIN→KNO (Scoot)" },
+  { id: "f3", from: "medan",      to: "jakarta",    color: "#f77f00", label: "Medan→JKT" },
+  { id: "f4", from: "banyuwangi", to: "labuanbajo", via: "bali",       color: "#f72585", label: "BWI→DPS→LBJ" },
+  { id: "f5", from: "labuanbajo", to: "bali",       color: "#ffb703", label: "LBJ→DPS" },
+  { id: "f6", from: "bali",       to: "brussels",   color: "#4cc9f0", label: "DPS→BRU" },
+  { id: "f7", from: "brussels",   to: "jakarta",    color: "#00f5d4", label: "BRU→JKT (Maurice/Mathias/Jens)" },
+];
+
+const BOAT_SEGS = [
+  { id: "b1", from: "labuanbajo", to: "komodo", color: "#00f5d4", label: "Boot Komodo" },
+];
+
+/* ================================================================
+   MAP SETUP & LEAFLET LOGIC
+   ================================================================ */
+const map = L.map('map', {
+  center: [-2.5, 115],
+  zoom: 5,
+  zoomControl: false,
+  attributionControl: true,
+});
+
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+const TILES = {
+  satellite: L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles © Esri', maxZoom: 19 }
+  ),
+  terrain: L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles © Esri', maxZoom: 19 }
+  ),
+  street: L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '© OpenStreetMap', maxZoom: 19 }
+  ),
+};
+let activeTile = 'satellite';
+TILES.satellite.addTo(map);
+
+document.getElementById('tile-btns').addEventListener('click', e => {
+  const btn = e.target.closest('.tbtn');
+  if (!btn) return;
+  const t = btn.dataset.tile;
+  if (t === activeTile) return;
+  map.removeLayer(TILES[activeTile]);
+  TILES[t].addTo(map);
+  activeTile = t;
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.toggle('active', b.dataset.tile === t));
+});
+
+/* ================================================================
+   ROUTING RENDER
+   ================================================================ */
+const routeGroup = L.layerGroup().addTo(map);
+
+function gcPoints(from, to, n = 80) {
+  const R = Math.PI / 180, D = 180 / Math.PI;
+  const φ1 = from.lat*R, λ1 = from.lng*R;
+  const φ2 = to.lat*R,   λ2 = to.lng*R;
+  const d  = 2 * Math.asin(Math.sqrt(
+    Math.sin((φ2-φ1)/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin((λ2-λ1)/2)**2
+  ));
+  if (d < 0.0001) return [[from.lat, from.lng], [to.lat, to.lng]];
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const f = i/n, sinD = Math.sin(d);
+    const A = Math.sin((1-f)*d)/sinD, B = Math.sin(f*d)/sinD;
+    const x = A*Math.cos(φ1)*Math.cos(λ1) + B*Math.cos(φ2)*Math.cos(λ2);
+    const y = A*Math.cos(φ1)*Math.sin(λ1) + B*Math.cos(φ2)*Math.sin(λ2);
+    const z = A*Math.sin(φ1)              + B*Math.sin(φ2);
+    pts.push([Math.atan2(z, Math.sqrt(x*x+y*y))*D, Math.atan2(y,x)*D]);
+  }
+  for (let i = 1; i < pts.length; i++) {
+    while (pts[i][1] - pts[i-1][1] >  180) pts[i][1] -= 360;
+    while (pts[i][1] - pts[i-1][1] < -180) pts[i][1] += 360;
+  }
+  return pts;
+}
+
+function midpoint(ll) { return ll[Math.floor(ll.length/2)]; }
+
+function drawFlight(arc) {
+  const f = LOCS[arc.from], t = LOCS[arc.to];
+  let pts = arc.via
+    ? [...gcPoints(f, LOCS[arc.via], 40), ...gcPoints(LOCS[arc.via], t, 40)]
+    : gcPoints(f, t, 80);
+
+  L.polyline(pts, { color: arc.color, weight: 1.8, opacity: .65, dashArray: "6 5" })
+    .bindTooltip(`✈️ ${arc.label}`, { className: 'rlabel', sticky: true })
+    .addTo(routeGroup);
+
+  const mid = midpoint(pts);
+  L.marker(mid, {
+    icon: L.divIcon({
+      html: `<span style="font-size:15px; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.8)); color:#fff">✈</span>`,
+      className: '', iconSize: [18,18], iconAnchor: [9,9],
+    }),
+    interactive: false,
+  }).addTo(routeGroup);
+}
+
+function fmtDur(sec) {
+  if (!sec) return '';
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60);
+  return h ? `${h}u${m ? m+'m' : ''}` : `${m}m`;
+}
+
+async function fetchRoad(fromKey, toKey) {
+  const key = `osrm2_${fromKey}_${toKey}`;
+  const cached = localStorage.getItem(key);
+  if (cached) return JSON.parse(cached);
+
+  const f = LOCS[fromKey], t = LOCS[toKey];
+  const url = `https://router.project-osrm.org/route/v1/driving/${f.lng},${f.lat};${t.lng},${t.lat}?overview=full&geometries=geojson`;
+  try {
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.routes?.length) {
+      const r = data.routes[0];
+      const result = {
+        coords: r.geometry.coordinates.map(([lng,lat]) => [lat,lng]),
+        dur: r.duration,
+        dist: r.distance,
+      };
+      localStorage.setItem(key, JSON.stringify(result));
+      return result;
+    }
+  } catch (e) {
+    console.warn('OSRM error:', fromKey, '→', toKey, e);
+  }
+  return { coords: [[f.lat,f.lng],[t.lat,t.lng]], dur: null };
+}
+
+async function loadAllRoutes() {
+  const status = document.getElementById('route-status');
+
+  FLIGHT_ARCS.forEach(drawFlight);
+
+  BOAT_SEGS.forEach(seg => {
+    const pts = [[LOCS[seg.from].lat, LOCS[seg.from].lng],[LOCS[seg.to].lat, LOCS[seg.to].lng]];
+    L.polyline(pts, { color: seg.color, weight: 2.5, opacity: .8, dashArray: "4 7" })
+      .bindTooltip(`⛵ ${seg.label}`, { className: 'rlabel', sticky: true })
+      .addTo(routeGroup);
+  });
+
+  let loaded = 0;
+  for (const seg of ROAD_SEGS) {
+    status.textContent = `Route ${++loaded}/${ROAD_SEGS.length} laden…`;
+    const r = await fetchRoad(seg.from, seg.to);
+    const durStr = fmtDur(r.dur);
+    const tip = `${seg.icon} ${seg.label}${durStr ? ' · ' + durStr : ''}`;
+
+    L.polyline(r.coords, { color: seg.color, weight: 3, opacity: .85 })
+      .bindTooltip(tip, { className: 'rlabel', sticky: true })
+      .addTo(routeGroup);
+  }
+
+  status.textContent = 'Routes geladen ✓';
+  setTimeout(() => { status.textContent = ''; }, 2500);
+}
+
+/* ================================================================
+   TIMELINE SCHEDULING
+   ================================================================ */
+const T0   = new Date('2026-08-28T00:00:00');
+const TEND  = new Date('2026-09-29T00:00:00');
+const NDAYS = Math.round((TEND - T0) / 86400000); // 32
+
+function dayToDate(day) {
+  const d = new Date(T0);
+  d.setDate(d.getDate() + day);
+  return d;
+}
+
+function dateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function getState(personId, day) {
+  const date = dayToDate(day);
+  const ds   = dateStr(date);
+  const sched = SCHEDULES[personId];
+
+  let wp = null;
+  for (const w of sched) {
+    if (w.date <= ds) wp = w; else break;
+  }
+
+  if (!wp) wp = sched[0];
+
+  const inTransit = wp.transit === true && wp.date === ds;
+  const isHome    = !inTransit && wp.loc === 'brussels';
+
+  let locData;
+  if (inTransit) {
+    const f = LOCS[wp.loc], t = LOCS[wp.to];
+    locData = {
+      lat: (f.lat + t.lat) / 2,
+      lng: (f.lng + t.lng) / 2,
+      name: `${f.name} → ${t.name}`,
+    };
+  } else {
+    locData = LOCS[wp.loc];
+  }
+
+  return { inTransit, isHome, locData, locKey: wp.loc };
+}
+
+/* ================================================================
+   MARKER AVATARS
+   ================================================================ */
+function personOffset(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  const rx = ((h & 0xFF) / 255 - 0.5) * 0.12;
+  const ry = (((h >> 8) & 0xFF) / 255 - 0.5) * 0.12;
+  return [rx, ry];
+}
+
+const markers  = {};
+let currentDay = 0;
+
+function photoKey(id) { return `mapphoto_${id}`; }
+
+function makeIcon(id, state) {
+  const p  = PEOPLE[id];
+  const ph = localStorage.getItem(photoKey(id));
+  const inner = ph ? `<img src="${ph}" alt="">` : p.initials;
+  const cls   = ['mav', state.isHome ? 'thuis' : '', state.inTransit ? 'transit' : ''].filter(Boolean).join(' ');
+  return L.divIcon({
+    html: `<div class="${cls}" style="background:${p.color}">${inner}</div>`,
+    className: '',
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -22],
+  });
+}
+
+function popupHtml(id) {
+  const p  = PEOPLE[id];
+  const ph = localStorage.getItem(photoKey(id));
+  const st = getState(id, currentDay);
+  const avHtml = ph
+    ? `<img src="${ph}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid ${p.color}">`
+    : `<div style="width:42px;height:42px;border-radius:50%;background:${p.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff">${p.initials}</div>`;
+
+  return `
+  <div style="min-width:180px; font-family:'Outfit', sans-serif;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      ${avHtml}
+      <div>
+        <div style="font-weight:700;font-size:14.5px;color:#fff">${p.name}</div>
+        <div style="font-size:11px;color:var(--text-soft)">${st.inTransit ? '✈ ' : ''}${st.locData?.name || '—'}</div>
+      </div>
+    </div>
+    <label style="display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;font-size:12px;color:var(--teal);padding:8px;background:var(--teal-soft);border-radius:8px;border:1px solid rgba(0, 180, 216, 0.15)">
+      <input type="file" accept="image/*" style="display:none" onchange="handlePhotoUpload(event,'${id}')">
+      📷 Foto toevoegen
+    </label>
+  </div>`;
+}
+
+function handlePhotoUpload(event, id) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    localStorage.setItem(photoKey(id), e.target.result);
+    map.closePopup();
+    updateAll(currentDay);
+  };
+  reader.readAsDataURL(file);
+}
+
+function initMarkers() {
+  Object.keys(PEOPLE).forEach(id => {
+    const st     = getState(id, 0);
+    const [ox, oy] = personOffset(id);
+    const ll     = [st.locData.lat + ox, st.locData.lng + oy];
+
+    const m = L.marker(ll, {
+      icon: makeIcon(id, st),
+      zIndexOffset: id === 'matthew' ? 1000 : 0,
+    })
+    .bindPopup(() => popupHtml(id), { maxWidth: 260 })
+    .addTo(map);
+
+    markers[id] = m;
+  });
+}
+
+function updateMarkers(day) {
+  Object.keys(PEOPLE).forEach(id => {
+    const st       = getState(id, day);
+    const [ox, oy] = personOffset(id);
+    const ll       = [st.locData.lat + ox, st.locData.lng + oy];
+    markers[id].setLatLng(ll);
+    markers[id].setIcon(makeIcon(id, st));
+  });
+}
+
+/* ================================================================
+   SIDEBAR
+   ================================================================ */
+const MND = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+function updateSidebar(day) {
+  const d = dayToDate(day);
+  document.getElementById('sb-date').textContent =
+    `${d.getDate()} ${MND[d.getMonth()]} ${d.getFullYear()}`;
+  document.getElementById('sb-sub').textContent =
+    `Dag ${day+1} van ${NDAYS+1} · klik voor actie`;
+
+  const html = Object.entries(PEOPLE).map(([id, p]) => {
+    const st  = getState(id, day);
+    const ph  = localStorage.getItem(photoKey(id));
+    const avInner = ph ? `<img src="${ph}" alt="">` : p.initials;
+    const cls = st.inTransit ? 'transit' : st.isHome ? 'thuis' : '';
+    const lbl = st.inTransit 
+      ? `→ ${LOCS[SCHEDULES[id].find(w=>w.date===dateStr(dayToDate(day)))?.to]?.name || '?'}` 
+      : st.locData?.name || 'Brussel';
+
+    return `
+    <div class="prow" onclick="focusPerson('${id}')">
+      <div class="av" style="background:${p.color}" onclick="openPhotoForPerson(event,'${id}')">
+        ${avInner}
+        <div class="upload-hint">📷</div>
+      </div>
+      <div class="pinfo">
+        <div class="pname">${p.name}</div>
+        <div class="ploc ${cls}">${lbl}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('people-list').innerHTML = html;
+}
+
+function focusPerson(id) {
+  const m = markers[id];
+  if (!m) return;
+  map.setView(m.getLatLng(), 7, { animate: true });
+  m.openPopup();
+}
+
+function openPhotoForPerson(e, id) {
+  e.stopPropagation();
+  const inp = document.getElementById('photo-input');
+  inp.onchange = ev => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = re => {
+      localStorage.setItem(photoKey(id), re.target.result);
+      updateAll(currentDay);
+    };
+    reader.readAsDataURL(file);
+    inp.value = '';
+  };
+  inp.click();
+}
+
+/* ================================================================
+   TIMELINE SCRUBBER ANIMATION
+   ================================================================ */
+const scrubber = document.getElementById('scrubber');
+scrubber.max = NDAYS;
+
+function updateAll(day) {
+  currentDay = +day;
+  scrubber.value = currentDay;
+  updateMarkers(currentDay);
+  updateSidebar(currentDay);
+}
+
+scrubber.addEventListener('input', () => {
+  stopAnim();
+  updateAll(scrubber.value);
+});
+
+let animTimer = null, animSpeed = 1, playing = false;
+const btnPlay = document.getElementById('btn-play');
+
+function startAnim() {
+  playing = true;
+  btnPlay.textContent = '⏸';
+  animTimer = setInterval(() => {
+    if (currentDay >= NDAYS) { stopAnim(); return; }
+    updateAll(currentDay + 1);
+  }, 750 / animSpeed);
+}
+function stopAnim() {
+  playing = false;
+  btnPlay.textContent = '▶';
+  clearInterval(animTimer);
+  animTimer = null;
+}
+
+btnPlay.addEventListener('click', () => {
+  if (playing) { stopAnim(); return; }
+  if (currentDay >= NDAYS) updateAll(0);
+  startAnim();
+});
+
+document.getElementById('spd-btns').addEventListener('click', e => {
+  const btn = e.target.closest('.sbtn');
+  if (!btn) return;
+  animSpeed = parseInt(btn.dataset.speed);
+  document.querySelectorAll('.sbtn').forEach(b => b.classList.toggle('active', b === btn));
+  if (playing) { stopAnim(); startAnim(); }
+});
+
+/* ================================================================
+   INITIALIZATION
+   ================================================================ */
+async function init() {
+  initMarkers();
+  updateAll(0);
+  await loadAllRoutes();
+}
+
+init();
+</script>
+</body>
+</html>

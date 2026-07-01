@@ -105,20 +105,20 @@ const PERSON_TRIPS = {
   matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
   hinke:   ["t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
   arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
-  eliott:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
+  eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
   jens:    ["t7", "t8", "t9", "t10", "t24"],
-  kamiel:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
+  kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
   maurice: ["t7", "t8", "t9", "t10", "t24"],
-  kasper:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
-  willem:  ["t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
+  kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
+  willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
   mathias: ["t7", "t8", "t9", "t10", "t24"]
 };
 
 const PERSON_GROUP_INFO = {
   matthew: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>28/08 – 31/08:</b> Matthew + Arne (Brussel → Singapore → Medan)</li>
-      <li><b>31/08, in Medan:</b> Ontmoeting met de Sumatra-groep — 6 man trekken de jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>28/08 – 31/08:</b> Matthew + Arne (Brussel → Bangkok → Singapore → Medan); 31/08 overnachting in Medan</li>
+      <li><b>01/09, Medan:</b> Ontmoeting met Kamiel, Eliott, Kasper & Willem (vlucht vanuit Jakarta) — alle 6 man naar Ketambe</li>
       <li><b>08/09, Jakarta:</b> Maurice, Mathias & Jens sluiten aan — crew compleet met 9 man voor Java</li>
       <li><b>11/09, Malang:</b> Matthew splitst af naar Surabaya; de jongens gaan naar Tumpak Sewu/Bromo</li>
       <li><b>14/09, Surabaya:</b> Hinke landt, vanaf hier reizen Matthew & Hinke samen</li>
@@ -139,8 +139,8 @@ const PERSON_GROUP_INFO = {
   `,
   arne: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>28/08 – 31/08:</b> Samen met Matthew (Brussel → Singapore → Medan)</li>
-      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>28/08 – 31/08:</b> Samen met Matthew (Brussel → Bangkok → Singapore → Medan); 31/08 overnachting in Medan</li>
+      <li><b>01/09 – 07/09:</b> Met de jongens de Sumatra-jungle in (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
       <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep compleet met 9 man)</li>
       <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
       <li><b>13/09:</b> Einde jongens-trip en terugvlucht/vervolg.</li>
@@ -148,7 +148,11 @@ const PERSON_GROUP_INFO = {
   `,
   eliott: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
+      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
+      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe</li>
+      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>07/09:</b> Ketambe → Medan → Jakarta</li>
       <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
       <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
       <li><b>13/09 – 20/09:</b> Samen met Kamiel naar Bali voor een week; daarna terugvlucht naar huis.</li>
@@ -164,7 +168,11 @@ const PERSON_GROUP_INFO = {
   `,
   kamiel: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
+      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
+      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe</li>
+      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>07/09:</b> Ketambe → Medan → Jakarta</li>
       <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
       <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
       <li><b>13/09 – 20/09:</b> Samen met Eliott naar Bali voor een week; daarna terugvlucht naar huis.</li>
@@ -180,7 +188,11 @@ const PERSON_GROUP_INFO = {
   `,
   kasper: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>31/08 – 07/09:</b> Met de jongens de Sumatra-jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
+      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
+      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe</li>
+      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
+      <li><b>07/09:</b> Ketambe → Medan → Jakarta</li>
       <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
       <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
       <li><b>13/09:</b> Einde jongens-trip en terugvlucht/vervolg.</li>
@@ -188,9 +200,9 @@ const PERSON_GROUP_INFO = {
   `,
   willem: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>30/08:</b> Aankomst Jakarta (09:55) — dag acclimatiseren</li>
-      <li><b>31/08:</b> Jakarta verkennen</li>
-      <li><b>01/09:</b> Vlucht Jakarta → Medan (~220 €/pp), taxi Medan → Ketambe (7-8u)</li>
+      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
+      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
+      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe (7-8u)</li>
       <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (5d/4n, all-in ~160 €/pp) — met Matthew, Arne, Kasper, Eliott, Kamiel</li>
       <li><b>07/09:</b> Taxi Ketambe → Medan, vlucht Medan → Jakarta</li>
       <li><b>08/09:</b> Jakarta — Maurice & Mathias komen toe (08:25), groep compleet</li>
@@ -257,8 +269,8 @@ const PTS = {
 const TRIP = [
   { id:"t1", fase:"heen", start:"2026-08-28", end:"2026-08-29", title:"Brussel → Bangkok → Singapore (met Arne)", details:[], costs:["c1"], map:["singapore"] },
   { id:"t2", fase:"sg", start:"2026-08-29", end:"2026-08-30", title:"Singapore (met Arne)", details:[], costs:["c18"], map:["singapore"] },
-  { id:"t3", fase:"sumatra", start:"2026-08-31", end:"2026-08-31", title:"Singapore → Medan (Scoot)", details:[], costs:["c2"], map:["singapore","medan"] },
-  { id:"t4", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Medan → Ketambe — alle 6 man samen", details:["Taxi/minibus vertrekt 07:00 uit Medan. Alle 6 man: Matthew, Arne, Willem, Kasper, Eliott, Kamiel. Rit ±7-8u."], costs:["c3"], map:["medan","ketambe"] },
+  { id:"t3", fase:"sumatra", start:"2026-08-31", end:"2026-08-31", title:"Singapore → Medan — Matthew & Arne (Scoot)", details:["Matthew & Arne vliegen 31/08 van Singapore naar Medan en overnachten daar. De volgende dag ontmoeten zij Kamiel, Eliott, Kasper & Willem die arriveren vanuit Jakarta."], costs:["c2"], map:["singapore","medan"] },
+  { id:"t4", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Medan → Ketambe — alle 6 man samen", details:["Alle 6 man: Matthew, Arne, Willem, Kasper, Eliott, Kamiel. Matthew & Arne sliepen de nacht ervoor al in Medan. Kamiel, Eliott, Kasper & Willem arriveren met vlucht vanuit Jakarta. Na aankomst samen taxi naar Ketambe (rit ±7-8u)."], costs:["c3"], map:["medan","ketambe"] },
   { id:"t5", fase:"sumatra", start:"2026-09-02", end:"2026-09-06", title:"Jungle trekking — Ketambe", details:[], costs:["c4"], map:["ketambe"] },
   { id:"t6", fase:"sumatra", start:"2026-09-07", end:"2026-09-07", title:"Ketambe → Medan → Jakarta", details:[], costs:["c5","c6"], map:["ketambe","medan","jakarta"] },
   { id:"t7", fase:"jakarta", start:"2026-09-08", end:"2026-09-08", title:"Jakarta — Maurice & Mathias sluiten aan", details:[], costs:["c19"], map:["jakarta"] },
@@ -278,7 +290,10 @@ const TRIP = [
   { id:"t21", fase:"bali", start:"2026-09-26", end:"2026-09-26", title:"Labuan Bajo → Bali", details:[], costs:["c15"], map:["labuanbajo","bali"] },
   { id:"t22", fase:"bali", start:"2026-09-26", end:"2026-09-28", title:"Bali — luxe & chill", details:[], costs:["c16"], map:["bali"] },
   { id:"t23", fase:"bali", start:"2026-09-29", end:"2026-09-29", title:"Terug naar huis", details:[], costs:["c17"], map:["bali"] },
-  { id:"t24", fase:"java", start:"2026-09-13", end:"2026-09-13", title:"Terugvlucht naar huis (Arne, Jens, Maurice, Mathias, Willem, Kasper)", details:[], costs:[], map:["malang"] },
+  { id:"t24", fase:"java", start:"2026-09-13", end:"2026-09-13", title:"Terugvlucht naar huis (Arne, Jens, Maurice, Mathias, Kasper)", details:[], costs:[], map:["malang"] },
+  { id:"t27", fase:"heen", start:"2026-08-29", end:"2026-08-30", title:"Brussel → Singapore → Jakarta (Kamiel, Eliott, Kasper, Willem)", details:["SQ 303: BRU 11:45 (29/08) → SIN 06:40 (30/08). Layover 2u25 in Changi (Singapore). SQ 956: SIN 09:05 → CGK 09:55 (30/08), aankomst Jakarta Soekarno Intl T3. Beide segmenten: Airbus A350-900, Economy."], costs:[], map:["singapore","jakarta"] },
+  { id:"t28", fase:"heen", start:"2026-08-30", end:"2026-08-31", title:"Jakarta — aankomst & acclimatiseren (Kamiel, Eliott, Kasper, Willem)", details:["Aankomst 30/08 om 09:55 op Jakarta Soekarno Intl T3. Twee nachten Jakarta (30 en 31 aug): stad verkennen."], costs:[], map:["jakarta"] },
+  { id:"t29", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Jakarta → Medan (Kamiel, Eliott, Kasper, Willem)", details:["Vlucht Jakarta (CGK) → Medan. Ontmoeting met Matthew & Arne in Medan. Aansluitend met alle 6 man taxi naar Ketambe (±7-8u)."], costs:[], map:["jakarta","medan"] },
   { id:"t25", fase:"bali", start:"2026-09-13", end:"2026-09-20", title:"Bali — verlenging (Eliott & Kamiel)", details:[], costs:[], map:["malang","bali"] },
   { id:"t26", fase:"bali", start:"2026-09-20", end:"2026-09-20", title:"Terugvlucht Bali → huis (Eliott & Kamiel)", details:[], costs:[], map:["bali"] },
 ];
