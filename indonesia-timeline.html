@@ -71,6 +71,7 @@ const FASES = {
   flores:  { label: "Flores",       color: "#f72585", uitleg: "Verkenning van het bergachtige Flores, Ruteng en spinnenwebvelden." },
   komodo:  { label: "Komodo",       color: "#00f5d4", uitleg: "Boottocht naar Padar Island, Pink Beach en Komodovaranen." },
   bali:    { label: "Bali",         color: "#ffb703", uitleg: "Afsluitende ontspanning met luxe villa, strand en gezellig uit eten." },
+  terug:   { label: "Vlucht terug", color: "#4cc9f0", uitleg: "Terugreis naar huis of doorreis naar Vietnam." },
 };
 
 const COSTS = {
@@ -212,7 +213,7 @@ const TRIP = [
     details:["Villa stay (Ubud / Canggu / Uluwatu — nog te kiezen)","Genieten van spa-behandelingen & massages","Lange stranddagen en surfen","Heerlijk uit eten bij diverse trendy restaurants & sunset bars"],
     costs:["c16"], map:["bali"] },
 
-  { id:"t23", fase:"bali", start:"2026-09-29", end:"2026-09-29",
+  { id:"t23", fase:"terug", start:"2026-09-29", end:"2026-09-29",
     title:"Terug naar huis",
     details:["Internationale vlucht vanuit Bali Denpasar terug naar Brussel","Einde van een fantastische reis!"],
     costs:["c17"], map:["bali"] },
@@ -267,15 +268,25 @@ const TRIP = [
     details:["Sidemen rijstterrassen: rustige wandeling, minder toeristisch dan Ubud","Besakih Temple: moedertempel van Bali, aan de voet van Agung","Mount Agung sunrise hike: middernacht vertrek, 4–6u klimmen, episch uitzicht op Lombok","Verplichte lokale gids (max. 3 pp/gids, verplicht sinds 2025)","Herstel 's middags, eventueel hot springs"],
     costs:[], map:["bali"] },
 
-  { id:"t37", fase:"bali", start:"2026-09-19", end:"2026-09-20",
+  { id:"t37", fase:"terug", start:"2026-09-19", end:"2026-09-20",
     title:"Bali → Vietnam (Mathias, Willem, Momo) — TBD",
     details:["Na het volledige 7-daagse programma vliegen Mathias, Willem en Momo door naar Vietnam","Exacte vluchtdatum en bestemming nog te bevestigen"],
     costs:[], map:["bali"], openNote: true },
 
-  { id:"t38", fase:"bali", start:"2026-09-19", end:"2026-09-20",
+  { id:"t38", fase:"terug", start:"2026-09-19", end:"2026-09-20",
     title:"Terugvlucht Bali → Brussel (Arne, Eliott, Jens, Kamiel, Kasper) — TBD",
     details:["Alle 5 vliegen terug naar Brussel na afloop van het volledige 7-daagse Bali-programma","Exacte datum/tijd TBD"],
-    costs:[], map:["bali"], openNote: true }
+    costs:[], map:["bali"], openNote: true },
+
+  { id:"t39", fase:"heen", start:"2026-09-07", end:"2026-09-08",
+    title:"Brussel → Jakarta (Maurice, Mathias, Jens)",
+    details:["Maurice, Mathias en Jens vliegen vanuit Brussel naar Jakarta om zich bij de groep te voegen."],
+    costs:[], map:["jakarta"] },
+
+  { id:"t41", fase:"heen", start:"2026-09-13", end:"2026-09-14",
+    title:"Brussel → Singapore → Surabaya (Hinke)",
+    details:["Vlucht Hinke naar Surabaya om daar bij Matthew aan te sluiten."],
+    costs:[], map:["surabaya"] }
 ];
 
 /* ---------------- HELPERS ---------------- */
@@ -454,15 +465,15 @@ const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice
 
 const PERSON_TRIPS = {
   matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  hinke:   ["t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
+  hinke:   ["t41", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
   arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  jens:    ["t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  jens:    ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  maurice: ["t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
+  maurice: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
   kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  mathias: ["t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
+  mathias: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
 };
 
 /* ---------------- RENDER: phase nav ---------------- */
@@ -483,7 +494,7 @@ function renderPhaseNav(){
 
 /* ---------------- FLIGHT DETECTION ---------------- */
 function isFlight(item) {
-  if (item.fase === 'heen') return true;
+  if (item.fase === 'heen' || item.fase === 'terug') return true;
   if (item.title.toLowerCase().includes('vlucht') || item.title.toLowerCase().includes('vliegen') || item.title.toLowerCase().includes('terugvlucht')) return true;
   if (item.costs.some(cid => COSTS[cid] && COSTS[cid].cat === 'vlucht')) return true;
   if (item.details.some(d => d.toLowerCase().includes('vlucht') || d.toLowerCase().includes('vliegen') || d.toLowerCase().includes('vliegtuig'))) return true;

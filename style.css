@@ -29,6 +29,7 @@
   --c-flores: #f72585;
   --c-komodo: #00f5d4;
   --c-bali: #ffb703;
+  --c-terug: #4cc9f0;
   
   /* Soft phase backdrops */
   --s-heen: rgba(76, 201, 240, 0.1);
@@ -39,6 +40,7 @@
   --s-flores: rgba(247, 37, 133, 0.1);
   --s-komodo: rgba(0, 245, 212, 0.1);
   --s-bali: rgba(255, 183, 3, 0.1);
+  --s-terug: rgba(76, 201, 240, 0.1);
 }
 
 /* View transitions for smooth page navigation */

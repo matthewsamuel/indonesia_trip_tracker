@@ -23,7 +23,7 @@ Beide bestanden kunnen direct in de browser worden geopend (`open indonesia-trac
 
 Alle data zit in het `<script>`-blok bovenaan, vóór de render-functies:
 
-**`PHASES`** — object dat fase-IDs mapt naar `{label, color, soft}`. Fase-IDs: `heen`, `sg`, `sumatra`, `jakarta`, `java`, `flores`, `komodo`, `bali`.
+**`PHASES`** — object dat fase-IDs mapt naar `{label, color, soft}`. Fase-IDs: `heen`, `sg`, `sumatra`, `jakarta`, `java`, `flores`, `komodo`, `bali`, `terug`.
 
 **`COSTS`** — object: `id → {label, cat, amount, ...}`. `amount: null` = TBD. `cat` is één van: `"vlucht"`, `"transport"`, `"accommodatie"`, `"activiteit"`. Elke kostenpost heeft een unieke string-ID (bijv. `"c1"`, `"c7b"`).
 
