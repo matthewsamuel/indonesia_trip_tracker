@@ -837,8 +837,8 @@ textarea.note::placeholder {
   padding-bottom: 6px;
 }
 .photo-slot {
-  flex: 0 0 156px;
-  height: 98px;
+  flex: 0 0 240px;
+  height: 150px;
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -1751,64 +1751,7 @@ ul.history .hdel:hover {
 
 /* ── COLLAPSIBLE ELEMENTS FOR TIMELINE & STEPPER ── */
 
-/* Daily details dropdown in indonesia-timeline.html */
-.timeline-details-dropdown {
-  margin: 12px 0 6px 0;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.01);
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-.timeline-details-dropdown[open] {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(0, 180, 216, 0.15);
-}
-.timeline-details-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  cursor: pointer;
-  user-select: none;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-soft);
-  outline: none;
-}
-.timeline-details-summary::-webkit-details-marker {
-  display: none;
-}
-.timeline-details-summary::marker {
-  display: none;
-}
-.timeline-details-summary:hover {
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
-}
-.timeline-details-summary .summary-badge {
-  background: rgba(0, 180, 216, 0.08);
-  color: var(--teal);
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 99px;
-  margin-left: auto;
-  margin-right: 12px;
-  font-weight: 600;
-}
-.timeline-details-summary .summary-chevron {
-  font-size: 10px;
-  transition: transform 0.2s ease;
-  opacity: 0.6;
-}
-.timeline-details-dropdown[open] .timeline-details-summary .summary-chevron {
-  transform: rotate(180deg);
-}
-.timeline-details-dropdown .details {
-  padding: 10px 14px 14px;
-  margin: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
+/* Daily details are now displayed statically in .details-content (styled at the end of the file) */
 
 /* Collapsible phase headers in indonesia-timeline.html */
 .fase-header.collapsible {
@@ -1863,6 +1806,407 @@ ul.history .hdel:hover {
 .simple-step.collapsed .simple-step-companions-container,
 .simple-step.collapsed .stepper-photos {
   display: none !important;
+}
+
+/* ── REISCHEMA UPGRADE & HERSTRUCTURERING ── */
+
+/* Timeline controls bar style */
+.timeline-controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 20px;
+  backdrop-filter: blur(10px);
+}
+.view-toggles, .expand-collapse-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.control-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 4px;
+}
+.control-btn {
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-soft);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+}
+.control-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+.control-btn.active {
+  background: var(--teal-soft);
+  border-color: rgba(0, 180, 216, 0.35);
+  color: #fff;
+  box-shadow: 0 0 10px var(--teal-glow);
+}
+.control-btn.secondary {
+  font-size: 12px;
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+.control-btn.secondary:hover {
+  border-style: solid;
+  border-color: var(--border-hover);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Phase header upgrades */
+.fase-header.collapsible {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
+  margin-top: 48px;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+.fase-header.collapsible:hover {
+  border-bottom-color: var(--phase-color);
+  background: rgba(255, 255, 255, 0.02);
+}
+.fase-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fase-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+.fase-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  margin-right: 16px;
+}
+.fase-days, .fase-dates, .fase-cost {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  color: var(--text-soft);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.fase-cost {
+  color: var(--teal);
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .fase-stats {
+    display: none; /* Hide stats in header on mobile to avoid overflow */
+  }
+}
+
+/* Timeline Left Date Upgrades */
+.timeline-item .when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 4px;
+}
+.timeline-item .when .day-number {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--phase-color);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+.timeline-item .when .date-range {
+  font-size: 12px;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.timeline-item .when .dur {
+  font-size: 10.5px;
+  color: var(--teal);
+  background: var(--teal-soft);
+  border: 1px solid rgba(0, 180, 216, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+/* Timeline node oplichting */
+.timeline-node::after {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  background: var(--bg) !important;
+  box-shadow: none !important;
+  transition: all 0.25s ease !important;
+}
+.timeline-item:hover .timeline-node::after {
+  border-color: var(--phase-color) !important;
+  background: var(--phase-color) !important;
+  box-shadow: 0 0 10px var(--phase-color) !important;
+  transform: scale(1.25) !important;
+}
+
+/* Timeline cards: glassmorphism, nice spacing and borders */
+.item-card {
+  background: rgba(13, 20, 36, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2) !important;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+  padding: 18px 22px !important;
+}
+.timeline-item:hover .item-card {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
+}
+.item-title-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.item-title-wrapper h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.35;
+}
+
+/* Details content container style (always open) */
+.details-content {
+  margin: 14px 0 8px 0 !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 10px !important;
+  padding: 14px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Card sections style */
+.card-section {
+  padding-left: 12px;
+  border-left: 3px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 4px;
+}
+.card-section.transport-section { border-left-color: #4cc9f0; }
+.card-section.stay-section { border-left-color: #00b4d8; }
+.card-section.program-section { border-left-color: #4ad66d; }
+
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.transport-list, .stay-list, .program-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.transport-list li, .stay-list li, .program-list li {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.45;
+  position: relative;
+  padding-left: 12px;
+}
+.transport-list li::before { content: "•"; color: #4cc9f0; position: absolute; left: 0; font-weight: bold; }
+.stay-list li::before { content: "•"; color: #00b4d8; position: absolute; left: 0; font-weight: bold; }
+.program-list li::before { content: "•"; color: #4ad66d; position: absolute; left: 0; font-weight: bold; }
+
+/* Tips box styling */
+.tips-box {
+  background: rgba(247, 127, 0, 0.06);
+  border: 1px solid rgba(247, 127, 0, 0.15);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 4px;
+}
+.tips-box-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f77f00;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.tips-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tips-list li {
+  font-size: 12.5px;
+  color: #ffe3d1;
+  line-height: 1.4;
+  position: relative;
+  padding-left: 16px;
+}
+.tips-list li::before {
+  content: "💡";
+  position: absolute;
+  left: 0;
+  font-size: 11px;
+  top: 1px;
+}
+
+/* Airbnb Booking Link button */
+.airbnb-btn-link {
+  font-size: 10.5px;
+  text-decoration: none;
+  background: rgba(200, 86, 125, 0.1);
+  border: 1px solid rgba(200, 86, 125, 0.25);
+  color: #c8567d !important;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.airbnb-btn-link:hover {
+  background: #c8567d;
+  color: #fff !important;
+  border-color: #c8567d;
+}
+
+/* Notes Textarea Upgrade (Sticky Note Style) */
+textarea.note {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 183, 3, 0.02) !important;
+  border: 1px dashed rgba(255, 183, 3, 0.12) !important;
+  border-left: 3px solid #ffb703 !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  color: #ffe8b5 !important;
+  transition: all 0.2s ease !important;
+  padding: 8px 12px !important;
+}
+textarea.note:focus {
+  background: rgba(255, 183, 3, 0.05) !important;
+  border-color: #ffb703 !important;
+  border-left: 3px solid #ffb703 !important;
+  box-shadow: 0 0 10px rgba(255, 183, 3, 0.08) !important;
+  color: #fff !important;
+}
+textarea.note::placeholder {
+  color: rgba(255, 183, 3, 0.25) !important;
+}
+
+/* Compact view badges styling */
+.compact-badges {
+  display: none;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.c-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: default;
+}
+
+/* Compact view triggers */
+.timeline-container.compact .compact-badges {
+  display: flex;
+}
+.timeline-container.compact .details-content,
+.timeline-container.compact .photo-strip-label,
+.timeline-container.compact .photo-strip,
+.timeline-container.compact .costs,
+.timeline-container.compact .item-foot {
+  display: none !important;
+}
+.timeline-container.compact .timeline-item {
+  padding: 10px 0 !important;
+}
+.timeline-container.compact .item-card {
+  padding: 10px 14px !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .timeline-item .when {
+    flex-direction: row !important;
+    align-items: baseline !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+  }
+  .timeline-item .when .day-number {
+    font-size: 13.5px !important;
+  }
+  .timeline-item .when .date-range {
+    font-size: 11.5px !important;
+  }
+  .timeline-item .when .dur {
+    margin-top: 0 !important;
+    margin-left: auto !important;
+  }
+  .timeline-controls-bar {
+    padding: 10px 14px !important;
+    gap: 12px !important;
+  }
+  .view-toggles, .expand-collapse-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .control-btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 11.5px !important;
+    padding: 6px 10px !important;
+  }
 }
 
 

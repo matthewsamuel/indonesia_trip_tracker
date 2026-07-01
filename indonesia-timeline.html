@@ -31,6 +31,19 @@
   <!-- PHASE NAVIGATION -->
   <div class="fase-nav-container" id="phaseNav"></div>
 
+  <!-- TIMELINE CONTROLS -->
+  <div class="timeline-controls-bar">
+    <div class="view-toggles">
+      <span class="control-label">Weergave:</span>
+      <button class="control-btn" id="viewExpandedBtn" onclick="setViewMode('expanded')">✨ Uitgebreid</button>
+      <button class="control-btn" id="viewCompactBtn" onclick="setViewMode('compact')">📱 Compact</button>
+    </div>
+    <div class="expand-collapse-controls">
+      <button class="control-btn secondary" onclick="toggleAllDetails(true)">➕ Alles uitklappen</button>
+      <button class="control-btn secondary" onclick="toggleAllDetails(false)">➖ Alles inklappen</button>
+    </div>
+  </div>
+
   <!-- TIMELINE CONTAINER -->
   <section class="panel">
     <h2>📅 Chronologisch Reisschema</h2>
@@ -75,7 +88,7 @@ const COSTS = {
   c11: { label: "Vlucht Java → Denpasar → Labuan Bajo", cat: "vlucht", amount: null },
   c12: { label: "Overnachting Labuan Bajo (3n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1202849662764744783" },
   c13: { label: "Overnachting Ruteng (2n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/50427330" },
-  c14: { label: "Overnachting Labuan Bajo, terugkeer (3n)", cat: "accommodatie", amount: null },
+  c14: { label: "Overnachting Labuan Bajo, terugkeer (3n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/1202849662764744783" },
   c15: { label: "Vlucht Labuan Bajo → Bali", cat: "vlucht", amount: null },
   c16: { label: "Bali villa (26-29 sep)", cat: "accommodatie", amount: 101 },
   c17: { label: "Terugvlucht Bali → huis", cat: "vlucht", amount: null },
@@ -204,20 +217,65 @@ const TRIP = [
     details:["Internationale vlucht vanuit Bali Denpasar terug naar Brussel","Einde van een fantastische reis!"],
     costs:["c17"], map:["bali"] },
 
-  { id:"t24", fase:"java", start:"2026-09-13", end:"2026-09-13",
-    title:"Terugvlucht naar huis (Arne, Jens, Maurice, Mathias, Willem, Kasper)",
-    details:["Internationale vlucht van Java (Surabaya of Jakarta) terug naar Brussel","Einde van de reis voor de jongens"],
-    costs:[], map:["malang"] },
+  { id:"t27", fase:"heen", start:"2026-08-29", end:"2026-08-30",
+    title:"Brussel → Singapore → Jakarta (Kamiel, Eliott, Kasper, Willem)",
+    details:["SQ 303: BRU 11:45 (29/08) → SIN 06:40 (30/08)","Layover 2u25 in Changi (Singapore)","SQ 956: SIN 09:05 → CGK 09:55 (30/08), aankomst Jakarta Soekarno Intl T3","Beide segmenten: Airbus A350-900, Economy"],
+    costs:[], map:["singapore","jakarta"] },
 
-  { id:"t25", fase:"bali", start:"2026-09-13", end:"2026-09-20",
-    title:"Bali — verlenging (Eliott & Kamiel)",
-    details:["Binnenlandse vlucht van Java naar Bali Denpasar","Chillen, zonnen en feesten op Bali samen met Kamiel/Eliott"],
-    costs:[], map:["malang","bali"] },
+  { id:"t28", fase:"heen", start:"2026-08-30", end:"2026-08-31",
+    title:"Jakarta — aankomst & acclimatiseren (Kamiel, Eliott, Kasper, Willem)",
+    details:["Aankomst 30/08 om 09:55 op Jakarta Soekarno Intl T3","Twee nachten Jakarta (30 en 31 aug): stad verkennen"],
+    costs:[], map:["jakarta"] },
 
-  { id:"t26", fase:"bali", start:"2026-09-20", end:"2026-09-20",
-    title:"Terugvlucht Bali → huis (Eliott & Kamiel)",
-    details:["Internationale vlucht van Bali Denpasar terug naar Brussel","Einde van de reis voor Eliott en Kamiel"],
+  { id:"t29", fase:"sumatra", start:"2026-09-01", end:"2026-09-01",
+    title:"Jakarta → Medan (Kamiel, Eliott, Kasper, Willem)",
+    details:["Vlucht Jakarta (CGK) → Medan","Ontmoeting met Matthew & Arne in Medan","Aansluitend met alle 6 man taxi naar Ketambe (±7-8u)"],
+    costs:["c6"], map:["jakarta","medan"] },
+
+  { id:"t30", fase:"bali", start:"2026-09-13", end:"2026-09-13",
+    title:"Kawah Ijen → ferry → Bali (alle jongens)",
+    details:["Na de Kawah Ijen-hike taxi naar Ketapang","Ferry naar Gilimanuk (Bali)","Doorrijden naar Canggu"],
+    costs:[], map:["banyuwangi","bali"] },
+
+  { id:"t31", fase:"bali", start:"2026-09-13", end:"2026-09-14",
+    title:"Bali dag 1–2 — Canggu",
+    details:["Surfen: Batu Bolong Beach (zachte golven, ideaal voor beginners), Echo Beach (iets pittiger), Old Man's (relaxte sfeer)","Zonsondergang bij beachclubs: Old Man's, La Brisa of Finns","Optioneel stop: Tanah Lot klieftempel in zee"],
     costs:[], map:["bali"] },
+
+  { id:"t32", fase:"bali", start:"2026-09-14", end:"2026-09-15",
+    title:"Bali dag 2–3 — Uluwatu",
+    details:["Uluwatu Temple: klieftempel + Kecak dance bij zonsondergang","Surfen op Uluwatu/Padang Padang (gevorderde reef breaks) en Bingin & Impossibles","Single Fin: legendarische sunset-bar boven de golven","Suluban (Blue Point) strand bereikbaar via een grot","Bingin Beach: chille vibe met warungs en cliffside cafés"],
+    costs:[], map:["bali"] },
+
+  { id:"t33", fase:"bali", start:"2026-09-16", end:"2026-09-16",
+    title:"Bali dag 4 — Nusa Penida",
+    details:["Vroege boot vanaf Sanur","Kelingking Beach: iconisch T-rex-uitzicht, eventueel afdalen","Broken Beach: natuurlijke rotsboog boven turquoise water","Angel's Billabong: natuurlijk zwembad in de rotsen","Snorkelen met manta rays (beroemde mantapunt)","Crystal Bay voor extra snorkelen"],
+    costs:[], map:["bali"] },
+
+  { id:"t34", fase:"bali", start:"2026-09-17", end:"2026-09-17",
+    title:"Bali dag 5 — Ubud",
+    details:["Tegalalang Rice Terrace: iconische groene terrassen met swings","Tirta Empul: heilige waterbrontempel, reinigingsritueel mogelijk","Monkey Forest: bosreservaat met apen en oude tempels","Campuhan Ridge Walk bij zonsopgang","Optioneel: Balinese kookles met marktbezoek of Tegenungan waterval"],
+    costs:[], map:["bali"] },
+
+  { id:"t35", fase:"bali", start:"2026-09-18", end:"2026-09-18",
+    title:"Bali dag 6 — Amed & Tulamben",
+    details:["USAT Liberty Wreck: wereldberoemde wrakduik, ook goed te snorkelen","Coral Garden: snorkelspot met kleurrijk rif vlak bij de kust","Freediving sessie: Amed staat bekend om intro's en cursussen","Jemeluk Bay voor een ontspannen snorkelsessie","Uitzicht op Mount Agung vanaf rustige stranden"],
+    costs:[], map:["bali"] },
+
+  { id:"t36", fase:"bali", start:"2026-09-19", end:"2026-09-19",
+    title:"Bali dag 7 — Sidemen & Mount Agung",
+    details:["Sidemen rijstterrassen: rustige wandeling, minder toeristisch dan Ubud","Besakih Temple: moedertempel van Bali, aan de voet van Agung","Mount Agung sunrise hike: middernacht vertrek, 4–6u klimmen, episch uitzicht op Lombok","Verplichte lokale gids (max. 3 pp/gids, verplicht sinds 2025)","Herstel 's middags, eventueel hot springs"],
+    costs:[], map:["bali"] },
+
+  { id:"t37", fase:"bali", start:"2026-09-19", end:"2026-09-20",
+    title:"Bali → Vietnam (Mathias, Willem, Momo) — TBD",
+    details:["Na het volledige 7-daagse programma vliegen Mathias, Willem en Momo door naar Vietnam","Exacte vluchtdatum en bestemming nog te bevestigen"],
+    costs:[], map:["bali"], openNote: true },
+
+  { id:"t38", fase:"bali", start:"2026-09-19", end:"2026-09-20",
+    title:"Terugvlucht Bali → Brussel (Arne, Eliott, Jens, Kamiel, Kasper) — TBD",
+    details:["Alle 5 vliegen terug naar Brussel na afloop van het volledige 7-daagse Bali-programma","Exacte datum/tijd TBD"],
+    costs:[], map:["bali"], openNote: true }
 ];
 
 /* ---------------- HELPERS ---------------- */
@@ -241,6 +299,135 @@ const STATUS_LABEL = { voltooid:"voltooid", bezig:"nu bezig", binnenkort:"binnen
 
 function ls_get(key, fallback){ try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); } catch(e){ return fallback; } }
 function ls_set(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+/* ── NEW ITINERARY HELPERS ── */
+const TRIP_START_DATE = "2026-08-28";
+
+function getTripDayRange(startStr, endStr) {
+  const tripStart = new Date(TRIP_START_DATE + "T00:00:00");
+  const s = new Date(startStr + "T00:00:00");
+  const e = new Date(endStr + "T00:00:00");
+  const startDay = Math.round((s - tripStart) / 86400000) + 1;
+  const endDay = Math.round((e - tripStart) / 86400000) + 1;
+  return startDay === endDay ? `Dag ${startDay}` : `Dag ${startDay} – ${endDay}`;
+}
+
+function parseDetails(detailsArray) {
+  const transport = [];
+  const stay = [];
+  const tips = [];
+  const activities = [];
+
+  detailsArray.forEach(d => {
+    const lower = d.toLowerCase();
+    
+    // Tips
+    if (lower.startsWith("tip:") || lower.startsWith("let op:")) {
+      tips.push(d.replace(/^(tip:|let op:)\s*/i, ""));
+      return;
+    }
+    
+    // Transport & Flights
+    if (
+      lower.includes("vlucht") || 
+      lower.includes("vliegen") || 
+      lower.includes("overstap") || 
+      lower.includes("reistijd") || 
+      lower.includes("trein") || 
+      lower.includes("nachttrein") || 
+      lower.includes("taxi") || 
+      lower.includes("minibus") || 
+      lower.includes("transfer") || 
+      lower.includes("rit van") || 
+      lower.includes("mrt") || 
+      lower.includes("ov-kaart") ||
+      lower.includes("tg935") ||
+      lower.includes("tg403") ||
+      lower.includes("lion air") ||
+      lower.includes("denpasar") ||
+      lower.includes("brussel → bangkok")
+    ) {
+      transport.push(d);
+      return;
+    }
+    
+    // Stay & Accommodations
+    if (
+      lower.includes("hotel") || 
+      lower.includes("guesthouse") || 
+      lower.includes("villa") || 
+      lower.includes("overnachting") || 
+      lower.includes("inchecken") || 
+      lower.includes("check-in") || 
+      lower.includes("verblijf") ||
+      lower.includes("stay")
+    ) {
+      stay.push(d);
+      return;
+    }
+    
+    // Activities / Program
+    activities.push(d);
+  });
+
+  return { transport, stay, tips, activities };
+}
+
+const TRIP_AIRBNB_LINKS = {
+  t12: "https://www.airbnb.com/rooms/1420571119911855020", // Banyuwangi (Bromo/Ijen)
+  t13: "https://www.airbnb.com/rooms/1420571119911855020", // Banyuwangi (Bromo/Ijen)
+  t14: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
+  t15: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
+  t16: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
+  t17: "https://www.airbnb.com/rooms/50427330",             // Ruteng
+  t18: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
+  t19: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
+  t20: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
+};
+
+function getAccommodationUrl(item) {
+  if (TRIP_AIRBNB_LINKS[item.id]) {
+    return TRIP_AIRBNB_LINKS[item.id];
+  }
+  for (const cid of item.costs) {
+    const cost = COSTS[cid];
+    if (cost && cost.cat === "accommodatie" && cost.url) {
+      return cost.url;
+    }
+  }
+  return null;
+}
+
+function getPhaseStats(faseKey, tripIds) {
+  const phaseItems = TRIP.filter(item => item.fase === faseKey && tripIds.includes(item.id));
+  if (phaseItems.length === 0) return null;
+  
+  let minDate = phaseItems[0].start;
+  let maxDate = phaseItems[0].end;
+  let totalCost = 0;
+  
+  phaseItems.forEach(item => {
+    if (item.start < minDate) minDate = item.start;
+    if (item.end > maxDate) maxDate = item.end;
+    
+    item.costs.forEach(cid => {
+      const v = costValue(cid);
+      if (v !== null) {
+        totalCost += v;
+      }
+    });
+  });
+  
+  const tripStart = new Date(minDate + "T00:00:00");
+  const tripEnd = new Date(maxDate + "T00:00:00");
+  const days = Math.round((tripEnd - tripStart) / 86400000) + 1;
+  
+  return {
+    dateRange: fmtRange(minDate, maxDate),
+    days,
+    totalCost: totalCost > 0 ? totalCost.toFixed(2) : null
+  };
+}
 
 function costValue(id){
   const stored = ls_get("cost_"+id, undefined);
@@ -268,14 +455,14 @@ const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice
 const PERSON_TRIPS = {
   matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
   hinke:   ["t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
-  eliott:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
-  jens:    ["t7", "t8", "t9", "t10", "t24"],
-  kamiel:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t25", "t26"],
-  maurice: ["t7", "t8", "t9", "t10", "t24"],
-  kasper:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
-  willem:  ["t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t24"],
-  mathias: ["t7", "t8", "t9", "t10", "t24"]
+  arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  jens:    ["t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  maurice: ["t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
+  kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
+  mathias: ["t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
 };
 
 /* ---------------- RENDER: phase nav ---------------- */
@@ -326,6 +513,36 @@ function scrollToFase(faseKey) {
 }
 
 /* ---------------- RENDER: timeline ---------------- */
+function getCompactBadgesHtml(item, parsed) {
+  let html = `<div class="compact-badges">`;
+  const isFlightItem = isFlight(item);
+  if (isFlightItem || parsed.transport.length > 0) {
+    html += `<span class="c-badge transport" title="Vervoer/Vlucht">✈️</span>`;
+  }
+  if (parsed.stay.length > 0) {
+    html += `<span class="c-badge stay" title="Verblijf/Overnachting">🏨</span>`;
+  }
+  if (parsed.activities.length > 0) {
+    html += `<span class="c-badge activity" title="Activiteit">🥾</span>`;
+  }
+  if (parsed.tips.length > 0) {
+    html += `<span class="c-badge tip" title="Handige tip">💡</span>`;
+  }
+  if (item.costs.length > 0) {
+    html += `<span class="c-badge cost" title="Kosten gekoppeld">💰</span>`;
+  }
+  const note = ls_get("note_"+item.id, "");
+  if (note && note.trim().length > 0) {
+    html += `<span class="c-badge note-icon" title="Notitie aanwezig">📝</span>`;
+  }
+  const photos = getPhotos(item.id);
+  if (photos.length > 0) {
+    html += `<span class="c-badge photos" title="Foto's">📸</span>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
 function renderTimeline(){
   const el = document.getElementById("timeline");
   const personKey = ls_get("selected_person", "matthew");
@@ -333,7 +550,8 @@ function renderTimeline(){
 
   let html = "";
   let lastFase = null;
-  for (const item of TRIP) {
+  const sortedTrips = [...TRIP].sort((a, b) => a.start.localeCompare(b.start));
+  for (const item of sortedTrips) {
     if (!tripIds.includes(item.id)) continue;
     if (item.fase !== lastFase) {
       if (lastFase !== null) {
@@ -341,10 +559,25 @@ function renderTimeline(){
       }
       const f = FASES[item.fase];
       const isCollapsed = ls_get("collapsed_fase_" + item.fase, false);
+      const stats = getPhaseStats(item.fase, tripIds);
+      let statsHtml = "";
+      if (stats) {
+        statsHtml = `
+        <div class="fase-stats">
+          <span class="fase-days">📅 ${stats.days} ${stats.days === 1 ? 'dag' : 'dagen'}</span>
+          <span class="fase-dates">(${stats.dateRange})</span>
+          ${stats.totalCost ? `<span class="fase-cost">💰 €${stats.totalCost}</span>` : ""}
+        </div>
+        `;
+      }
+      
       html += `
-      <div class="fase-header collapsible ${isCollapsed ? 'collapsed' : ''}" id="fase-${item.fase}" onclick="toggleFaseCollapse('${item.fase}')">
-        <span class="dot" style="color:${f.color}; background:${f.color}"></span>
-        <span>${f.label}</span>
+      <div class="fase-header collapsible ${isCollapsed ? 'collapsed' : ''}" id="fase-${item.fase}" onclick="toggleFaseCollapse('${item.fase}')" style="--phase-color: ${f.color}">
+        <div class="fase-title-group">
+          <span class="dot" style="color:${f.color}; background:${f.color}"></span>
+          <span class="fase-name">${f.label}</span>
+        </div>
+        ${statsHtml}
         <span class="fase-chevron">▼</span>
       </div>
       <div class="fase-items-container" id="fase-container-${item.fase}" style="display: ${isCollapsed ? 'none' : 'block'}">
@@ -355,45 +588,87 @@ function renderTimeline(){
     const note = ls_get("note_"+item.id, "");
     const nDays = Math.round((dateOf(item.end) - dateOf(item.start)) / 86400000) + 1;
     const durStr = nDays > 1 ? `<span class="dur">${nDays} dagen</span>` : "";
+    const dayRange = getTripDayRange(item.start, item.end);
     
-    // Collapsible daily details (bullets)
+    const parsed = parseDetails(item.details);
+    const compactBadgesHtml = getCompactBadgesHtml(item, parsed);
+
+    // Collapsible daily details (structured)
     let detailsHtml = "";
     if (item.details.length) {
+      const stayUrl = getAccommodationUrl(item);
+      
+      let transportHtml = parsed.transport.length ? `
+        <div class="card-section transport-section">
+          <div class="section-title">✈️ Vervoer &amp; Reisdetails</div>
+          <ul class="transport-list">
+            ${parsed.transport.map(t => `<li>${t}</li>`).join("")}
+          </ul>
+        </div>
+      ` : "";
+
+      let stayHtml = (parsed.stay.length || stayUrl) ? `
+        <div class="card-section stay-section">
+          <div class="section-title">
+            🏨 Verblijf &amp; Accommodatie
+            ${stayUrl ? `<a href="${stayUrl}" target="_blank" rel="noopener" class="airbnb-btn-link">🏠 Bekijk Airbnb →</a>` : ""}
+          </div>
+          ${parsed.stay.length ? `
+          <ul class="stay-list">
+            ${parsed.stay.map(s => `<li>${s}</li>`).join("")}
+          </ul>` : ""}
+        </div>
+      ` : "";
+
+      let activitiesHtml = parsed.activities.length ? `
+        <div class="card-section program-section">
+          <div class="section-title">🥾 Activiteiten &amp; Programma</div>
+          <ul class="program-list">
+            ${parsed.activities.map(a => `<li>${a}</li>`).join("")}
+          </ul>
+        </div>
+      ` : "";
+
+      let tipsHtml = parsed.tips.length ? `
+        <div class="tips-box">
+          <div class="tips-box-title">💡 Handige Tips &amp; Info</div>
+          <ul class="tips-list">
+            ${parsed.tips.map(t => `<li>${t}</li>`).join("")}
+          </ul>
+        </div>
+      ` : "";
+
       detailsHtml = `
-      <details class="timeline-details-dropdown">
-        <summary class="timeline-details-summary">
-          <span>📋 Programma &amp; details</span>
-          <span class="summary-badge">${item.details.length} ${item.details.length === 1 ? 'punt' : 'punten'}</span>
-          <span class="summary-chevron">▼</span>
-        </summary>
-        <ul class="details">
-          ${item.details.map(d=>`<li>${d}</li>`).join("")}
-        </ul>
-      </details>
+      <div class="details-content">
+        ${transportHtml}
+        ${stayHtml}
+        ${activitiesHtml}
+        ${tipsHtml}
+      </div>
       `;
     }
 
-    // Hide note text area if item represents a flight
-    const isFlightItem = isFlight(item);
-    const notesBlockHtml = isFlightItem ? "" : `
-      <div class="item-foot">
-        <textarea class="note" data-item="${item.id}" placeholder="${item.openNote ? 'Nog in te vullen — typ hier de plannen…' : 'Notitie toevoegen…'}">${note}</textarea>
-      </div>
-    `;
+    const f = FASES[item.fase];
 
     html += `
     <div class="timeline-item" id="${item.id}">
-      <div class="when">${fmtRange(item.start,item.end)}<span class="yr">2026</span>${durStr}</div>
-      <div class="timeline-node"></div>
+      <div class="when" style="--phase-color: ${f.color}">
+        <span class="day-number">${dayRange}</span>
+        <span class="date-range">${fmtRange(item.start,item.end)}</span>
+        ${durStr}
+      </div>
+      <div class="timeline-node" style="--phase-color: ${f.color}"></div>
       <div class="item-card">
         <div class="item-head">
-          <h3>${item.title}</h3>
+          <div class="item-title-wrapper">
+            <h3>${item.title}</h3>
+            ${compactBadgesHtml}
+          </div>
           <span class="badge ${st}">${STATUS_LABEL[st]}</span>
         </div>
         ${detailsHtml}
         ${photoStripHtml(item)}
         ${item.costs.length ? `<div class="costs">${item.costs.map(cid => costLineHtml(cid)).join("")}</div>` : ""}
-        ${notesBlockHtml}
       </div>
     </div>`;
   }
@@ -411,9 +686,9 @@ function renderTimeline(){
   el.querySelectorAll("input.booked-cb").forEach(cb => {
     cb.addEventListener("change", () => { ls_set("booked_"+cb.dataset.cost, cb.checked); });
   });
-  el.querySelectorAll("textarea.note").forEach(ta => {
-    ta.addEventListener("input", () => ls_set("note_"+ta.dataset.item, ta.value));
-  });
+
+  // Keep view mode state
+  updateViewModeUI();
 }
 
 /* ---------------- PHOTOS ---------------- */
@@ -472,7 +747,7 @@ function photoStripHtml(item){
   const slots = photos.map(src =>
     `<div class="photo-slot" onclick="openLightbox('${src}')"><img src="${src}" alt="foto" loading="lazy"></div>`
   );
-  return `<p class="photo-strip-label">Foto's</p><div class="photo-strip">${slots.join("")}</div>`;
+  return `<div class="photo-strip">${slots.join("")}</div>`;
 }
 
 function costLineHtml(cid){
@@ -539,11 +814,48 @@ function selectPerson(key) {
   renderTimeline();
 }
 
+/* ── VIEW MODE & EXPANSION CONTROL ── */
+function setViewMode(mode) {
+  ls_set("timeline_view_mode", mode);
+  updateViewModeUI();
+}
+
+function updateViewModeUI() {
+  const mode = ls_get("timeline_view_mode", "expanded");
+  const container = document.getElementById("timeline");
+  if (!container) return;
+  
+  if (mode === "compact") {
+    container.classList.add("compact");
+    document.getElementById("viewCompactBtn")?.classList.add("active");
+    document.getElementById("viewExpandedBtn")?.classList.remove("active");
+  } else {
+    container.classList.remove("compact");
+    document.getElementById("viewCompactBtn")?.classList.remove("active");
+    document.getElementById("viewExpandedBtn")?.classList.add("active");
+  }
+}
+
+function toggleAllDetails(open) {
+  ls_set("details_expanded_default", open);
+  
+  const personKey = ls_get("selected_person", "matthew");
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const activeFases = new Set(TRIP.filter(i => tripIds.includes(i.id)).map(i => i.fase));
+  
+  activeFases.forEach(faseKey => {
+    ls_set("collapsed_fase_" + faseKey, !open);
+  });
+  
+  renderTimeline();
+}
+
 /* ---------------- INIT ---------------- */
 function init() {
   renderPersonSelector();
   renderPhaseNav();
   renderTimeline();
+  updateViewModeUI();
   
   if (window.location.hash) {
     setTimeout(() => {

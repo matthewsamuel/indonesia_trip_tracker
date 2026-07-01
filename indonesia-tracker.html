@@ -277,7 +277,7 @@ const COSTS = {
   c11: { label: "Vlucht Java → Denpasar → Labuan Bajo", cat: "vlucht", amount: null },
   c12: { label: "Overnachting Labuan Bajo (3n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1202849662764744783" },
   c13: { label: "Overnachting Ruteng (2n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/50427330" },
-  c14: { label: "Overnachting Labuan Bajo, terugkeer (3n)", cat: "accommodatie", amount: null },
+  c14: { label: "Overnachting Labuan Bajo, terugkeer (3n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/1202849662764744783" },
   c15: { label: "Vlucht Labuan Bajo → Bali", cat: "vlucht", amount: null },
   c16: { label: "Bali villa (26-29 sep)", cat: "accommodatie", amount: 101 },
   c17: { label: "Terugvlucht Bali → huis", cat: "vlucht", amount: null },
@@ -805,7 +805,7 @@ function renderRouteStepper() {
 
   const personKey = ls_get("selected_person", "matthew");
   const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+  const personTrips = TRIP.filter(i => tripIds.includes(i.id)).sort((a, b) => a.start.localeCompare(b.start));
 
   // Group trip items by phase
   const phases = [];
@@ -997,7 +997,7 @@ function renderDestinationsGallery() {
 
   const personKey = ls_get("selected_person", "matthew");
   const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+  const personTrips = TRIP.filter(i => tripIds.includes(i.id)).sort((a, b) => a.start.localeCompare(b.start));
 
   const phases = [];
   const seen = new Set();

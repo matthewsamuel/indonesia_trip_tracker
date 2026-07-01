@@ -189,6 +189,24 @@
     border-color: rgba(255,255,255,0.12);
     background: rgba(255,255,255,0.03);
   }
+  .transport-block-item.clickable-flight {
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  }
+  .transport-block-item.clickable-flight:hover {
+    border-color: var(--teal);
+    background: rgba(0, 180, 216, 0.06);
+    box-shadow: 0 0 12px rgba(0, 180, 216, 0.15);
+    transform: translateY(-1px);
+  }
+  .clickable-flight-tag {
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .clickable-flight-tag:hover {
+    background: var(--teal-soft) !important;
+    border-color: var(--teal) !important;
+    color: #fff !important;
+  }
   .tbi-icon {
     width: 44px; height: 44px;
     border-radius: 10px;
@@ -450,6 +468,103 @@
   .tbi-operator-link:hover {
     filter: brightness(1.15);
     text-decoration: underline !important;
+  }
+
+  /* ── SCHEDULING TAGS ── */
+  .tbi-sched-tags {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .tbi-sched-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 11.5px;
+  }
+  .tbi-sched-tag.vertrek {
+    border-left: 3px solid #60a5fa;
+  }
+  .tbi-sched-tag.duur {
+    border-left: 3px solid #fbbf24;
+  }
+  .tbi-sched-tag.aankomst {
+    border-left: 3px solid #f472b6;
+  }
+  .sched-icon {
+    font-size: 12px;
+  }
+  .sched-label {
+    color: var(--text-soft);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .sched-val {
+    color: #fff;
+    font-weight: 700;
+  }
+  .sched-be-val {
+    color: #a5b4fc;
+    font-size: 10px;
+    margin-left: 2px;
+    font-weight: 500;
+  }
+
+  /* ── SHARING AVATARS ── */
+  .tbi-sharing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    background: rgba(255,255,255,0.02);
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px dashed rgba(255,255,255,0.05);
+    width: fit-content;
+  }
+  .tbi-sharing-label {
+    font-size: 10.5px;
+    color: var(--text-soft);
+    font-weight: 500;
+  }
+  .tbi-sharing-avatars {
+    display: flex;
+    align-items: center;
+  }
+  .tbi-sharing-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #131826;
+    margin-left: -6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, z-index 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tbi-sharing-avatar:first-child {
+    margin-left: 0;
+  }
+  .tbi-sharing-avatar:hover {
+    transform: translateY(-2px) scale(1.1);
+    z-index: 10;
+  }
+  .tbi-sharing-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
   }
 </style>
 </head>
@@ -989,40 +1104,40 @@ const TRANSPORT_LEGS = [
     persons:["arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
   },
   {
-    id:"tl16", type:"bus_auto", icon:"⛴️",
+    id:"tl16", type:"bus_auto", icon:" Ferry icon",
     date:"2026-09-13", dateD:"13", dateM:"sep",
     fromIATA:"BWX", toIATA:"DPS",
     fromLabel:"Banyuwangi (Ketapang)", toLabel:"Bali Gilimanuk → Kuta",
-    title:"Banyuwangi → Bali (ferry + bus, Eliott & Kamiel)",
+    title:"Banyuwangi → Bali (ferry + bus, alle jongens)",
     sub:"Ferry Ketapang→Gilimanuk + bus naar Bali centrum",
     operator:"ASDP Ferry + Bus", flightNum:null,
     terminal:null, times:"Middag", cost_id:null, ref:null,
     fromPt:"banyuwangi", toPt:"bali", qx:null, qy:null,
-    persons:["eliott","kamiel","willem"]
-  },
-  {
-    id:"tl17", type:"int_vlucht", icon:"✈️",
-    date:"2026-09-13", dateD:"13", dateM:"sep",
-    fromIATA:"SUB", toIATA:"BRU",
-    fromLabel:"Surabaya / Banyuwangi", toLabel:"Brussel (thuis)",
-    title:"Terugvlucht jongens naar huis",
-    sub:"Diverse airlines · Arne, Jens, Maurice, Mathias, Kasper",
-    operator:"Diverse airlines", flightNum:"—",
-    terminal:null, times:"TBD", cost_id:null, ref:null,
-    fromPt:"banyuwangi", toPt:"bru", qx:340, qy:80,
-    persons:["arne","jens","maurice","mathias","kasper"]
+    persons:["arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
   },
   {
     id:"tl18", type:"int_vlucht", icon:"✈️",
     date:"2026-09-20", dateD:"20", dateM:"sep",
     fromIATA:"DPS", toIATA:"BRU",
     fromLabel:"Bali Denpasar", toLabel:"Brussel (thuis)",
-    title:"Bali → Brussel (terugvlucht Eliott, Kamiel & Willem)",
+    title:"Bali → Brussel (terugvlucht)",
     sub:"Diverse airlines · na week Bali",
     operator:"Diverse airlines", flightNum:"—",
     terminal:null, times:"TBD", cost_id:null, ref:null,
     fromPt:"bali", toPt:"bru", qx:350, qy:55,
-    persons:["eliott","kamiel","willem"]
+    persons:["arne","eliott","jens","kamiel","kasper"]
+  },
+  {
+    id:"tl21", type:"int_vlucht", icon:"✈️",
+    date:"2026-09-20", dateD:"20", dateM:"sep",
+    fromIATA:"DPS", toIATA:"SGN",
+    fromLabel:"Bali Denpasar", toLabel:"Vietnam (Saigon)",
+    title:"Bali → Vietnam (verlenging Momo, Mathias & Willem)",
+    sub:"Diverse airlines · doorreis naar Vietnam",
+    operator:"Diverse airlines", flightNum:"—",
+    terminal:null, times:"TBD", cost_id:null, ref:null,
+    fromPt:"bali", toPt:"bru", qx:350, qy:55,
+    persons:["maurice","mathias","willem"]
   }
 ];
 
@@ -1445,6 +1560,94 @@ function renderLegTooltip(tooltip, leg, cx, cy){
 /* ══════════════════════════════════════════════════════════
    TRANSPORT BLOK OVERZICHT
    ══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   HELPERS VOOR VERTREK, DUUR, AANKOMST & SHARING
+   ══════════════════════════════════════════════════════════ */
+function getLegDuration(leg) {
+  if (leg.duration) return leg.duration;
+  if (leg.id === "tl1") return "16u 15m";
+  if (leg.id === "tl19") return "12–14u";
+  if (leg.id === "tl11" || leg.id === "tl12") return "3u";
+  if (leg.id === "tl15") return "12u";
+  if (leg.id === "tl16") return "6–8u";
+  
+  const sub = leg.sub || "";
+  const match = sub.match(/±\s*(\d+(?:[–-]\d+)?\s*(?:u|uur|h)\s*(?:\d+\s*m)?)/);
+  if (match) return match[1];
+  
+  if (leg.flightNum && FLIGHT_DB[leg.flightNum]) {
+    return FLIGHT_DB[leg.flightNum].duration;
+  }
+  
+  if (sub.includes("volledige dag")) return "1 dag";
+  
+  return "TBD";
+}
+
+function getVertrekAankomst(leg) {
+  let depLocal = "—";
+  let arrLocal = "—";
+  let depBE = "";
+  let arrBE = "";
+
+  const times = leg.times || "";
+  if (times && times !== "TBD") {
+    if (times.includes("→")) {
+      const parts = times.split("→");
+      depLocal = parts[0].trim();
+      arrLocal = parts[1].trim();
+    } else {
+      depLocal = times;
+      arrLocal = "—";
+    }
+  } else {
+    depLocal = "TBD";
+    arrLocal = "TBD";
+  }
+
+  // Calculate BE times for flights
+  if ((leg.type === "int_vlucht" || leg.type === "bin_vlucht") && times && times !== "TBD" && times.includes("→")) {
+    const match = times.match(/^(\d{2}):(\d{2})\s*→\s*(\d{2}):(\d{2})(\+\d+)?$/);
+    if (match) {
+      const fromOffset = AIRPORT_OFFSETS[leg.fromIATA];
+      const toOffset = AIRPORT_OFFSETS[leg.toIATA];
+      if (fromOffset !== undefined && toOffset !== undefined) {
+        const h1 = parseInt(match[1]);
+        const m1 = parseInt(match[2]);
+        const h2 = parseInt(match[3]);
+        const m2 = parseInt(match[4]);
+        const dayOffset = match[5] ? parseInt(match[5]) : 0;
+
+        const depHrsDiff = fromOffset - 2;
+        let depMinTotal = h1 * 60 + m1 - depHrsDiff * 60;
+        let depDayOffset = Math.floor(depMinTotal / 1440);
+        depMinTotal = (depMinTotal % 1440 + 1440) % 1440;
+        const depH = Math.floor(depMinTotal / 60);
+        const depM = depMinTotal % 60;
+
+        const arrHrsDiff = toOffset - 2;
+        let arrMinTotal = h2 * 60 + m2 - arrHrsDiff * 60;
+        let arrDayOffset = Math.floor(arrMinTotal / 1440) + dayOffset;
+        arrMinTotal = (arrMinTotal % 1440 + 1440) % 1440;
+        const arrH = Math.floor(arrMinTotal / 60);
+        const arrM = arrMinTotal % 60;
+
+        const pad = (n) => String(n).padStart(2, '0');
+        const formatDayOffset = (days) => (days === 0 ? "" : (days > 0 ? "+" : "") + days);
+
+        if (depHrsDiff !== 0) {
+          depBE = `${pad(depH)}:${pad(depM)}${formatDayOffset(depDayOffset)}`;
+        }
+        if (arrHrsDiff !== 0) {
+          arrBE = `${pad(arrH)}:${pad(arrM)}${formatDayOffset(arrDayOffset)}`;
+        }
+      }
+    }
+  }
+
+  return { depLocal, arrLocal, depBE, arrBE };
+}
+
 function renderBlockView(){
   const personKey=ls_get("selected_person","matthew");
   const myLegs=TRANSPORT_LEGS.filter(l=>l.persons.includes(personKey));
@@ -1471,12 +1674,78 @@ function renderBlockView(){
 
     const operatorUrl = getOperatorUrl(leg.operator);
     const operatorLinkHtml = operatorUrl 
-      ? `<a href="${operatorUrl}" target="_blank" class="tbi-tag ${cls} tbi-operator-link" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px;cursor:pointer;">🔗 Website</a>`
+      ? `<a href="${operatorUrl}" target="_blank" class="tbi-tag ${cls} tbi-operator-link" onclick="event.stopPropagation()" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px;cursor:pointer;">🔗 Website</a>`
       : "";
 
-    const beTime = formatBelgianTimes(leg);
+    // Calculate times
+    const sched = getVertrekAankomst(leg);
+    const duration = getLegDuration(leg);
+    const depIcon = leg.type.includes("vlucht") ? "🛫" : "📍";
+    const arrIcon = leg.type.includes("vlucht") ? "🛬" : "🏁";
 
-    return `<div class="transport-block-item">
+    const schedTagsHtml = `
+      <div class="tbi-sched-tags">
+        <div class="tbi-sched-tag vertrek" title="Vertrektijd">
+          <span class="sched-icon">${depIcon}</span>
+          <span class="sched-label">Vertrek:</span>
+          <span class="sched-val">${sched.depLocal}</span>
+          ${sched.depBE ? `<span class="sched-be-val">(${sched.depBE} BE)</span>` : ""}
+        </div>
+        <div class="tbi-sched-tag duur" title="Reisduur">
+          <span class="sched-icon">⏱️</span>
+          <span class="sched-label">Duur:</span>
+          <span class="sched-val">${duration}</span>
+        </div>
+        <div class="tbi-sched-tag aankomst" title="Aankomsttijd">
+          <span class="sched-icon">${arrIcon}</span>
+          <span class="sched-label">Aankomst:</span>
+          <span class="sched-val">${sched.arrLocal}</span>
+          ${sched.arrBE ? `<span class="sched-be-val">(${sched.arrBE} BE)</span>` : ""}
+        </div>
+      </div>
+    `;
+
+    // Render Shared Travelers
+    const otherPersons = leg.persons.filter(k => k !== personKey);
+    let sharingHtml = "";
+    if (otherPersons.length > 0) {
+      sharingHtml = `
+        <div class="tbi-sharing">
+          <span class="tbi-sharing-label">Samen met:</span>
+          <div class="tbi-sharing-avatars">
+            ${otherPersons.map(k => {
+              const p = PERSONS[k];
+              const photo = localStorage.getItem(`mapphoto_${k}`);
+              const avatarInner = photo 
+                ? `<img src="${photo}" alt="${p.name}" title="${p.name}">` 
+                : `<span style="color:#fff;">${p.name.substring(0, 2).toUpperCase()}</span>`;
+              return `
+                <div class="tbi-sharing-avatar" style="background: ${p.color};" title="${p.name}" onclick="event.stopPropagation(); selectPerson('${k}')">
+                  ${avatarInner}
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    const isFlight = leg.type === "int_vlucht" || leg.type === "bin_vlucht";
+    const hasFlight = isFlight && leg.flightNum && leg.flightNum !== "—" && leg.flightNum !== null;
+    const firstFlight = hasFlight ? leg.flightNum.split('+')[0].trim() : "";
+    const clickAttr = hasFlight ? ` onclick="selectFlightFromBlock('${firstFlight}')"` : "";
+    const extraClass = hasFlight ? " clickable-flight" : "";
+
+    // Generate individual flight tags that are separately clickable if there are multiple, or just single
+    let flightTagHtml = "";
+    if (leg.flightNum && leg.flightNum !== "—") {
+      flightTagHtml = leg.flightNum.split('+').map(fn => {
+        const cleanFn = fn.trim();
+        return `<span class="tbi-tag ${cls} clickable-flight-tag" onclick="event.stopPropagation(); selectFlightFromBlock('${cleanFn}')" style="cursor: pointer; position: relative; z-index: 2;" title="Klik om vluchtsimulator te starten">${cleanFn}</span>`;
+      }).join('<span style="opacity:0.4; margin: 0 2px;">+</span>');
+    }
+
+    return `<div class="transport-block-item${extraClass}"${clickAttr}>
       <div class="tbi-icon ${cls}">${leg.icon}</div>
       <div class="tbi-date">
         <div class="day">${leg.dateD}</div>
@@ -1488,10 +1757,11 @@ function renderBlockView(){
         <div class="tbi-sub">${leg.sub}</div>
         <div class="tbi-tags">
           <span class="tbi-tag ${cls}">${typeLabel(leg.type)}</span>
-          ${leg.flightNum&&leg.flightNum!=="—"?`<span class="tbi-tag ${cls}">${leg.flightNum}</span>`:""}
+          ${flightTagHtml}
           ${operatorLinkHtml}
-          ${leg.times?`<span style="font-size:10px;color:var(--text-soft);">🕐 Lokaal: ${leg.times} ${beTime ? ` | 🇧🇪 BE: ${beTime.replace(" (Belgische tijd)", "")}` : ""}</span>`:""}
         </div>
+        ${schedTagsHtml}
+        ${sharingHtml}
         ${noteHtml}
       </div>
       <div class="tbi-cost">${costHtml}</div>
@@ -1504,6 +1774,24 @@ function renderBlockView(){
    ══════════════════════════════════════════════════════════ */
 let scrapeTimer=null;
 function setFlightSearch(fn){document.getElementById("flightInput").value=fn;}
+
+function selectFlightFromBlock(flightNum) {
+  if (!flightNum || flightNum === "—") return;
+  // If multiple flights like "TG935 + TG403", take the first one or clean it up
+  let parts = flightNum.split('+');
+  let cleanFn = parts[0].trim().toUpperCase().replace(/\s/g,"");
+  setFlightSearch(cleanFn);
+  simulateScraper();
+  
+  // Smooth scroll to the flight simulator panel
+  const flightInput = document.getElementById("flightInput");
+  if (flightInput) {
+    const scraperSection = flightInput.closest("section");
+    if (scraperSection) {
+      scraperSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+}
 
 function simulateScraper(){
   const fn=document.getElementById("flightInput").value.trim().toUpperCase().replace(/\s/g,"");
@@ -1630,12 +1918,13 @@ window.addEventListener("DOMContentLoaded",()=>{
   renderTransportMap();
   renderBlockView();
   switchAirportTab("BRU",null);
-  updateBaggageTag();
-  simulateScraper();
   // Sync baggage dropdown with global person
   const personKey=ls_get("selected_person","matthew");
   const bp=document.getElementById("baggagePerson");
   if(bp) bp.value=personKey;
+
+  updateBaggageTag();
+  simulateScraper();
 });
 </script>
 </body>

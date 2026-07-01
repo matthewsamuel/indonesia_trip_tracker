@@ -360,6 +360,27 @@
 
   .mav { width: 30px; height: 30px; }
 }
+
+/* ── ROUTE STATUS STYLES & ANIMATIONS ── */
+@keyframes routeFlow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.active-route-road, .active-route-flight, .active-route-boat {
+  stroke-dasharray: 8 6;
+  animation: routeFlow 1.2s linear infinite;
+}
+
+.active-route-flight {
+  stroke-dasharray: 6 8;
+  animation: routeFlow 0.8s linear infinite;
+}
+
+.past-route, .future-route {
+  transition: stroke-dasharray 0.3s ease, stroke-width 0.3s ease, opacity 0.3s ease;
+}
 </style>
 </head>
 <body>
@@ -489,7 +510,7 @@ const SCHED_HINKE = [
   { date: "2026-09-29", loc: "bali",       transit: true,  to: "brussels" },
 ];
 
-const SCHED_BOYZ = [
+const SCHED_ARNE = [
   { date: "2026-08-28", loc: "brussels",   transit: true,  to: "singapore" },
   { date: "2026-08-29", loc: "singapore" },
   { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
@@ -500,28 +521,17 @@ const SCHED_BOYZ = [
   { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
   { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
   { date: "2026-09-12", loc: "banyuwangi" }, 
-  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "brussels" },  
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "bali" },
+  { date: "2026-09-14", loc: "bali" },
+  { date: "2026-09-20", loc: "bali",       transit: true,  to: "brussels" },
 ];
 
-const SCHED_WILLEM_KASPER = [
+const SCHED_ELIOTT_KAMIEL_KASPER_WILLEM = [
   { date: "2026-08-28", loc: "brussels" },
-  { date: "2026-08-30", loc: "brussels",   transit: true,  to: "singapore" },
-  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
-  { date: "2026-09-01", loc: "ketambe" },
-  { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
-  { date: "2026-09-08", loc: "jakarta" },
-  { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
-  { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
-  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
-  { date: "2026-09-12", loc: "banyuwangi" }, 
-  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "brussels" },
-];
-
-const SCHED_ELIOTT_KAMIEL = [
-  { date: "2026-08-28", loc: "brussels" },
-  { date: "2026-08-30", loc: "brussels",   transit: true,  to: "singapore" },
-  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
-  { date: "2026-09-01", loc: "ketambe" },
+  { date: "2026-08-29", loc: "brussels",   transit: true,  to: "singapore" },
+  { date: "2026-08-30", loc: "jakarta" },
+  { date: "2026-09-01", loc: "jakarta",    transit: true,  to: "ketambe" },
+  { date: "2026-09-02", loc: "ketambe" },
   { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
   { date: "2026-09-08", loc: "jakarta" },
   { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
@@ -540,20 +550,22 @@ const SCHED_JENS_MAURICE_MATHIAS = [
   { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
   { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
   { date: "2026-09-12", loc: "banyuwangi" },
-  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "brussels" },
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "bali" },
+  { date: "2026-09-14", loc: "bali" },
+  { date: "2026-09-20", loc: "bali",       transit: true,  to: "brussels" },
 ];
 
 const SCHEDULES = {
   matthew: SCHED_MATTHEW,
   hinke:   SCHED_HINKE,
-  arne:    SCHED_BOYZ,
-  eliott:  SCHED_ELIOTT_KAMIEL,
+  arne:    SCHED_ARNE,
+  eliott:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
   jens:    SCHED_JENS_MAURICE_MATHIAS,
-  kamiel:  SCHED_ELIOTT_KAMIEL,
+  kamiel:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
   maurice: SCHED_JENS_MAURICE_MATHIAS,
   mathias: SCHED_JENS_MAURICE_MATHIAS,
-  willem:  SCHED_WILLEM_KASPER,
-  kasper:  SCHED_WILLEM_KASPER,
+  willem:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
+  kasper:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
 };
 
 const ROAD_SEGS = [
@@ -578,6 +590,45 @@ const FLIGHT_ARCS = [
 const BOAT_SEGS = [
   { id: "b1", from: "labuanbajo", to: "komodo", color: "#00f5d4", label: "Boot Komodo" },
 ];
+
+/* ================================================================
+   ROUTE SEGMENT ACTIVE DATES & PATH COMBINATIONS
+   ================================================================ */
+const SEGMENT_ACTIVE_DAYS = {
+  f1: ["2026-08-28", "2026-08-29", "2026-08-30"],
+  f2: ["2026-08-31"],
+  r1: ["2026-08-31", "2026-09-07"],
+  f3: ["2026-09-07"],
+  f7: ["2026-09-08"],
+  r2: ["2026-09-09"],
+  r3: ["2026-09-10", "2026-09-11"],
+  r4: ["2026-09-11"],
+  r5: ["2026-09-11", "2026-09-16"],
+  f4: ["2026-09-18"],
+  r6: ["2026-09-21", "2026-09-23"],
+  b1: ["2026-09-25"],
+  f5: ["2026-09-13", "2026-09-26"],
+  f6: ["2026-09-20", "2026-09-29"],
+};
+
+const TRANSIT_PATHS = {
+  "singapore-ketambe": ["f2", "r1"],
+  "ketambe-jakarta": ["r1", "f3"],
+  "malang-banyuwangi": ["r4", "r5"],
+  "banyuwangi-brussels": ["f5", "f6"],
+  "banyuwangi-bali": ["f5"],
+  "brussels-singapore": ["f1"],
+  "brussels-jakarta": ["f7"],
+  "jakarta-yogya": ["r2"],
+  "yogya-malang": ["r3"],
+  "malang-surabaya": ["r4"],
+  "surabaya-banyuwangi": ["r5"],
+  "banyuwangi-labuanbajo": ["f4"],
+  "labuanbajo-ruteng": ["r6"],
+  "ruteng-labuanbajo": ["r6"],
+  "labuanbajo-bali": ["f5"],
+  "bali-brussels": ["f6"]
+};
 
 /* ================================================================
    MAP SETUP & LEAFLET LOGIC
@@ -623,6 +674,7 @@ document.getElementById('tile-btns').addEventListener('click', e => {
    ROUTING RENDER
    ================================================================ */
 const routeGroup = L.layerGroup().addTo(map);
+const polylines = {};
 
 function gcPoints(from, to, n = 80) {
   const R = Math.PI / 180, D = 180 / Math.PI;
@@ -656,18 +708,20 @@ function drawFlight(arc) {
     ? [...gcPoints(f, LOCS[arc.via], 40), ...gcPoints(LOCS[arc.via], t, 40)]
     : gcPoints(f, t, 80);
 
-  L.polyline(pts, { color: arc.color, weight: 1.8, opacity: .65, dashArray: "6 5" })
+  const poly = L.polyline(pts, { color: arc.color })
     .bindTooltip(`✈️ ${arc.label}`, { className: 'rlabel', sticky: true })
     .addTo(routeGroup);
 
   const mid = midpoint(pts);
-  L.marker(mid, {
+  const midMarker = L.marker(mid, {
     icon: L.divIcon({
       html: `<span style="font-size:15px; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.8)); color:#fff">✈</span>`,
       className: '', iconSize: [18,18], iconAnchor: [9,9],
     }),
     interactive: false,
   }).addTo(routeGroup);
+  
+  polylines[arc.id] = { type: 'flight', poly, midMarker, data: arc, pts };
 }
 
 function fmtDur(sec) {
@@ -709,9 +763,10 @@ async function loadAllRoutes() {
 
   BOAT_SEGS.forEach(seg => {
     const pts = [[LOCS[seg.from].lat, LOCS[seg.from].lng],[LOCS[seg.to].lat, LOCS[seg.to].lng]];
-    L.polyline(pts, { color: seg.color, weight: 2.5, opacity: .8, dashArray: "4 7" })
+    const poly = L.polyline(pts, { color: seg.color })
       .bindTooltip(`⛵ ${seg.label}`, { className: 'rlabel', sticky: true })
       .addTo(routeGroup);
+    polylines[seg.id] = { type: 'boat', poly, data: seg, pts };
   });
 
   let loaded = 0;
@@ -721,13 +776,76 @@ async function loadAllRoutes() {
     const durStr = fmtDur(r.dur);
     const tip = `${seg.icon} ${seg.label}${durStr ? ' · ' + durStr : ''}`;
 
-    L.polyline(r.coords, { color: seg.color, weight: 3, opacity: .85 })
+    const poly = L.polyline(r.coords, { color: seg.color })
       .bindTooltip(tip, { className: 'rlabel', sticky: true })
       .addTo(routeGroup);
+    polylines[seg.id] = { type: 'road', poly, data: seg, pts: r.coords };
   }
+
+  updateRoutes(currentDay);
+  updateMarkers(currentDay, false);
 
   status.textContent = 'Routes geladen ✓';
   setTimeout(() => { status.textContent = ''; }, 2500);
+}
+
+function getSegmentStatus(segmentId, day) {
+  const activeDates = SEGMENT_ACTIVE_DAYS[segmentId];
+  if (!activeDates || activeDates.length === 0) return 'future';
+  
+  const currentDateStr = dateStr(dayToDate(day));
+  
+  if (activeDates.includes(currentDateStr)) {
+    return 'active';
+  }
+  
+  const allPast = activeDates.every(d => d < currentDateStr);
+  if (allPast) return 'past';
+  
+  return 'future';
+}
+
+function updateRoutes(day) {
+  Object.entries(polylines).forEach(([id, item]) => {
+    const status = getSegmentStatus(id, day);
+    let options = {};
+    let className = '';
+
+    if (status === 'active') {
+      className = `active-route-${item.type}`;
+      options = {
+        color: item.data.color,
+        weight: item.type === 'road' ? 5.5 : (item.type === 'flight' ? 4 : 4.5),
+        opacity: 0.95,
+        dashArray: item.type === 'flight' ? '6 8' : '8 6'
+      };
+      if (item.midMarker) item.midMarker.setOpacity(1);
+    } else if (status === 'past') {
+      className = 'past-route';
+      options = {
+        color: item.data.color,
+        weight: 2.2,
+        opacity: 0.25,
+        dashArray: null
+      };
+      if (item.midMarker) item.midMarker.setOpacity(0.2);
+    } else {
+      className = 'future-route';
+      options = {
+        color: item.data.color,
+        weight: 1.5,
+        opacity: 0.1,
+        dashArray: '3 8'
+      };
+      if (item.midMarker) item.midMarker.setOpacity(0.05);
+    }
+
+    item.poly.setStyle(options);
+    const path = item.poly.getElement();
+    if (path) {
+      path.setAttribute('class', `leaflet-interactive ${className}`);
+    }
+  });
 }
 
 /* ================================================================
@@ -745,6 +863,74 @@ function dayToDate(day) {
 
 function dateStr(d) {
   return d.toISOString().slice(0, 10);
+}
+
+function getCombinedPathPoints(locA, locB) {
+  const key = `${locA}-${locB}`;
+  const revKey = `${locB}-${locA}`;
+  const segmentIds = TRANSIT_PATHS[key] || TRANSIT_PATHS[revKey] || null;
+  
+  if (segmentIds) {
+    let combined = [];
+    const ids = TRANSIT_PATHS[key] ? segmentIds : [...segmentIds].reverse();
+    
+    ids.forEach(sid => {
+      const item = polylines[sid];
+      if (item) {
+        let pts = item.pts;
+        if (!pts || !pts.length) return;
+        
+        const firstPt = pts[0];
+        const lastPt = pts[pts.length - 1];
+        const targetRef = combined.length ? combined[combined.length - 1] : [LOCS[locA].lat, LOCS[locA].lng];
+        const dFirst = Math.hypot(firstPt[0] - targetRef[0], firstPt[1] - targetRef[1]);
+        const dLast = Math.hypot(lastPt[0] - targetRef[0], lastPt[1] - targetRef[1]);
+        
+        if (dLast < dFirst) {
+          combined.push(...[...pts].reverse());
+        } else {
+          combined.push(...pts);
+        }
+      }
+    });
+    if (combined.length) return combined;
+  }
+  
+  const item = Object.values(polylines).find(it => {
+    return (it.data.from === locA && it.data.to === locB) ||
+           (it.data.from === locB && it.data.to === locA);
+  });
+  
+  if (item && item.pts && item.pts.length) {
+    const coords = item.pts;
+    const firstPt = coords[0];
+    const targetRef = [LOCS[locA].lat, LOCS[locA].lng];
+    const dFirst = Math.hypot(firstPt[0] - targetRef[0], firstPt[1] - targetRef[1]);
+    const lastPt = coords[coords.length - 1];
+    const dLast = Math.hypot(lastPt[0] - targetRef[0], lastPt[1] - targetRef[1]);
+    
+    if (dLast < dFirst) {
+      return [...coords].reverse();
+    }
+    return coords;
+  }
+  
+  return gcPoints(LOCS[locA], LOCS[locB], 40);
+}
+
+function interpolatePoint(pts, fraction) {
+  if (!pts || pts.length === 0) return null;
+  if (pts.length === 1) return pts[0];
+  
+  const idx = fraction * (pts.length - 1);
+  const i = Math.floor(idx);
+  const j = Math.min(i + 1, pts.length - 1);
+  const f = idx - i;
+  
+  return [
+    pts[i][0] + (pts[j][0] - pts[i][0]) * f,
+    pts[i][1] + (pts[j][1] - pts[i][1]) * f
+  ];
 }
 
 function getState(personId, day) {
@@ -765,9 +951,12 @@ function getState(personId, day) {
   let locData;
   if (inTransit) {
     const f = LOCS[wp.loc], t = LOCS[wp.to];
+    const pts = getCombinedPathPoints(wp.loc, wp.to);
+    const pos = interpolatePoint(pts, 0.5);
+    
     locData = {
-      lat: (f.lat + t.lat) / 2,
-      lng: (f.lng + t.lng) / 2,
+      lat: pos ? pos[0] : (f.lat + t.lat) / 2,
+      lng: pos ? pos[1] : (f.lng + t.lng) / 2,
       name: `${f.name} → ${t.name}`,
     };
   } else {
@@ -860,13 +1049,58 @@ function initMarkers() {
   });
 }
 
-function updateMarkers(day) {
+const activeAnimations = {};
+
+function updateMarkers(day, animate = false) {
+  const duration = 700 / animSpeed;
+  
   Object.keys(PEOPLE).forEach(id => {
     const st       = getState(id, day);
     const [ox, oy] = personOffset(id);
-    const ll       = [st.locData.lat + ox, st.locData.lng + oy];
-    markers[id].setLatLng(ll);
-    markers[id].setIcon(makeIcon(id, st));
+    const targetLL = [st.locData.lat + ox, st.locData.lng + oy];
+    const m        = markers[id];
+    
+    m.setIcon(makeIcon(id, st));
+    
+    if (animate) {
+      if (activeAnimations[id]) {
+        cancelAnimationFrame(activeAnimations[id]);
+      }
+      
+      const startLL = m.getLatLng();
+      const start = { lat: startLL.lat, lng: startLL.lng };
+      const end = { lat: targetLL[0], lng: targetLL[1] };
+      
+      if (start.lat === end.lat && start.lng === end.lng) {
+        return;
+      }
+      
+      const startTime = performance.now();
+      
+      function tick(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        
+        const curLat = start.lat + (end.lat - start.lat) * ease;
+        const curLng = start.lng + (end.lng - start.lng) * ease;
+        
+        m.setLatLng([curLat, curLng]);
+        
+        if (t < 1) {
+          activeAnimations[id] = requestAnimationFrame(tick);
+        } else {
+          delete activeAnimations[id];
+        }
+      }
+      activeAnimations[id] = requestAnimationFrame(tick);
+    } else {
+      if (activeAnimations[id]) {
+        cancelAnimationFrame(activeAnimations[id]);
+        delete activeAnimations[id];
+      }
+      m.setLatLng(targetLL);
+    }
   });
 }
 
@@ -937,16 +1171,17 @@ function openPhotoForPerson(e, id) {
 const scrubber = document.getElementById('scrubber');
 scrubber.max = NDAYS;
 
-function updateAll(day) {
+function updateAll(day, animate = false) {
   currentDay = +day;
   scrubber.value = currentDay;
-  updateMarkers(currentDay);
+  updateMarkers(currentDay, animate);
   updateSidebar(currentDay);
+  updateRoutes(currentDay);
 }
 
 scrubber.addEventListener('input', () => {
   stopAnim();
-  updateAll(scrubber.value);
+  updateAll(scrubber.value, false);
 });
 
 let animTimer = null, animSpeed = 1, playing = false;
@@ -957,7 +1192,7 @@ function startAnim() {
   btnPlay.textContent = '⏸';
   animTimer = setInterval(() => {
     if (currentDay >= NDAYS) { stopAnim(); return; }
-    updateAll(currentDay + 1);
+    updateAll(currentDay + 1, true);
   }, 750 / animSpeed);
 }
 function stopAnim() {
@@ -969,7 +1204,7 @@ function stopAnim() {
 
 btnPlay.addEventListener('click', () => {
   if (playing) { stopAnim(); return; }
-  if (currentDay >= NDAYS) updateAll(0);
+  if (currentDay >= NDAYS) updateAll(0, false);
   startAnim();
 });
 
@@ -986,7 +1221,7 @@ document.getElementById('spd-btns').addEventListener('click', e => {
    ================================================================ */
 async function init() {
   initMarkers();
-  updateAll(0);
+  updateAll(0, false);
   await loadAllRoutes();
 }
 
