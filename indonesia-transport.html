@@ -432,6 +432,25 @@
   .map-tooltip-row   { font-size: 11.5px; color: #cbd5e1; display: flex; gap: 6px; align-items: baseline; }
   .map-tooltip-row + .map-tooltip-row { margin-top: 3px; }
   .map-tooltip-dur   { font-weight: 800; color: #4ad66d; }
+
+  /* ── OPERATOR LINKS ── */
+  .bp-airline-link {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #334155;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .bp-airline-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+  .tbi-operator-link:hover {
+    filter: brightness(1.15);
+    text-decoration: underline !important;
+  }
 </style>
 </head>
 <body>
@@ -528,7 +547,7 @@
         Voer een vluchtnummer in om live telemetrie, ADS-B status, terminal/gate en bagage-informatie te "scrapen".
       </p>
       <div class="scraper-input-group">
-        <input type="text" id="flightInput" placeholder="Bv. TG935, TR220, QZ120..." value="TG935">
+        <input type="text" id="flightInput" placeholder="Bv. TG935, TR220, JT383..." value="TG935">
         <button onclick="simulateScraper()">Scrape Vlucht</button>
       </div>
       <div class="quick-search-labels">
@@ -536,7 +555,8 @@
         <span onclick="setFlightSearch('TG935')">TG935 (BRU→BKK)</span>
         <span onclick="setFlightSearch('TG403')">TG403 (BKK→SIN)</span>
         <span onclick="setFlightSearch('TR220')">TR220 (SIN→KNO)</span>
-        <span onclick="setFlightSearch('QZ120')">QZ120 (KNO→CGK)</span>
+        <span onclick="setFlightSearch('JT204')">JT204 (CGK→KNO)</span>
+        <span onclick="setFlightSearch('JT383')">JT383 (KNO→CGK)</span>
         <span onclick="setFlightSearch('GA402')">GA402 (SUB→LBJ)</span>
         <span onclick="setFlightSearch('QZ503')">QZ503 (LBJ→DPS)</span>
         <span onclick="setFlightSearch('QR959')">QR959 (DPS→DOH)</span>
@@ -609,7 +629,8 @@
           <select id="baggageFlight" onchange="updateBaggageTag()" style="width:100%;">
             <option value="TG935">TG935 (BRU→BKK)</option>
             <option value="TR220">TR220 (SIN→KNO)</option>
-            <option value="QZ120">QZ120 (KNO→CGK)</option>
+            <option value="JT204">JT204 (CGK→KNO)</option>
+            <option value="JT383">JT383 (KNO→CGK)</option>
             <option value="GA402">GA402 (SUB→LBJ)</option>
             <option value="QZ503">QZ503 (LBJ→DPS)</option>
           </select>
@@ -721,7 +742,7 @@ const COSTS = {
   c2:  { label:"Vlucht Singapore → Medan (Scoot)",         amount:71 },
   c3:  { label:"Taxi/minibus Medan → Ketambe",             amount:20 },
   c5:  { label:"Taxi/minibus Ketambe → Medan",             amount:20 },
-  c6:  { label:"Vlucht Medan → Jakarta",                   amount:220 },
+  c6:  { label:"Vlucht Jakarta ↔ Medan (Lion Air)",          amount:212 },
   c7:  { label:"Trein Jakarta → Yogyakarta",               amount:20 },
   c8:  { label:"Nachttrein Yogyakarta → Malang",           amount:15 },
   c11: { label:"Vlucht Java → Denpasar → Labuan Bajo",     amount:null },
@@ -788,7 +809,20 @@ const TRANSPORT_LEGS = [
     terminal:"Terminal 2, Gate F38",
     times:"08:15 → 09:45", cost_id:"c2", ref:"SC7F4X",
     fromPt:"singapore", toPt:"medan", qx:220, qy:68,
-    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
+    persons:["matthew","arne"]
+  },
+  {
+    id:"tl20", type:"bin_vlucht", icon:"✈️",
+    date:"2026-09-01", dateD:"01", dateM:"sep",
+    fromIATA:"CGK", toIATA:"KNO",
+    fromLabel:"Jakarta Soekarno-Hatta", toLabel:"Medan Kualanamu",
+    title:"Jakarta → Medan",
+    sub:"Lion Air · JT204 · ±2u 15m",
+    operator:"Lion Air", flightNum:"JT204",
+    terminal:"Terminal 2D, Gate 7",
+    times:"08:05 → 10:20", cost_id:"c6", ref:"JTJK9A",
+    fromPt:"jakarta", toPt:"medan", qx:250, qy:130,
+    persons:["eliott","kamiel","willem","kasper"]
   },
   {
     id:"tl3", type:"bus_auto", icon:"🚌",
@@ -820,10 +854,10 @@ const TRANSPORT_LEGS = [
     fromIATA:"KNO", toIATA:"CGK",
     fromLabel:"Medan Kualanamu", toLabel:"Jakarta Soekarno-Hatta",
     title:"Medan → Jakarta",
-    sub:"Indonesia AirAsia · QZ120 · ±2u 15m",
-    operator:"Indonesia AirAsia", flightNum:"QZ120",
-    terminal:"Terminal 2D, Gate 4",
-    times:"16:00 → 18:15", cost_id:"c6", ref:"QZJK9A",
+    sub:"Lion Air · JT383 · ±2u 25m",
+    operator:"Lion Air", flightNum:"JT383",
+    terminal:"Terminal 2D, Gate 3",
+    times:"19:00 → 21:25", cost_id:"c6", ref:"JT383R",
     fromPt:"medan", toPt:"jakarta", qx:250, qy:130,
     persons:["matthew","arne","eliott","kamiel","willem","kasper"]
   },
@@ -999,7 +1033,8 @@ const FLIGHT_DB = {
   TG935:{flight:"TG935",airline:"Thai Airways",aircraft:"Boeing 777-300ER (HS-TKK)",altitude:"36,000 ft",speed:"905 km/h",duration:"11u 15m",route:"BRU (Brussel Airport) → BKK (Suvarnabhumi Airport)",gate:"Pier B, Gate B20",baggage:"Baggage Hall 3, Band 4",risk:"Laag (2.5%)",status:"Scheduled",blipPos:{top:60,left:120}},
   TG403:{flight:"TG403",airline:"Thai Airways",aircraft:"Airbus A350-900 (HS-THC)",altitude:"38,000 ft",speed:"840 km/h",duration:"2u 25m",route:"BKK (Suvarnabhumi Airport) → SIN (Singapore Changi)",gate:"Concourse D, Gate D5",baggage:"Terminal 1, Belt 18",risk:"Gemiddeld (12.4%)",status:"Scheduled",blipPos:{top:120,left:240}},
   TR220:{flight:"TR220",airline:"Scoot",aircraft:"Airbus A320-neo (9V-TNC)",altitude:"28,000 ft",speed:"710 km/h",duration:"1u 30m",route:"SIN (Singapore Changi) → KNO (Medan Kualanamu)",gate:"Terminal 2, Gate F38",baggage:"Main Hall, Belt 2",risk:"Laag (1.8%)",status:"Scheduled",blipPos:{top:80,left:160}},
-  QZ120:{flight:"QZ120",airline:"Indonesia AirAsia",aircraft:"Airbus A320-200 (PK-AZA)",altitude:"32,000 ft",speed:"780 km/h",duration:"2u 15m",route:"KNO (Medan Kualanamu) → CGK (Jakarta Soekarno-Hatta)",gate:"Terminal 2D, Gate 4",baggage:"Terminal 2D, Band 3",risk:"Gemiddeld (8.5%)",status:"Scheduled",blipPos:{top:150,left:380}},
+  JT204:{flight:"JT204",airline:"Lion Air",aircraft:"Boeing 737-900ER (PK-LGO)",altitude:"36,000 ft",speed:"820 km/h",duration:"2u 15m",route:"CGK (Jakarta Soekarno-Hatta) → KNO (Medan Kualanamu)",gate:"Terminal 2D, Gate 7",baggage:"Main Arrival Hall, Belt 2",risk:"Gemiddeld (5.8%)",status:"Scheduled",blipPos:{top:130,left:320}},
+  JT383:{flight:"JT383",airline:"Lion Air",aircraft:"Boeing 737-900ER (PK-LGP)",altitude:"35,000 ft",speed:"810 km/h",duration:"2u 25m",route:"KNO (Medan Kualanamu) → CGK (Jakarta Soekarno-Hatta)",gate:"Terminal 2D, Gate 3",baggage:"Terminal 2D, Band 4",risk:"Gemiddeld (6.2%)",status:"Scheduled",blipPos:{top:150,left:380}},
   GA402:{flight:"GA402",airline:"Garuda Indonesia",aircraft:"Boeing 737-800 (PK-GFM)",altitude:"34,000 ft",speed:"810 km/h",duration:"1u 45m",route:"SUB (Surabaya Juanda) → LBJ (Labuan Bajo Komodo)",gate:"Terminal 1, Gate 5",baggage:"Arrival Hall, Belt A",risk:"Zeer Laag (0.5%)",status:"Scheduled",blipPos:{top:165,left:550}},
   QZ503:{flight:"QZ503",airline:"Indonesia AirAsia",aircraft:"Airbus A320-200 (PK-AXV)",altitude:"24,000 ft",speed:"680 km/h",duration:"1u 10m",route:"LBJ (Labuan Bajo Komodo) → DPS (Bali Denpasar)",gate:"Gate 2 (Platformloopbrug)",baggage:"Domestic Arrivals, Belt 1",risk:"Gemiddeld (14.2%)",status:"Scheduled",blipPos:{top:172,left:630}},
   QR959:{flight:"QR959",airline:"Qatar Airways",aircraft:"Boeing 777-300ER (A7-BEP)",altitude:"33,000 ft",speed:"890 km/h",duration:"9u 35m",route:"DPS (Bali Denpasar) → DOH (Hamad Airport Qatar)",gate:"International Pier, Gate 15",baggage:"N/A - Transit",risk:"Laag (4.1%)",status:"Scheduled",blipPos:{top:180,left:660}}
@@ -1027,6 +1062,82 @@ const BAGGAGE_LIMITS = {
   willem: {name:"WILLEM", allowances:{international:"30 KG",domestic:"20 KG"}},
   kasper: {name:"KASPER", allowances:{international:"30 KG",domestic:"20 KG"}}
 };
+
+const AIRPORT_OFFSETS = {
+  BRU: 2, // UTC+2 (CEST)
+  SIN: 8, // UTC+8
+  KNO: 7, // UTC+7 (WIB)
+  CGK: 7, // UTC+7 (WIB)
+  DPS: 8, // UTC+8 (WITA)
+  LBJ: 8, // UTC+8 (WITA)
+  SUB: 7, // UTC+7 (WIB)
+  BKK: 7, // UTC+7 (ICT)
+  DOH: 3  // UTC+3 (AST)
+};
+
+function formatBelgianTimes(leg) {
+  if (leg.type !== "int_vlucht" && leg.type !== "bin_vlucht") return "";
+  if (!leg.times || leg.times === "TBD") return "";
+  const match = leg.times.match(/^(\d{2}):(\d{2})\s*→\s*(\d{2}):(\d{2})(\+\d+)?$/);
+  if (!match) return "";
+
+  const fromOffset = AIRPORT_OFFSETS[leg.fromIATA];
+  const toOffset = AIRPORT_OFFSETS[leg.toIATA];
+  if (fromOffset === undefined || toOffset === undefined) return "";
+
+  if (leg.fromIATA === "BRU" && leg.toIATA === "BRU") return "";
+
+  const h1 = parseInt(match[1]);
+  const m1 = parseInt(match[2]);
+  const h2 = parseInt(match[3]);
+  const m2 = parseInt(match[4]);
+  const dayOffset = match[5] ? parseInt(match[5]) : 0;
+
+  const depHrsDiff = fromOffset - 2;
+  const arrHrsDiff = toOffset - 2;
+
+  let depMinTotal = h1 * 60 + m1 - depHrsDiff * 60;
+  let depDayOffset = Math.floor(depMinTotal / 1440);
+  depMinTotal = (depMinTotal % 1440 + 1440) % 1440;
+  const depH = Math.floor(depMinTotal / 60);
+  const depM = depMinTotal % 60;
+
+  let arrMinTotal = h2 * 60 + m2 - arrHrsDiff * 60;
+  let arrDayOffset = Math.floor(arrMinTotal / 1440) + dayOffset;
+  arrMinTotal = (arrMinTotal % 1440 + 1440) % 1440;
+  const arrH = Math.floor(arrMinTotal / 60);
+  const arrM = arrMinTotal % 60;
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const formatDayOffset = (days) => {
+    if (days === 0) return "";
+    return (days > 0 ? "+" : "") + days;
+  };
+
+  const depStr = `${pad(depH)}:${pad(depM)}${formatDayOffset(depDayOffset)}`;
+  const arrStr = `${pad(arrH)}:${pad(arrM)}${formatDayOffset(arrDayOffset)}`;
+
+  return `${depStr} → ${arrStr} (Belgische tijd)`;
+}
+
+function getOperatorUrl(op) {
+  if (!op) return "";
+  const o = op.toLowerCase();
+  if (o.includes("thai")) return "https://www.thaiairways.com";
+  if (o.includes("scoot")) return "https://www.flyscoot.com";
+  if (o.includes("airasia") || o.includes("air asia")) return "https://www.airasia.com";
+  if (o.includes("lion")) return "https://www.lionair.co.id";
+  if (o.includes("garuda")) return "https://www.garuda-indonesia.com";
+  if (o.includes("wings")) return "https://www.lionair.co.id";
+  if (o.includes("qatar")) return "https://www.qatarairways.com";
+  if (o.includes("kai") || o.includes("kereta api")) return "https://booking.kai.id";
+  if (o.includes("asdp") || o.includes("ferry")) return "https://www.ferizy.com";
+  if (o.includes("nmbs") || o.includes("sncb")) return "https://www.belgiantrain.be";
+  if (o.includes("grab")) return "https://www.grab.com";
+  if (o.includes("gojek")) return "https://www.gojek.com";
+  if (o.includes("bluebird") || o.includes("blue bird")) return "https://www.bluebirdgroup.com";
+  return "";
+}
 
 /* ══════════════════════════════════════════════════════════
    HELPERS
@@ -1152,9 +1263,16 @@ function makeBoardingPass(leg, personKey){
     ? `<div class="bp-qr-wrap">${genQR(leg.id+personKey)}</div>`
     : `<div style="width:68px;height:68px;background:rgba(0,0,0,.07);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${leg.icon}</div>`;
 
+  const operatorUrl = getOperatorUrl(leg.operator);
+  const operatorHtml = operatorUrl 
+    ? `<a href="${operatorUrl}" target="_blank" class="bp-airline-link">${leg.operator.toUpperCase()} 🔗</a>`
+    : `<span class="bp-airline">${leg.operator.toUpperCase()}</span>`;
+
+  const beTime = formatBelgianTimes(leg);
+
   return `<div class="boarding-pass ${cls}">
     <div class="bp-header">
-      <span class="bp-airline">${leg.operator.toUpperCase()}</span>
+      ${operatorHtml}
       <span class="bp-type-badge ${cls}">${typeLabel(leg.type)}</span>
     </div>
     <div class="bp-route">
@@ -1172,7 +1290,14 @@ function makeBoardingPass(leg, personKey){
       <div class="bp-field"><span class="bp-label">Passagier</span><span class="bp-value">${pName}</span></div>
       <div class="bp-field"><span class="bp-label">${leg.flightNum?"Vlucht / Trein":"Datum"}</span><span class="bp-value">${leg.flightNum&&leg.flightNum!=="—"?leg.flightNum:leg.dateD+" "+leg.dateM}</span></div>
       <div class="bp-field"><span class="bp-label">${seat?"Stoel / Seat":"Datum"}</span><span class="bp-value">${seat||leg.dateD+" "+leg.dateM}</span></div>
-      <div class="bp-field"><span class="bp-label">Vertrektijd</span><span class="bp-value ${leg.times==="TBD"?"tbd":""}">${leg.times}</span></div>
+      <div class="bp-field">
+        <span class="bp-label">Tijd (Lokaal)</span>
+        ${beTime 
+          ? `<span class="bp-value" style="font-size:10px;line-height:1.2;">${leg.times}</span>
+             <span style="font-size:8px;color:#4f46e5;font-weight:800;margin-top:2.5px;display:block;line-height:1;">🇧🇪 BE: ${beTime.replace(" (Belgische tijd)", "")}</span>`
+          : `<span class="bp-value ${leg.times==="TBD"?"tbd":""}">${leg.times}</span>`
+        }
+      </div>
       <div class="bp-field"><span class="bp-label">${leg.terminal?"Gate / Spoor":"Operator"}</span><span class="bp-value" style="font-size:10px;">${leg.terminal||leg.operator}</span></div>
       <div class="bp-field"><span class="bp-label">Kosten pp</span><span class="bp-value ${costTxt==="TBD"?"tbd":""}">${costTxt||"—"}</span></div>
     </div>
@@ -1285,10 +1410,11 @@ function renderLegTooltip(tooltip, leg, cx, cy){
   const durMatch=leg.sub.match(/[±~]?\d+\s*[–-]\s*\d+\s*u(?:\s*\d+\s*m)?|[±~]?\d+u\s*\d+m|[±~]?\d+\s*u\b|\bdag-trip\b/i);
   const durStr=durMatch?durMatch[0].trim():null;
   const hasTime=leg.times&&leg.times!=="TBD"&&leg.times!=="Ochtend"&&leg.times!=="Vroeg ochtend"&&leg.times!=="Vroeg vertrek"&&leg.times!=="Middag";
+  const beTime = formatBelgianTimes(leg);
   tooltip.innerHTML=`
     <div class="map-tooltip-title">${leg.icon} ${leg.title}</div>
     <div class="map-tooltip-sub">${leg.sub}</div>
-    ${hasTime?`<div class="map-tooltip-row">🕐 <span>${leg.times}</span></div>`:""}
+    ${hasTime?`<div class="map-tooltip-row">🕐 <span>Lokaal: ${leg.times} ${beTime ? `<br><span style="color:#a5b4fc;margin-left:18px;">België: ${beTime.replace(" (Belgische tijd)", "")}</span>` : ""}</span></div>`:""}
     ${durStr?`<div class="map-tooltip-row">⏱ <span class="map-tooltip-dur">${durStr}</span></div>`:`<div class="map-tooltip-row"><span class="map-tooltip-dur">${leg.times||"Zie blokweergave"}</span></div>`}
   `;
   tooltip.style.display="block";
@@ -1328,6 +1454,13 @@ function renderBlockView(){
       ? `<div style="margin-top:4px;font-size:11px;color:#f59e0b;opacity:0.85;">📎 ${leg.note}</div>`
       : "";
 
+    const operatorUrl = getOperatorUrl(leg.operator);
+    const operatorLinkHtml = operatorUrl 
+      ? `<a href="${operatorUrl}" target="_blank" class="tbi-tag ${cls} tbi-operator-link" style="text-decoration:none;display:inline-flex;align-items:center;gap:3px;cursor:pointer;">🔗 Website</a>`
+      : "";
+
+    const beTime = formatBelgianTimes(leg);
+
     return `<div class="transport-block-item">
       <div class="tbi-icon ${cls}">${leg.icon}</div>
       <div class="tbi-date">
@@ -1341,7 +1474,8 @@ function renderBlockView(){
         <div class="tbi-tags">
           <span class="tbi-tag ${cls}">${typeLabel(leg.type)}</span>
           ${leg.flightNum&&leg.flightNum!=="—"?`<span class="tbi-tag ${cls}">${leg.flightNum}</span>`:""}
-          ${leg.times?`<span style="font-size:10px;color:var(--text-soft);">🕐 ${leg.times}</span>`:""}
+          ${operatorLinkHtml}
+          ${leg.times?`<span style="font-size:10px;color:var(--text-soft);">🕐 Lokaal: ${leg.times} ${beTime ? ` | 🇧🇪 BE: ${beTime.replace(" (Belgische tijd)", "")}` : ""}</span>`:""}
         </div>
         ${noteHtml}
       </div>
