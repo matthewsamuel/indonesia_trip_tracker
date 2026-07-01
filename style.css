@@ -168,7 +168,7 @@ body {
 }
 @media (max-width: 860px) {
   .stat-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 }
@@ -180,7 +180,7 @@ body {
 }
 @media (max-width: 860px) {
   .stat-cards-right {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 }
@@ -253,7 +253,7 @@ body {
 }
 @media (max-width: 860px) {
   .panel-grid-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 }
@@ -276,7 +276,7 @@ body {
 }
 @media (max-width: 860px) {
   .combined-route-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 }
@@ -290,7 +290,7 @@ body {
 }
 @media (max-width: 768px) {
   .cost-flex {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -383,7 +383,7 @@ body {
 }
 @media (max-width: 620px) {
   .health-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1092,7 +1092,7 @@ form.update {
 }
 @media (max-width: 520px) {
   form.update {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }
 }
@@ -1242,7 +1242,7 @@ ul.history .hdel:hover {
 }
 @media (max-width: 860px) {
   .person-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 .person-card {
@@ -1691,7 +1691,7 @@ ul.history .hdel:hover {
 
   /* Reisschema (indonesia-timeline.html): datumkolom boven de kaart in plaats van ernaast */
   .timeline-item {
-    grid-template-columns: 22px 1fr;
+    grid-template-columns: 22px minmax(0, 1fr);
     grid-template-areas:
       "when when"
       "node card";
@@ -1726,12 +1726,12 @@ ul.history .hdel:hover {
   .locked-photo-hero { height: 160px; }
 
   /* Gezondheid: SOS/formulier-grids naar 1 kolom op zeer smalle schermen */
-  .sos-grid, .sos-form-grid { grid-template-columns: 1fr; }
+  .sos-grid, .sos-form-grid { grid-template-columns: minmax(0, 1fr); }
   .sos-field.full, .sos-form-grid .full-w { grid-column: span 1; }
 
   /* Live tracker */
   .sim-date-display { min-width: 0; font-size: 14px; }
-  .status-widget { grid-template-columns: 1fr; }
+  .status-widget { grid-template-columns: minmax(0, 1fr); }
 
   /* Transport: tickets iets smaller zodat er meer zichtbaar is */
   .boarding-pass { flex-basis: 260px; }
