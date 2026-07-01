@@ -40,6 +40,11 @@
   <footer class="note">Wijzigingen in kosten of notities worden automatisch opgeslagen en gesynchroniseerd met het dashboard.</footer>
 </div>
 
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
 <script>
 /* ================================================================
    DATA & SCHEDULING (SHARED LOGIC)
@@ -374,53 +379,28 @@ const TRIP_DEFAULT_PHOTOS = {
 };
 
 function getPhotos(id){
-  const stored = ls_get("photos_"+id, null);
-  if (stored !== null) return stored;
-  return TRIP_DEFAULT_PHOTOS[id] || [null, null, null];
-}
-function savePhotos(id, arr){ ls_set("photos_"+id, arr); }
-
-function addPhoto(itemId, idx){
-  const url = prompt("Plak hier een foto-URL (bijv. van Google Foto's, Unsplash of je eigen hosting):");
-  if (!url || !url.startsWith("http")) return;
-  const arr = getPhotos(itemId);
-  arr[idx] = url.trim();
-  savePhotos(itemId, arr);
-  renderTimeline();
+  return (TRIP_DEFAULT_PHOTOS[id] || []).filter(Boolean);
 }
 
-function removePhoto(itemId, idx, e){
-  e.stopPropagation();
-  const arr = getPhotos(itemId);
-  arr[idx] = null;
-  savePhotos(itemId, arr);
-  renderTimeline();
+function openLightbox(src){
+  const overlay = document.getElementById("lightboxOverlay");
+  const img = document.getElementById("lightboxImg");
+  if (!overlay || !img) return;
+  img.src = src;
+  overlay.classList.add("open");
 }
+function closeLightbox(){
+  const overlay = document.getElementById("lightboxOverlay");
+  if (overlay) overlay.classList.remove("open");
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
 
 function photoStripHtml(item){
   const photos = getPhotos(item.id);
-  const slots = photos.map((url, idx) => {
-    const defaultUrl = `images/${item.id}_${idx}.png`;
-    const finalUrl = url || defaultUrl;
-    const f = FASES[item.fase];
-    const grad = `linear-gradient(135deg, ${f.color}22 0%, ${f.color}05 100%)`;
-    
-    return `<div class="photo-slot" onclick="addPhoto('${item.id}',${idx})" style="background:#0d111c; position:relative; overflow:hidden;">
-      <!-- Placeholder -->
-      <div class="ph placeholder-view" style="background:${grad}; border:1px dashed ${f.color}33; display:flex; width:100%; height:100%; align-items:center; justify-content:center; flex-direction:column; position:absolute; top:0; left:0; z-index:1;">
-        <span class="ph-icon">📷</span>
-        <span class="ph-lbl" style="color:var(--text-soft)">Foto toevoegen</span>
-        <span class="ph-sub">plak URL</span>
-      </div>
-      <!-- Image Wrapper -->
-      <div class="img-wrap" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; display:none;">
-        <img src="${finalUrl}" alt="foto" style="width:100%; height:100%; object-fit:cover;" 
-             onload="this.closest('.photo-slot').querySelector('.img-wrap').style.display='block'; this.closest('.photo-slot').querySelector('.placeholder-view').style.display='none';" 
-             onerror="this.closest('.photo-slot').querySelector('.img-wrap').style.display='none'; this.closest('.photo-slot').querySelector('.placeholder-view').style.display='flex';">
-        <button class="img-del" onclick="removePhoto('${item.id}',${idx},event)" title="Foto verwijderen" style="z-index:3;">×</button>
-      </div>
-    </div>`;
-  });
+  if (photos.length === 0) return "";
+  const slots = photos.map(src =>
+    `<div class="photo-slot" onclick="openLightbox('${src}')"><img src="${src}" alt="foto" loading="lazy"></div>`
+  );
   return `<p class="photo-strip-label">Foto's</p><div class="photo-strip">${slots.join("")}</div>`;
 }
 
