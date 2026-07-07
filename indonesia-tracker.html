@@ -88,8 +88,7 @@
    DATA & SCHEDULING (SHARED LOGIC)
    ================================================================ */
 const FASES = {
-  heen:    { label: "Vlucht heen",  color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Heenreis vanuit Brussel (overstap in Bangkok) naar Singapore.", desc: "Matthew en Arne stappen op 28 augustus op het vliegtuig vanuit Brussel richting Bangkok met THAI Airlines. Na een korte overstap vliegen ze door naar Singapore, waar ze op 29 augustus om 11:15 landen. De eerste dag staat in het teken van een zachte aankomst — bijkomen van de tijdzone en uitkijken naar het avontuur dat komen gaat." },
-  sg:      { label: "Singapore",    color: "#00b4d8", soft: "rgba(0, 180, 216, 0.1)", uitleg: "Acclimatiseren, Gardens by the Bay en heerlijk streetfood.", desc: "Eén volle dag Singapore om te acclimatiseren en de stad te verkennen. Op het programma: Gardens by the Bay met de spectaculaire Supertrees, de infinity pool van Marina Bay Sands bewonderen en avondeten bij een van de levendige hawker centres. De perfecte tussenstop voor het echte avontuur in Indonesië begint." },
+  heen:    { label: "Vlucht heen",  color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Heenreis vanuit Brussel naar Medan, met korte overstap in Singapore.", desc: "Matthew en Arne vliegen op 29 augustus met Singapore Airlines (SQ303) vanuit Brussel naar Singapore, waar ze op 30 augustus om 06:40 landen. Na een korte overstap van 50 minuten in Changi vliegen ze door met SQ990 naar Medan, waar ze om 08:00 aankomen. Geen tussenstop om te chillen — de reis gaat rechtstreeks door richting het avontuur." },
   sumatra: { label: "Sumatra",      color: "#4ad66d", soft: "rgba(74, 214, 109, 0.1)", uitleg: "Intense 5-daagse jungle trekking in Ketambe met de hele crew.", desc: "Na een vlucht naar Medan volgt een marathon rit van 7-8 uur de oerwouden in naar Ketambe, diep in het hart van Sumatra. Met 6 man — Matthew, Arne, Kamiel, Eliott, Kasper en Willem — wordt een intensieve 5-daagse all-in jungle trekking gedaan, compleet met orang-oetans, nachtelijke geluiden en jungle overnachtingen. Een van de meest avontuurlijke en onvergetelijke onderdelen van de hele reis." },
   jakarta: { label: "Jakarta",      color: "#f77f00", soft: "rgba(247, 127, 0, 0.1)", uitleg: "Aankomst in de hoofdstad en samenkomst van de complete groep van 9.", desc: "Na de jungle is het tijd voor de bruisende hoofdstad Jakarta, waar Maurice, Mathias en Jens de groep versterken — nu zijn alle 9 reizigers voor het eerst bij elkaar. Eén nacht in de stad: bijkomen, Kota Tua verkennen en de groep samenvoegen. Het is ook het moment om bij te trekken voor de avontuurlijke Java-etappe die volgt." },
   java:    { label: "Java",         color: "#9d4edd", soft: "rgba(157, 78, 221, 0.1)", uitleg: "Reis langs Yogyakarta, Borobudur, Prambanan en Bromo/Ijen vulkanen.", desc: "Java biedt een indrukwekkend programma: Yogyakarta, Borobudur en Prambanan, gevolgd door een nachttrein naar Malang. Matthew wacht in Surabaya op Hinke terwijl de jongens Tumpak Sewu en Mount Bromo verkennen. Zodra Hinke landt op 14 september reizen ze samen verder — Kawah Ijen blauwvuur, daarna Flores." },
@@ -101,7 +100,6 @@ const FASES = {
 
 const FASE_PHOTOS = {
   heen:    [],
-  sg:      ["images/singapore_famoushotel.webp", "images/singapore_bigtree.webp", "images/singapore_airport_waterval.jpg"],
   sumatra: ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", "images/sumatra_Waterval.jpg"],
   jakarta: ["images/jakartanightskyline.jpg", "images/jakarta.jpg"],
   java:    ["images/Yogyakartatempel.jpg", "images/mountbromo.webp", "images/Ijen.jpeg", "images/tumpaksewuwaterval.webp", "images/Yogyakartamonument.jpeg", "images/bromo.jpg", "images/bromoblauwvuur.jpeg", "images/Yogyakartahandmonument.jpg"],
@@ -127,9 +125,9 @@ const PERSONS = {
 const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
 
 const PERSON_TRIPS = {
-  matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
+  matthew: ["t1", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
   hinke:   ["t41", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  arne:    ["t1", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   jens:    ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
@@ -142,7 +140,7 @@ const PERSON_TRIPS = {
 const PERSON_GROUP_INFO = {
   matthew: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>28/08 – 31/08:</b> Matthew + Arne (Brussel → Bangkok → Singapore → Medan); 31/08 overnachting in Medan</li>
+      <li><b>29/08 – 30/08:</b> Matthew + Arne (Brussel → Singapore → Medan, SQ303+SQ990, korte overstap Changi); 30-31/08 overnachting in Medan, wachten op de rest</li>
       <li><b>01/09, Medan:</b> Ontmoeting met Kamiel, Eliott, Kasper & Willem (vlucht vanuit Jakarta) — alle 6 man naar Ketambe</li>
       <li><b>08/09, Jakarta:</b> Maurice, Mathias & Jens sluiten aan — crew compleet met 9 man voor Java</li>
       <li><b>11/09, Malang:</b> Matthew splitst af naar Surabaya; de jongens gaan naar Tumpak Sewu/Bromo</li>
@@ -167,7 +165,7 @@ const PERSON_GROUP_INFO = {
   `,
   arne: `
     <ul class="details" style="font-size:14.5px">
-      <li><b>28/08 – 31/08:</b> Samen met Matthew (Brussel → Bangkok → Singapore → Medan); 31/08 overnachting in Medan</li>
+      <li><b>29/08 – 30/08:</b> Samen met Matthew (Brussel → Singapore → Medan, SQ303+SQ990, korte overstap Changi); 30-31/08 overnachting in Medan, wachten op de rest</li>
       <li><b>01/09 – 07/09:</b> Met de jongens de Sumatra-jungle in (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
       <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep compleet met 9 man)</li>
       <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
@@ -271,8 +269,7 @@ const PERSON_GROUP_INFO = {
 };
 
 const COSTS = {
-  c1:  { label: "Vlucht BRU → Bangkok → Singapore (THAI)", cat: "vlucht", amount: 464.23 },
-  c2:  { label: "Vlucht Singapore → Medan (Scoot)", cat: "vlucht", amount: 71 },
+  c1:  { label: "Vlucht BRU → Singapore → Medan (Singapore Airlines, SQ303+SQ990)", cat: "vlucht", amount: null },
   c3:  { label: "Taxi/minibus Medan → Ketambe", cat: "transport", amount: 20 },
   c4:  { label: "Jungle trekking Ketambe (5d/4n, all-in)", cat: "activiteit", amount: 160 },
   c5:  { label: "Taxi/minibus Ketambe → Medan", cat: "transport", amount: 20 },
@@ -289,7 +286,6 @@ const COSTS = {
   c15: { label: "Vlucht Labuan Bajo → Bali", cat: "vlucht", amount: null },
   c16: { label: "Bali villa (26-29 sep)", cat: "accommodatie", amount: 101 },
   c17: { label: "Terugvlucht Bali → huis", cat: "vlucht", amount: null },
-  c18: { label: "Hotel Singapore (2n)", cat: "accommodatie", amount: 90 },
   c19: { label: "Hotel Jakarta (1n)", cat: "accommodatie", amount: 35 },
   c20: { label: "Hotel Yogyakarta (1n)", cat: "accommodatie", amount: 30 },
   c21: { label: "Bromo + Tumpak Sewu (jeep-tour + entree, met Hinke)", cat: "activiteit", amount: 25 },
@@ -313,9 +309,8 @@ const PTS = {
 };
 
 const TRIP = [
-  { id:"t1", fase:"heen", start:"2026-08-28", end:"2026-08-29", title:"Brussel → Bangkok → Singapore (met Arne)", details:[], costs:["c1"], map:["singapore"] },
-  { id:"t2", fase:"sg", start:"2026-08-29", end:"2026-08-30", title:"Singapore (met Arne)", details:[], costs:["c18"], map:["singapore"] },
-  { id:"t3", fase:"sumatra", start:"2026-08-31", end:"2026-08-31", title:"Singapore → Medan — Matthew & Arne (Scoot)", details:["Matthew & Arne vliegen 31/08 van Singapore naar Medan en overnachten daar. De volgende dag ontmoeten zij Kamiel, Eliott, Kasper & Willem die arriveren vanuit Jakarta."], costs:["c2"], map:["singapore","medan"] },
+  { id:"t1", fase:"heen", start:"2026-08-29", end:"2026-08-30", title:"Brussel → Singapore → Medan (met Arne)", details:["SQ303: BRU 11:45 (29/08) → SIN 06:40 (30/08), Singapore Airlines. Overstap 50 min in Changi. SQ990: SIN 07:30 → Medan (KNO) 08:00 (30/08)."], costs:["c1"], map:["singapore","medan"] },
+  { id:"t3", fase:"sumatra", start:"2026-08-30", end:"2026-08-31", title:"Medan — aankomst & wachten op de rest", details:["Matthew & Arne overnachten twee nachten in Medan. Op 01/09 ontmoeten zij Kamiel, Eliott, Kasper & Willem die arriveren vanuit Jakarta, waarna ze samen naar Ketambe vertrekken."], costs:[], map:["medan"] },
   { id:"t4", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Medan → Ketambe — alle 6 man samen", details:["Alle 6 man: Matthew, Arne, Willem, Kasper, Eliott, Kamiel. Matthew & Arne sliepen de nacht ervoor al in Medan. Kamiel, Eliott, Kasper & Willem arriveren met vlucht vanuit Jakarta. Na aankomst samen taxi naar Ketambe (rit ±7-8u)."], costs:["c3"], map:["medan","ketambe"] },
   { id:"t5", fase:"sumatra", start:"2026-09-02", end:"2026-09-06", title:"Jungle trekking — Ketambe", details:[], costs:["c4"], map:["ketambe"] },
   { id:"t6", fase:"sumatra", start:"2026-09-07", end:"2026-09-07", title:"Ketambe → Medan → Jakarta", details:[], costs:["c5","c6"], map:["ketambe","medan","jakarta"] },
@@ -769,9 +764,12 @@ function closeLightbox() {
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
 
+let lockedPhotoTimer = null;
+
 function updateLockedPhotos(faseKey, tripIds) {
   const panel = document.getElementById("lockedPhotosPanel");
   if (!panel) return;
+  if (lockedPhotoTimer) { clearInterval(lockedPhotoTimer); lockedPhotoTimer = null; }
   if (!faseKey) { panel.style.display = "none"; return; }
 
   const fase = FASES[faseKey];
@@ -789,7 +787,7 @@ function updateLockedPhotos(faseKey, tripIds) {
 
   panel.innerHTML = `
     <div class="locked-photo-wrap">
-      ${hero ? `<img id="lockedPhotoHero" src="${hero}" class="locked-photo-hero" loading="lazy" alt="" onclick="openLightbox('${hero}')">` : `<div class="locked-photo-placeholder"><span>${fase.label}</span></div>`}
+      ${hero ? `<img id="lockedPhotoHero" src="${hero}" class="locked-photo-hero" loading="lazy" alt="" onclick="openLightbox(this.src)">` : `<div class="locked-photo-placeholder"><span>${fase.label}</span></div>`}
       ${thumbsHtml}
     </div>
     <div class="locked-phase-info">
@@ -799,6 +797,19 @@ function updateLockedPhotos(faseKey, tripIds) {
     </div>
   `;
   panel.style.display = "block";
+
+  if (photos.length > 1) {
+    let idx = 0;
+    const heroImg = document.getElementById("lockedPhotoHero");
+    lockedPhotoTimer = setInterval(() => {
+      idx = (idx + 1) % photos.length;
+      heroImg.classList.add("fading");
+      setTimeout(() => {
+        heroImg.src = photos[idx];
+        heroImg.classList.remove("fading");
+      }, 300);
+    }, 3000);
+  }
 }
 
 function toggleStepperCollapse(faseKey) {
