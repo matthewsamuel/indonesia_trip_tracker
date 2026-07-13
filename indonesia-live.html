@@ -380,6 +380,244 @@
     border-radius: 10px;
     transition: width 0.4s ease;
   }
+
+  /* Tickets Panel */
+  .tickets-panel {
+    margin-bottom: 24px;
+  }
+
+  .tickets-scroll {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+  }
+
+  .ticket-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ticket-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--teal);
+    box-shadow: 0 8px 24px rgba(0, 180, 216, 0.15);
+  }
+
+  .ticket-card.empty {
+    border: 2px dashed rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.1);
+    color: var(--text-soft);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 240px;
+  }
+
+  .ticket-card.empty:hover {
+    border-color: var(--teal);
+    background: rgba(0,180,216,0.04);
+  }
+
+  .ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding-bottom: 10px;
+  }
+
+  .ticket-route {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--teal);
+    letter-spacing: 0.05em;
+  }
+
+  .ticket-type {
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(0,180,216,0.15);
+    color: var(--teal);
+    font-weight: 600;
+  }
+
+  .ticket-body {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .ticket-from-to {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .ticket-location {
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .ticket-arrow {
+    color: var(--teal);
+    font-weight: 500;
+  }
+
+  .ticket-date {
+    font-size: 12px;
+    color: var(--text-soft);
+    margin-top: 8px;
+  }
+
+  .ticket-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  .ticket-upload-btn {
+    flex: 1;
+    background: rgba(0,180,216,0.1);
+    border: 1px solid rgba(0,180,216,0.2);
+    color: var(--teal);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .ticket-upload-btn:hover {
+    background: var(--teal-soft);
+    border-color: var(--teal);
+  }
+
+  .ticket-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .ticket-empty-placeholder {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .ticket-empty-placeholder strong {
+    color: #fff;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* Tickets Gallery Modal */
+  .tickets-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .tickets-modal-overlay.open {
+    display: flex;
+  }
+
+  .tickets-modal-content {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow-y: auto;
+    width: 100%;
+    position: relative;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .modal-close:hover {
+    transform: scale(1.1);
+  }
+
+  .tickets-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .ticket-gallery-item {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .ticket-gallery-item:hover {
+    border-color: var(--teal);
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,180,216,0.1);
+  }
+
+  .ticket-gallery-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ticket-gallery-info {
+    padding: 14px;
+  }
+
+  .ticket-gallery-route {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  .ticket-gallery-date {
+    font-size: 12px;
+    color: var(--text-soft);
+  }
 </style>
 </head>
 <body>
@@ -475,6 +713,26 @@
       <div class="groups-list" id="groups-container">
         <!-- Rendered by JS -->
       </div>
+    </div>
+  </div>
+
+  <!-- TICKETS & BOARDING PASSES -->
+  <section class="panel tickets-panel">
+    <h3 style="display:flex; align-items:center; gap:8px; margin-top:0; font-size:15px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft); border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:12px;">
+      🎫 Tickets &amp; Instapkaarten
+      <span id="ticketCountPill" style="margin-left:auto; background:var(--teal-soft); color:var(--teal); border:1px solid rgba(0,180,216,0.2); padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;">0 tickets</span>
+    </h3>
+    <div class="tickets-scroll" id="ticketsContainer">
+      <!-- Tickets rendered here -->
+    </div>
+  </section>
+
+  <!-- TICKETS GALLERY MODAL -->
+  <div id="ticketsModal" class="tickets-modal-overlay" onclick="closeTicketsGallery()">
+    <div class="tickets-modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeTicketsGallery()">×</button>
+      <h2 style="margin-top:0;">Alle Tickets &amp; Boarding Passes</h2>
+      <div class="tickets-gallery-grid" id="ticketsGalleryGrid"></div>
     </div>
   </div>
 
@@ -779,7 +1037,7 @@ let activeTab = "overzicht";
 function getStatusOnSimulatedDate(key) {
   const p = DATA[key];
   let currentLog = null;
-  
+
   // Find the last log entry that occurred on or before simulationDateStr
   for (let i = 0; i < p.log.length; i++) {
     if (p.log[i].date <= simulationDateStr) {
@@ -789,6 +1047,25 @@ function getStatusOnSimulatedDate(key) {
     }
   }
   return currentLog;
+}
+
+// Helper: Calculate which day of the trip this is for a specific person
+function getPersonTravelDay(key) {
+  const p = DATA[key];
+  const schedDates = p.log.map(e => e.date);
+  if (schedDates.length === 0) return 0; // nog niet vertrokken
+
+  const earliestDate = new Date(schedDates[0]);
+  const currentSimDate = new Date(simulationDateStr);
+
+  if (currentSimDate < earliestDate) {
+    return 0; // nog niet vertrokken
+  }
+
+  const diffTime = currentSimDate - earliestDate;
+  const dayNum = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 omdat dag 1 de eerste dag is
+
+  return dayNum;
 }
 
 function renderOverview(){
@@ -920,8 +1197,10 @@ function renderPanels(){
     }
   }
 
+  const travelDay = getPersonTravelDay(key);
+  const dayLabel = travelDay > 0 ? ` — Dag ${travelDay} van hun reis` : "";
   const currentBox = `<div class="current-box">
-    <div class="label">Status op deze dag (${fmtDate(simulationDateStr)})</div>
+    <div class="label">Status op deze dag (${fmtDate(simulationDateStr)})${dayLabel}</div>
     <div class="place">${last ? last.location : "Nog in Brussel (Thuis)"}</div>
     <div class="meta">${last ? fmtDate(last.date) + (last.note ? " — "+last.note : "") + (last.planned ? " (gepland)" : " (live update)") : "Nog niet vertrokken."}</div>
   </div>`;
@@ -1182,6 +1461,7 @@ function renderAll(){
   renderPanels();
   renderMapNodes();
   renderGroupComposition();
+  renderTickets();
 }
 
 function downloadUpdatedSite(){
@@ -1209,6 +1489,132 @@ clockTimer = setInterval(updateLiveClocks, 1000);
 
 // Initialize slider position
 onSliderChange(0);
+
+/* ================================================================
+   TICKETS & BOARDING PASSES
+   ================================================================ */
+
+// All flights extracted from TRIP data
+const FLIGHTS = [
+  { id: "sq303", route: "BRU → SIN", from: "Brussel", to: "Singapore", date: "2026-08-29", time: "11:45", operator: "Singapore Airlines", flightNo: "SQ303", passengers: ["matthew", "arne"] },
+  { id: "sq990", route: "SIN → Medan", from: "Singapore", to: "Medan", date: "2026-08-30", time: "07:30", operator: "Singapore Airlines", flightNo: "SQ990", passengers: ["matthew", "arne"] },
+  { id: "sq956", route: "SIN → Jakarta", from: "Singapore", to: "Jakarta", date: "2026-08-30", time: "09:05", operator: "Singapore Airlines", flightNo: "SQ956", passengers: ["eliott", "kamiel", "willem"] },
+  { id: "jak_medan", route: "Jakarta → Medan", from: "Jakarta", to: "Medan", date: "2026-09-01", time: "TBD", operator: "Lion Air", flightNo: "TBD", passengers: ["eliott", "kamiel", "willem"] },
+  { id: "med_jak", route: "Medan → Jakarta", from: "Medan", to: "Jakarta", date: "2026-09-07", time: "TBD", operator: "Lion Air", flightNo: "TBD", passengers: ["matthew", "arne", "eliott", "kamiel", "willem"] },
+  { id: "java_denp", route: "Java → Denpasar → Labuan Bajo", from: "Surabaya", to: "Labuan Bajo", date: "2026-09-18", time: "TBD", operator: "Garuda Indonesia / Wings Air", flightNo: "TBD", passengers: ["matthew", "hinke"] },
+  { id: "labuan_bali", route: "Labuan Bajo → Bali", from: "Labuan Bajo", to: "Bali", date: "2026-09-25", time: "TBD", operator: "Garuda Indonesia", flightNo: "TBD", passengers: ["matthew", "hinke", "arne", "eliott", "jens", "kamiel", "maurice", "mathias", "willem", "kasper"] },
+  { id: "bali_home", route: "Bali → Brussel", from: "Bali", to: "Brussel", date: "2026-09-29", time: "TBD", operator: "Singapore Airlines", flightNo: "TBD", passengers: ["matthew", "hinke", "arne", "eliott", "jens", "kamiel", "kasper"] },
+  { id: "bali_vietnam", route: "Bali → Vietnam", from: "Bali", to: "Ho Chi Minh City", date: "2026-09-19", time: "TBD", operator: "TBD", flightNo: "TBD", passengers: ["maurice", "mathias", "willem"] }
+];
+
+function getTicketImage(ticketId) {
+  const stored = localStorage.getItem(`ticket_image_${ticketId}`);
+  return stored ? stored : null;
+}
+
+function setTicketImage(ticketId, dataUrl) {
+  localStorage.setItem(`ticket_image_${ticketId}`, dataUrl);
+  renderTickets();
+}
+
+function renderTickets() {
+  const container = document.getElementById("ticketsContainer");
+  if (!container) return;
+
+  container.innerHTML = FLIGHTS.map(flight => {
+    const image = getTicketImage(flight.id);
+    const canUpload = flight.passengers.includes(activeTab) || activeTab === "overzicht";
+
+    if (image) {
+      // Ticket has been uploaded
+      return `
+        <div class="ticket-card" onclick="openTicketsGallery('${flight.id}')">
+          <img src="${image}" alt="${flight.route}" class="ticket-image">
+          <div class="ticket-header">
+            <span class="ticket-route">${flight.route}</span>
+            <span class="ticket-type">Vlucht</span>
+          </div>
+          <div class="ticket-body">
+            <div class="ticket-from-to">
+              <span class="ticket-location">${flight.from.split("→")[0].trim()}</span>
+              <span class="ticket-arrow">→</span>
+              <span class="ticket-location">${flight.to.split("→").pop().trim()}</span>
+            </div>
+            <div class="ticket-date">${new Date(flight.date).toLocaleDateString("nl-NL", {day:"numeric", month:"short", year:"numeric"})}</div>
+          </div>
+          <div class="ticket-footer">
+            <input type="file" class="hidden-file-input" id="upload-${flight.id}" accept="image/*" onchange="handleImageUpload(event, '${flight.id}')">
+            <button class="ticket-upload-btn" onclick="document.getElementById('upload-${flight.id}').click(); event.stopPropagation();">Vervang foto</button>
+          </div>
+        </div>
+      `;
+    } else {
+      // Empty ticket placeholder
+      return `
+        <div class="ticket-card empty" onclick="canUpload ? document.getElementById('upload-${flight.id}').click() : null">
+          <div class="ticket-empty-placeholder">
+            <strong>${flight.from}</strong>
+            ↓<br>
+            <strong>${flight.to}</strong>
+            <div style="font-size:12px; margin-top:12px; opacity:0.7;">${new Date(flight.date).toLocaleDateString("nl-NL")}</div>
+            <div style="margin-top:14px; font-size:11px;">Klik om boarding pass<br>foto op te laden</div>
+          </div>
+          <input type="file" class="hidden-file-input" id="upload-${flight.id}" accept="image/*" onchange="handleImageUpload(event, '${flight.id}')" ${canUpload ? "" : "disabled"}>
+        </div>
+      `;
+    }
+  }).join("");
+
+  document.getElementById("ticketCountPill").textContent = `${FLIGHTS.filter(f => getTicketImage(f.id)).length} / ${FLIGHTS.length} tickets`;
+
+  // Add hidden file input styling
+  if (!document.querySelector("style[data-file-inputs]")) {
+    const style = document.createElement("style");
+    style.setAttribute("data-file-inputs", "true");
+    style.textContent = `.hidden-file-input { display: none; }`;
+    document.head.appendChild(style);
+  }
+}
+
+function handleImageUpload(event, ticketId) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    setTicketImage(ticketId, dataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function openTicketsGallery(activeTicketId = null) {
+  const modal = document.getElementById("ticketsModal");
+  const galleryGrid = document.getElementById("ticketsGalleryGrid");
+
+  galleryGrid.innerHTML = FLIGHTS.filter(f => getTicketImage(f.id)).map(flight => {
+    const image = getTicketImage(flight.id);
+    return `
+      <div class="ticket-gallery-item">
+        <img src="${image}" alt="${flight.route}" class="ticket-gallery-image">
+        <div class="ticket-gallery-info">
+          <div class="ticket-gallery-route">${flight.route}</div>
+          <div class="ticket-gallery-date">${flight.flightNo}<br>${new Date(flight.date).toLocaleDateString("nl-NL", {day:"numeric", month:"long"})}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  modal.classList.add("open");
+}
+
+function closeTicketsGallery() {
+  const modal = document.getElementById("ticketsModal");
+  modal.classList.remove("open");
+}
+
+// Initial render
+renderTickets();
 </script>
 </body>
 </html>
