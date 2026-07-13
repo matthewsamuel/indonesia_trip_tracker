@@ -100,6 +100,7 @@ const COSTS = {
   c22: { label: "Kawah Ijen (entree + gids)", cat: "activiteit", amount: 18 },
   c23: { label: "Komodo dagtour (boot, Padar + Pink Beach + Komodo + Manta)", cat: "activiteit", amount: 68 },
   c24: { label: "Hotel Surabaya (11–13/09, 3n, wachten op Hinke)", cat: "accommodatie", amount: 75 },
+  c25: { label: "Villa Blimbing, Wonderhouz Premium (15-16/09, 1n, met Hinke)", cat: "accommodatie", amount: 40, url: "https://www.airbnb.com/rooms/1574650852556499790" },
 };
 
 const TRIP = [
@@ -157,6 +158,11 @@ const TRIP = [
     title:"Hinke landt in Surabaya — ze zijn samen",
     details:["Hinke landt 14/09 om 8u 's ochtends — Matthew staat haar op te wachten","Transfer naar hotel, rust na de reis","Vanaf hier reist Matthew met Hinke verder (niet meer met de jongens)"],
     costs:["c9"], map:["surabaya"] },
+
+  { id:"t11b", fase:"java", start:"2026-09-15", end:"2026-09-16",
+    title:"Villa in Blimbing (met Hinke) — rustdag",
+    details:["Wonderhouz Premium Villa, hosted by Irene Iola Auxilia","Check-in Tue Sep 15 at 3:00 PM, check-out Wed Sep 16 at 12:00 PM","Adres: No 2C Breezia Villa, Allegro Cluster, Blimbing, East Java","Confirmation code: HMJFAKQ8FH","Een rustdag voor Matthew & Hinke in een mooie villa voordat ze de Bromo/Tumpak Sewu-dagtour doen"],
+    costs:["c25"], map:["malang"] },
 
   { id:"t12", fase:"java", start:"2026-09-16", end:"2026-09-16",
     title:"Bromo + Tumpak Sewu (met Hinke)",
@@ -464,8 +470,8 @@ const PERSONS = {
 const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
 
 const PERSON_TRIPS = {
-  matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  hinke:   ["t41", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
+  matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
+  hinke:   ["t41", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
   arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
   jens:    ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
@@ -675,7 +681,6 @@ function renderTimeline(){
             <h3>${item.title}</h3>
             ${compactBadgesHtml}
           </div>
-          <span class="badge ${st}">${STATUS_LABEL[st]}</span>
         </div>
         ${detailsHtml}
         ${photoStripHtml(item)}
