@@ -615,10 +615,11 @@
       <!-- Maurice, Mathias, Jens -->
       <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(74,214,109,0.3); border-radius: 12px; padding: 14px;">
         <div style="font-weight: 700; color: #fff; font-size: 13px; margin-bottom: 8px;">👥 Maurice, Mathias, Jens</div>
-        <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 6px;">📅 Woensdag 7 sep 2026</div>
-        <div style="font-size: 12px; color: #ffb703; font-weight: 600; margin-bottom: 6px;"><span style="background: rgba(255,183,3,0.2); border: 1px solid rgba(255,183,3,0.4); padding: 2px 6px; border-radius: 4px;">TBD</span> Vluchtdetails</div>
-        <div style="font-size: 12px; color: #cbd5e1;"><strong>Bestemming:</strong> BRU → Jakarta</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 6px;"><em>Exact vluchtnummer en tijd nog in te vullen</em></div>
+        <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 6px;">📅 Maandag 7 sep 2026</div>
+        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;"><strong>Vlucht:</strong> SQ303 + SQ952 (Singapore Airlines)</div>
+        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;"><strong>Vertrek:</strong> BRU 11:45</div>
+        <div style="font-size: 12px; color: #4ad66d;"><strong>Aankomst:</strong> CGK 08:25 (08/09)</div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;"><em>Boekingsref. Jens: FSXOOZ · €680,77 pp</em></div>
       </div>
 
       <!-- Hinke -->
@@ -876,54 +877,9 @@
 </div>
 <div id="mapTooltip" class="map-tooltip"></div>
 
+<script src="data.js"></script>
 <script>
-/* ══════════════════════════════════════════════════════════
-   GEDEELDE DATA (gesynchroniseerd met tracker)
-   ══════════════════════════════════════════════════════════ */
-const PERSONS = {
-  matthew: { name:"Matthew", color:"#0F6B5C" },
-  hinke:   { name:"Hinke",   color:"#C8567D" },
-  arne:    { name:"Arne",    color:"#5B7FB5" },
-  eliott:  { name:"Eliott",  color:"#D97A2B" },
-  jens:    { name:"Jens",    color:"#6B4E9C" },
-  kamiel:  { name:"Kamiel",  color:"#4A8B3B" },
-  maurice: { name:"Maurice", color:"#C8932B" },
-  mathias: { name:"Mathias", color:"#1C8AA0" },
-  willem:  { name:"Willem",  color:"#C75D3A" },
-  kasper:  { name:"Kasper",  color:"#8A6D3B" }
-};
-const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
 
-const COSTS = {
-  c1:  { label:"Vlucht BRU → Bangkok → Singapore (THAI)", amount:464.23 },
-  c2:  { label:"Vlucht Singapore → Medan (Scoot)",         amount:71 },
-  c3:  { label:"Taxi/minibus Medan → Ketambe",             amount:20 },
-  c5:  { label:"Taxi/minibus Ketambe → Medan",             amount:20 },
-  c6:  { label:"Vlucht Jakarta ↔ Medan (Lion Air)",          amount:212 },
-  c7:  { label:"Trein Jakarta → Yogyakarta",               amount:20 },
-  c8:  { label:"Nachttrein Yogyakarta → Malang",           amount:15 },
-  c11: { label:"Vlucht Java → Denpasar → Labuan Bajo",     amount:null },
-  c15: { label:"Vlucht Labuan Bajo → Bali",                amount:null },
-  c17: { label:"Terugvlucht Bali → huis",                  amount:null },
-  c21: { label:"Bromo + Tumpak Sewu (jeep-tour)",          amount:25 },
-  c22: { label:"Kawah Ijen (entree + gids)",               amount:18 },
-};
-
-/* PTS met BRU erbij (coördinaten voor SVG viewBox 900×400) */
-const PTS = {
-  bru:        { x:50,  y:120, label:"BRU",           dx:5,  dy:-10, anchor:"middle" },
-  singapore:  { x:304, y:112, label:"SIN (Changi)",  dx:9,  dy:3,   anchor:"start"  },
-  medan:      { x:143, y:61,  label:"KNO (Medan)",   dx:9,  dy:3,   anchor:"start"  },
-  ketambe:    { x:112, y:58,  label:"Ketambe",       dx:-9, dy:3,   anchor:"end"    },
-  jakarta:    { x:399, y:285, label:"CGK (Jakarta)", dx:9,  dy:3,   anchor:"start"  },
-  yogya:      { x:508, y:321, label:"Yogyakarta",    dx:-9, dy:10,  anchor:"end"    },
-  malang:     { x:579, y:325, label:"Malang",        dx:9,  dy:14,  anchor:"start"  },
-  surabaya:   { x:583, y:309, label:"Surabaya",      dx:9,  dy:-6,  anchor:"start"  },
-  banyuwangi: { x:634, y:331, label:"Banyuwangi",    dx:9,  dy:-6,  anchor:"start"  },
-  bali:       { x:660, y:341, label:"DPS (Bali)",    dx:9,  dy:6,   anchor:"start"  },
-  labuanbajo: { x:806, y:337, label:"LBJ (L.Bajo)",  dx:-9, dy:-6,  anchor:"end"    },
-  ruteng:     { x:824, y:340, label:"Ruteng",        dx:9,  dy:8,   anchor:"start"  }
-};
 
 /* ══════════════════════════════════════════════════════════
    TRANSPORT LEGS — kern data voor kaart, blokweergave en tickets
@@ -1180,6 +1136,19 @@ const TRANSPORT_LEGS = [
     terminal:null, times:"TBD", cost_id:null, ref:null,
     fromPt:"bali", toPt:"bru", qx:350, qy:55,
     persons:["maurice","mathias","willem"]
+  },
+  {
+    id:"tl22", type:"int_vlucht", icon:"✈️",
+    date:"2026-09-07", dateD:"07", dateM:"sep",
+    fromIATA:"BRU", toIATA:"CGK",
+    fromLabel:"Brussel Airport", toLabel:"Jakarta Soekarno-Hatta (via SIN)",
+    title:"Brussel → Singapore → Jakarta (Maurice, Mathias, Jens)",
+    sub:"Singapore Airlines · SQ303 (BRU→SIN) + SQ952 (SIN→CGK)",
+    operator:"Singapore Airlines", flightNum:"SQ303 + SQ952",
+    terminal:"Pier B → Changi T2",
+    times:"11:45 (07/09) → 08:25 (08/09)", cost_id:null, ref:"FSXOOZ",
+    fromPt:"bru", toPt:"jakarta", qx:150, qy:45,
+    persons:["jens","maurice","mathias"]
   }
 ];
 
@@ -1194,7 +1163,9 @@ const FLIGHT_DB = {
   JT383:{flight:"JT383",airline:"Lion Air",aircraft:"Boeing 737-900ER (PK-LGP)",altitude:"35,000 ft",speed:"810 km/h",duration:"2u 25m",route:"KNO (Medan Kualanamu) → CGK (Jakarta Soekarno-Hatta)",gate:"Terminal 2D, Gate 3",baggage:"Terminal 2D, Band 4",risk:"Gemiddeld (6.2%)",status:"Scheduled",blipPos:{top:150,left:380}},
   GA402:{flight:"GA402",airline:"Garuda Indonesia",aircraft:"Boeing 737-800 (PK-GFM)",altitude:"34,000 ft",speed:"810 km/h",duration:"1u 45m",route:"SUB (Surabaya Juanda) → LBJ (Labuan Bajo Komodo)",gate:"Terminal 1, Gate 5",baggage:"Arrival Hall, Belt A",risk:"Zeer Laag (0.5%)",status:"Scheduled",blipPos:{top:165,left:550}},
   QZ503:{flight:"QZ503",airline:"Indonesia AirAsia",aircraft:"Airbus A320-200 (PK-AXV)",altitude:"24,000 ft",speed:"680 km/h",duration:"1u 10m",route:"LBJ (Labuan Bajo Komodo) → DPS (Bali Denpasar)",gate:"Gate 2 (Platformloopbrug)",baggage:"Domestic Arrivals, Belt 1",risk:"Gemiddeld (14.2%)",status:"Scheduled",blipPos:{top:172,left:630}},
-  QR959:{flight:"QR959",airline:"Qatar Airways",aircraft:"Boeing 777-300ER (A7-BEP)",altitude:"33,000 ft",speed:"890 km/h",duration:"9u 35m",route:"DPS (Bali Denpasar) → DOH (Hamad Airport Qatar)",gate:"International Pier, Gate 15",baggage:"N/A - Transit",risk:"Laag (4.1%)",status:"Scheduled",blipPos:{top:180,left:660}}
+  QR959:{flight:"QR959",airline:"Qatar Airways",aircraft:"Boeing 777-300ER (A7-BEP)",altitude:"33,000 ft",speed:"890 km/h",duration:"9u 35m",route:"DPS (Bali Denpasar) → DOH (Hamad Airport Qatar)",gate:"International Pier, Gate 15",baggage:"N/A - Transit",risk:"Laag (4.1%)",status:"Scheduled",blipPos:{top:180,left:660}},
+  SQ303:{flight:"SQ303",airline:"Singapore Airlines",aircraft:"Airbus A350-900",altitude:"38,000 ft",speed:"905 km/h",duration:"12u 55m",route:"BRU (Brussel Airport) → SIN (Singapore Changi)",gate:"Pier B",baggage:"Terminal 2",risk:"Zeer Laag (0.5%)",status:"Scheduled",blipPos:{top:60,left:120}},
+  SQ952:{flight:"SQ952",airline:"Singapore Airlines",aircraft:"Airbus A350-900",altitude:"37,000 ft",speed:"860 km/h",duration:"1u 45m",route:"SIN (Singapore Changi T2) → CGK (Jakarta Soekarno-Hatta T3)",gate:"Terminal 2",baggage:"Terminal 3 Arrival Hall",risk:"Zeer Laag (0.6%)",status:"Scheduled",blipPos:{top:120,left:240}}
 };
 
 const AIRPORTS_DB = {
@@ -1299,8 +1270,7 @@ function getOperatorUrl(op) {
 /* ══════════════════════════════════════════════════════════
    HELPERS
    ══════════════════════════════════════════════════════════ */
-function ls_get(key,fallback){try{const v=localStorage.getItem(key);return v===null?fallback:JSON.parse(v);}catch(e){return fallback;}}
-function ls_set(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+
 
 function typeClass(t){ return t.replace("_","-"); }
 
