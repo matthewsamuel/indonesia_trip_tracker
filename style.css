@@ -523,13 +523,20 @@ svg#routemap {
 }
 .map-pt {
   cursor: pointer;
+  transition: opacity 0.3s ease;
 }
 .map-pt circle.halo {
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.25s ease, fill 0.3s ease;
 }
 .map-pt:hover circle.halo {
   opacity: 0.25;
+}
+.map-pt.is-active circle.halo {
+  opacity: 0.2;
+}
+.map-pt circle.dot {
+  transition: fill 0.3s ease;
 }
 .map-pt text {
   font-size: 10px;
@@ -540,6 +547,7 @@ svg#routemap {
   stroke: #07090e;
   stroke-width: 3px;
   stroke-linejoin: round;
+  transition: fill 0.3s ease;
 }
 .map-legend {
   display: flex;
@@ -1809,6 +1817,7 @@ ul.history .hdel:hover {
   transform: rotate(-90deg);
 }
 .simple-step.collapsed .simple-step-desc,
+.simple-step.collapsed .simple-step-trips,
 .simple-step.collapsed .simple-step-companions-container,
 .simple-step.collapsed .stepper-photos {
   display: none !important;

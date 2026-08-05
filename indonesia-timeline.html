@@ -58,270 +58,27 @@
   <img id="lightboxImg" src="" alt="">
 </div>
 
+<script src="data.js"></script>
 <script>
 /* ================================================================
-   DATA & SCHEDULING (SHARED LOGIC)
+   TIMELINE LOGIC
    ================================================================ */
-const FASES = {
-  heen:    { label: "Vlucht heen",  color: "#4cc9f0", uitleg: "Heenreis vanuit Brussel (overstap in Bangkok) naar Singapore." },
-  sg:      { label: "Singapore",    color: "#00b4d8", uitleg: "Acclimatiseren, Gardens by the Bay en heerlijk streetfood." },
-  sumatra: { label: "Sumatra",      color: "#4ad66d", uitleg: "Intense 5-daagse jungle trekking in Ketambe met de hele crew." },
-  jakarta: { label: "Jakarta",      color: "#f77f00", uitleg: "Aankomst in de hoofdstad en samenkomst van de complete groep van 9." },
-  java:    { label: "Java",         color: "#9d4edd", uitleg: "Reis langs Yogyakarta, Borobudur, Prambanan en Bromo/Ijen vulkanen." },
-  flores:  { label: "Flores",       color: "#f72585", uitleg: "Verkenning van het bergachtige Flores, Ruteng en spinnenwebvelden." },
-  komodo:  { label: "Komodo",       color: "#00f5d4", uitleg: "Boottocht naar Padar Island, Pink Beach en Komodovaranen." },
-  bali:    { label: "Bali",         color: "#ffb703", uitleg: "Afsluitende ontspanning met luxe villa, strand en gezellig uit eten." },
-  terug:   { label: "Vlucht terug", color: "#4cc9f0", uitleg: "Terugreis naar huis of doorreis naar Vietnam." },
-};
 
-const COSTS = {
-  c1:  { label: "Vlucht BRU → Bangkok → Singapore (THAI)", cat: "vlucht", amount: 464.23 },
-  c2:  { label: "Vlucht Singapore → Medan (Scoot)", cat: "vlucht", amount: 71 },
-  c3:  { label: "Taxi/minibus Medan → Ketambe", cat: "transport", amount: 20 },
-  c4:  { label: "Jungle trekking Ketambe (5d/4n, all-in)", cat: "activiteit", amount: 160 },
-  c5:  { label: "Taxi/minibus Ketambe → Medan", cat: "transport", amount: 20 },
-  c6:  { label: "Vlucht Jakarta ↔ Medan (Lion Air)", cat: "vlucht", amount: 212 },
-  c7:  { label: "Trein Jakarta → Yogyakarta", cat: "transport", amount: 20 },
-  c7b: { label: "Tempels entree (Borobudur + Prambanan)", cat: "activiteit", amount: 40 },
-  c8:  { label: "Nachttrein Yogyakarta → Malang", cat: "transport", amount: 15 },
-  c9:  { label: "Overnachting Surabaya (1n)", cat: "accommodatie", amount: 40 },
-  c10: { label: "Overnachting Banyuwangi (2n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1420571119911855020" },
-  c11: { label: "Vlucht Java → Denpasar → Labuan Bajo", cat: "vlucht", amount: null },
-  c12: { label: "Overnachting Labuan Bajo (3n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1202849662764744783" },
-  c13: { label: "Overnachting Ruteng (2n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/50427330" },
-  c14: { label: "Overnachting Labuan Bajo, terugkeer (3n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/1202849662764744783" },
-  c15: { label: "Vlucht Labuan Bajo → Bali", cat: "vlucht", amount: null },
-  c16: { label: "Bali villa (26-29 sep)", cat: "accommodatie", amount: 101 },
-  c17: { label: "Terugvlucht Bali → huis", cat: "vlucht", amount: null },
-  c18: { label: "Hotel Singapore (2n)", cat: "accommodatie", amount: 90 },
-  c19: { label: "Hotel Jakarta (1n)", cat: "accommodatie", amount: 35 },
-  c20: { label: "Hotel Yogyakarta (1n)", cat: "accommodatie", amount: 30 },
-  c21: { label: "Bromo + Tumpak Sewu (jeep-tour + entree, met Hinke)", cat: "activiteit", amount: 25 },
-  c22: { label: "Kawah Ijen (entree + gids)", cat: "activiteit", amount: 18 },
-  c23: { label: "Komodo dagtour (boot, Padar + Pink Beach + Komodo + Manta)", cat: "activiteit", amount: 68 },
-  c24: { label: "Hotel Surabaya (11–13/09, 3n, wachten op Hinke)", cat: "accommodatie", amount: 75 },
-  c25: { label: "Villa Blimbing, Wonderhouz Premium (15-16/09, 1n, met Hinke)", cat: "accommodatie", amount: 40, url: "https://www.airbnb.com/rooms/1574650852556499790" },
-};
 
-const TRIP = [
-  { id:"t1", fase:"heen", start:"2026-08-28", end:"2026-08-29",
-    title:"Brussel → Bangkok → Singapore (met Arne)",
-    details:["THAI TG935 (BRU 13:30) → Bangkok, overstap 2u25","THAI TG403 → Singapore, aankomst 29/08 11:15","Totale reistijd ca. 15u45","Samen met Arne — de rest van de jongens komt apart toe"],
-    costs:["c1"], map:["singapore"] },
 
-  { id:"t2", fase:"sg", start:"2026-08-29", end:"2026-08-30",
-    title:"Singapore (met Arne)",
-    details:["Aankomst 29/08 om 11:15 — inchecken, rust en acclimatiseren","Gardens by the Bay 's avonds (gratis wandelen, Supertrees & Flower Dome)","Hawker centre: Maxwell Food Centre, Lau Pa Sat of Tiong Bahru Market","Chinatown & Little India verkennen, Clarke Quay voor een drankje","Marina Bay Sands rooftop (optioneel)","MRT is spotgoedkoop en makkelijk — EZ-Link OV-kaart kopen bij aankomst","Tip: 30/08 vroeg koffie/ontbijt, dan naar het vliegveld voor 14:45 vlucht"],
-    costs:["c18"], map:["singapore"], openNote:true },
+function getTripDayRange(startStr, endStr, personKey) {
+  // Find this person's first trip date
+  let personTripStart = TRIP_START_DATE;
+  if (personKey && PERSON_TRIPS[personKey]) {
+    const tripIds = PERSON_TRIPS[personKey];
+    const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+    if (personTrips.length > 0) {
+      const sortedByDate = personTrips.sort((a, b) => a.start.localeCompare(b.start));
+      personTripStart = sortedByDate[0].start;
+    }
+  }
 
-  { id:"t3", fase:"sumatra", start:"2026-08-31", end:"2026-08-31",
-    title:"Singapore → Medan → Ketambe",
-    details:["Vlucht Scoot SIN → Medan (KNO), 14:45–15:15, met Arne","In Medan ontmoeten ze de rest van de jongens (6 man voor de jungle: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)","Medan zelf overslaan","Taxi/minibus naar Ketambe, 7-8u rijden"],
-    costs:["c2","c3"], map:["singapore","medan","ketambe"] },
-
-  { id:"t4", fase:"sumatra", start:"2026-09-01", end:"2026-09-01",
-    title:"Ketambe — aankomst & voorbereiding",
-    details:["Aankomst vanuit Medan na lange rit (7-8u)","Check-in guesthouse in Ketambe — klein, authentiek dorpje aan de bosrand van het Gunung Leuser NP","Briefing door de jungle guide: route, uitrusting check, wat te verwachten (orang-oetans, gibbons, neusapen)","Voorbereiding: rugzak inpakken, laarzen, regenponcho, DEET","Vroeg naar bed — de trekking begint morgen vroeg","Tip: neem genoeg cash mee vanuit Medan, er zijn geen geldautomaten in Ketambe"],
-    costs:[], map:["ketambe"] },
-
-  { id:"t5", fase:"sumatra", start:"2026-09-02", end:"2026-09-06",
-    title:"Jungle trekking — Ketambe",
-    details:["5 dagen / 4 nachten, alles inclusief","Met de 6-koppige jungle-crew: Matthew, Arne, Willem, Kasper, Eliott, Kamiel"],
-    costs:["c4"], map:["ketambe"] },
-
-  { id:"t6", fase:"sumatra", start:"2026-09-07", end:"2026-09-07",
-    title:"Ketambe → Medan → Jakarta",
-    details:["Taxi/minibus Ketambe → Medan, 7-8u rijden","Vlucht Medan → Jakarta (Lion Air, 19:00), Medan overslaan"],
-    costs:["c5","c6"], map:["ketambe","medan","jakarta"] },
-
-  { id:"t7", fase:"jakarta", start:"2026-09-08", end:"2026-09-08",
-    title:"Jakarta — Maurice (Momo), Mathias & Jens sluiten aan, crew compleet (9 man)",
-    details:["Aankomst 08:25 — inchecken, ontbijt, groep bijeenbrengen","Maurice (Momo), Mathias & Jens sluiten aan → groep van 9 compleet","Slechts 1 dag in Jakarta: Kota Tua (oud-Batavia, koloniale architectuur) of SCBD/Sudirman voor sfeer","Warung eten in de buurt van het hotel, 's avonds terrasje in de buurt","Tip: Jakarta-verkeer is berucht — neem Gojek of Grab, nooit een taxi zonder meter","Volgende ochtend trein naar Yogyakarta — relaxte avond, vroeg bed"],
-    costs:["c19"], map:["jakarta"] },
-
-  { id:"t8", fase:"java", start:"2026-09-09", end:"2026-09-09",
-    title:"Jakarta → Yogyakarta",
-    details:["Dagtein Jakarta → Yogyakarta, 6u25 reistijd — comfortabel, mooi landschap","Aankomst Yogya: drop bagage, lunch in de buurt","'s Middags Prambanan (30 min rijden): 9e-eeuwse hindoetempels, UNESCO-werelderfgoed","'s Avonds Malioboro straat — souvenirs, street food, batik, sfeer","Nacht in Yogyakarta, morgen vroeg Borobudur"],
-    costs:["c7","c7b","c20"], map:["jakarta","yogya"] },
-
-  { id:"t9", fase:"java", start:"2026-09-10", end:"2026-09-10",
-    title:"Yogyakarta → nachttrein naar Malang",
-    details:["Vroeg opstaan voor zonsopgang bij Borobudur — dit is het absolute hoogtepunt, niet overslaan","Borobudur: grootste boeddhistische tempel ter wereld, 9e eeuw, UNESCO — 's morgens rustig vóór de drukte","Terug naar Yogya: ontbijt, namiddag vrij (poel, koffiezaak, Kraton sultanenpaleis)","'s Avonds nachttrein naar Malang — comfortabele slaapplaats, aankomst volgende ochtend vroeg","Tip: sarong is verplicht bij Borobudur, te huur/kopen ter plekke"],
-    costs:["c8"], map:["yogya","malang"] },
-
-  { id:"t10", fase:"java", start:"2026-09-11", end:"2026-09-13",
-    title:"Splitsingspunt — Matthew wacht in Surabaya, jongens → Bromo",
-    details:["Aankomst Malang vroeg (nachttrein) — kort ontbijt met de groep, daarna splitst Matthew af","Matthew neemt bus/taxi naar Surabaya (1u15) — de jongens gaan door naar Tumpak Sewu (11/09) + Bromo (12/09)","Matthew doet dit bewust NIET mee — hij bewaart Bromo/Tumpak Sewu voor met Hinke (16/09)","3 dagen Surabaya: Hero's Monument (Tugu Pahlawan), arabische wijk Ampel, House of Sampoerna museum","Surabaya is Java's tweede stad — goede restaurants, cafés, rustig tempo","Tip: boek hotel dichtbij de luchthaven — handig als Hinke landt op 14/09 om 8u"],
-    costs:["c24"], map:["malang","surabaya"], openNote:true },
-
-  { id:"t11", fase:"java", start:"2026-09-14", end:"2026-09-15",
-    title:"Hinke landt in Surabaya — ze zijn samen",
-    details:["Hinke landt 14/09 om 8u 's ochtends — Matthew staat haar op te wachten","Transfer naar hotel, rust na de reis","Vanaf hier reist Matthew met Hinke verder (niet meer met de jongens)"],
-    costs:["c9"], map:["surabaya"] },
-
-  { id:"t11b", fase:"java", start:"2026-09-15", end:"2026-09-16",
-    title:"Villa in Blimbing (met Hinke) — rustdag",
-    details:["Wonderhouz Premium Villa, hosted by Irene Iola Auxilia","Check-in Tue Sep 15 at 3:00 PM, check-out Wed Sep 16 at 12:00 PM","Adres: No 2C Breezia Villa, Allegro Cluster, Blimbing, East Java","Confirmation code: HMJFAKQ8FH","Een rustdag voor Matthew & Hinke in een mooie villa voordat ze de Bromo/Tumpak Sewu-dagtour doen"],
-    costs:["c25"], map:["malang"] },
-
-  { id:"t12", fase:"java", start:"2026-09-16", end:"2026-09-16",
-    title:"Bromo + Tumpak Sewu (met Hinke)",
-    details:["Vertrek 02:30 vanuit Banyuwangi richting Bromo Tengger Semeru NP","Sunrise bij Mount Bromo: jeep-tour naar de viewpoint-heuvel, daarna afdalen naar de zandvlakte en krater","Door naar Tumpak Sewu waterval (2u rijden) — spectaculaire jungle-waterval, hike omlaag","Lange maar epische dag: verwacht 16-18u onderweg","Dit is de versie van Matthew & Hinke — de jongens deden dit al op 11-12/09 zonder Matthew","Tip: boek de jeep-tour vooruit via het hotel in Banyuwangi"],
-    costs:["c10","c21"], map:["surabaya","banyuwangi"] },
-
-  { id:"t13", fase:"java", start:"2026-09-17", end:"2026-09-17",
-    title:"Kawah Ijen (met Hinke)",
-    details:["Vertrek 00:00-01:00 — nachtelijke hike vanuit basiskamp Paltuding (1.5-2u klimmen)","Blue fire: zichtbaar alleen 's nachts — felblauwe vlammen van zwaveldamp, uniek fenomeen ter wereld","Sunrise boven de zuurmeer-caldera bij dagaanbreken — één van de mooiste uitzichten op Java","Klim: 2.9 km, 800 m hoogteverschil — goede schoenen + gasmasker meenemen (verplicht te huur ter plekke)","Overdag terugkeren, rust + recuperatie — morgen lange reisdag naar Flores"],
-    costs:["c22"], map:["banyuwangi"] },
-
-  { id:"t14", fase:"flores", start:"2026-09-18", end:"2026-09-18",
-    title:"Java → Bali → Flores",
-    details:["Transfer naar luchthaven","Vlucht naar Denpasar","Aansluitende vlucht naar Labuan Bajo"],
-    costs:["c11"], map:["banyuwangi","bali","labuanbajo"] },
-
-  { id:"t15", fase:"flores", start:"2026-09-19", end:"2026-09-19",
-    title:"Labuan Bajo — aankomen & relax",
-    details:["Aankomst — Labuan Bajo is een groeiend vissersdorpje als poort naar Komodo NP","Recovery dag: strand, liggen, niets doen na de intense Java-etappe","Sunset vanuit de haven of een heuveltje boven het dorp — goud-oranje over de eilandjes","Verse vis en seafood aan de kade (goedkoop en vers)","Tip: boek hier de Komodo dagtour voor 24 of 25/09 via een lokaal bootbedrijf"],
-    costs:["c12"], map:["labuanbajo"] },
-
-  { id:"t16", fase:"flores", start:"2026-09-20", end:"2026-09-20",
-    title:"Labuan Bajo — chill + omgeving",
-    details:["Snorkelen: lokale boot naar Kanawa Island of Bidadari (half dag, goedkoop)","Viewpoint boven het dorp voor panorama over de Flores Zee","Scooter huren om de omgeving te verkennen (€5-8/dag)","Koffie & lunch op een terras uitkijkend over de haven","Relaxt tempo — spaar energie voor Komodo en de roadtrip naar Ruteng"],
-    costs:[], map:["labuanbajo"] },
-
-  { id:"t17", fase:"flores", start:"2026-09-21", end:"2026-09-22",
-    title:"Ruteng (binnenland)",
-    details:["Roadtrip naar de bergen — rit van ca. 3-4 uur over kronkelige bergwegen","Bezoek de unieke Lingko rijstvelden (cirkelvormige spinnenweb-velden in Cancar)","Traditionele dorpen verkennen en kennismaken met de lokale cultuur van de Manggarai-bevolking","Omringd door groene heuvels en koelere temperaturen in de bergen"],
-    costs:["c13"], map:["labuanbajo","ruteng"] },
-
-  { id:"t18", fase:"flores", start:"2026-09-23", end:"2026-09-23",
-    title:"Terug naar Labuan Bajo regio",
-    details:["Relaxte reisdag terug van Ruteng naar Labuan Bajo","Laatste inkopen en voorbereiding op de Komodo boottocht"],
-    costs:["c14"], map:["ruteng","labuanbajo"] },
-
-  { id:"t19", fase:"komodo", start:"2026-09-24", end:"2026-09-24",
-    title:"Komodo — full day boottour",
-    details:["Vertrek vroeg vanuit de haven (07:00-08:00) — whole-day trip per speedboot of vissersboot","Padar Island: iconische hike (~30 min omhoog) met uitzicht op drie baaien — de foto die iedereen kent","Pink Beach: roze zand door koraaldeeltjes, snorkelen met kleurrijke vissen en koraal","Komodo Island: wandeling met ranger verplicht — Komodovaranen in het wild (tot 3m lang, giftig speeksel)","Manta Point (seizoensafhankelijk): snorkelen/duiken met mantaroggen, soms in schoolformatie","Terugkomst bij zonsondergang — bier op de kade","Tip: neem zwemspullen, zonnebrandcrème en cash mee — geen betaalautomaat op de eilanden"],
-    costs:["c23"], map:["labuanbajo"] },
-
-  { id:"t20", fase:"komodo", start:"2026-09-25", end:"2026-09-25",
-    title:"Relaxdag Labuan Bajo",
-    details:["Snorkelen of strand nabij het dorp","Gezellige sunset drinks op een terras","Lekker uitrusten na de intensieve boottour"],
-    costs:[], map:["labuanbajo"] },
-
-  { id:"t21", fase:"bali", start:"2026-09-26", end:"2026-09-26",
-    title:"Labuan Bajo → Bali",
-    details:["Binnenlandse vlucht van Labuan Bajo naar Denpasar (Bali)","Transfer naar je gereserveerde villa en inchecken"],
-    costs:["c15"], map:["labuanbajo","bali"] },
-
-  { id:"t22", fase:"bali", start:"2026-09-26", end:"2026-09-28",
-    title:"Bali — luxe & chill",
-    details:["Villa stay (Ubud / Canggu / Uluwatu — nog te kiezen)","Genieten van spa-behandelingen & massages","Lange stranddagen en surfen","Heerlijk uit eten bij diverse trendy restaurants & sunset bars"],
-    costs:["c16"], map:["bali"] },
-
-  { id:"t23", fase:"terug", start:"2026-09-29", end:"2026-09-29",
-    title:"Terug naar huis",
-    details:["Internationale vlucht vanuit Bali Denpasar terug naar Brussel","Einde van een fantastische reis!"],
-    costs:["c17"], map:["bali"] },
-
-  { id:"t27", fase:"heen", start:"2026-08-29", end:"2026-08-30",
-    title:"Brussel → Singapore → Jakarta (Kamiel, Eliott, Kasper, Willem)",
-    details:["SQ 303: BRU 11:45 (29/08) → SIN 06:40 (30/08)","Layover 2u25 in Changi (Singapore)","SQ 956: SIN 09:05 → CGK 09:55 (30/08), aankomst Jakarta Soekarno Intl T3","Beide segmenten: Airbus A350-900, Economy"],
-    costs:[], map:["singapore","jakarta"] },
-
-  { id:"t28", fase:"heen", start:"2026-08-30", end:"2026-08-31",
-    title:"Jakarta — aankomst & acclimatiseren (Kamiel, Eliott, Kasper, Willem)",
-    details:["Aankomst 30/08 om 09:55 op Jakarta Soekarno Intl T3","Twee nachten Jakarta (30 en 31 aug): stad verkennen"],
-    costs:[], map:["jakarta"] },
-
-  { id:"t29", fase:"sumatra", start:"2026-09-01", end:"2026-09-01",
-    title:"Jakarta → Medan (Kamiel, Eliott, Kasper, Willem)",
-    details:["Vlucht Jakarta (CGK) → Medan","Ontmoeting met Matthew & Arne in Medan","Aansluitend met alle 6 man taxi naar Ketambe (±7-8u)"],
-    costs:["c6"], map:["jakarta","medan"] },
-
-  { id:"t30", fase:"bali", start:"2026-09-13", end:"2026-09-13",
-    title:"Kawah Ijen → ferry → Bali (alle jongens)",
-    details:["Na de Kawah Ijen-hike taxi naar Ketapang","Ferry naar Gilimanuk (Bali)","Doorrijden naar Canggu"],
-    costs:[], map:["banyuwangi","bali"] },
-
-  { id:"t31", fase:"bali", start:"2026-09-13", end:"2026-09-14",
-    title:"Bali dag 1–2 — Canggu",
-    details:["Surfen: Batu Bolong Beach (zachte golven, ideaal voor beginners), Echo Beach (iets pittiger), Old Man's (relaxte sfeer)","Zonsondergang bij beachclubs: Old Man's, La Brisa of Finns","Optioneel stop: Tanah Lot klieftempel in zee"],
-    costs:[], map:["bali"] },
-
-  { id:"t32", fase:"bali", start:"2026-09-14", end:"2026-09-15",
-    title:"Bali dag 2–3 — Uluwatu",
-    details:["Uluwatu Temple: klieftempel + Kecak dance bij zonsondergang","Surfen op Uluwatu/Padang Padang (gevorderde reef breaks) en Bingin & Impossibles","Single Fin: legendarische sunset-bar boven de golven","Suluban (Blue Point) strand bereikbaar via een grot","Bingin Beach: chille vibe met warungs en cliffside cafés"],
-    costs:[], map:["bali"] },
-
-  { id:"t33", fase:"bali", start:"2026-09-16", end:"2026-09-16",
-    title:"Bali dag 4 — Nusa Penida",
-    details:["Vroege boot vanaf Sanur","Kelingking Beach: iconisch T-rex-uitzicht, eventueel afdalen","Broken Beach: natuurlijke rotsboog boven turquoise water","Angel's Billabong: natuurlijk zwembad in de rotsen","Snorkelen met manta rays (beroemde mantapunt)","Crystal Bay voor extra snorkelen"],
-    costs:[], map:["bali"] },
-
-  { id:"t34", fase:"bali", start:"2026-09-17", end:"2026-09-17",
-    title:"Bali dag 5 — Ubud",
-    details:["Tegalalang Rice Terrace: iconische groene terrassen met swings","Tirta Empul: heilige waterbrontempel, reinigingsritueel mogelijk","Monkey Forest: bosreservaat met apen en oude tempels","Campuhan Ridge Walk bij zonsopgang","Optioneel: Balinese kookles met marktbezoek of Tegenungan waterval"],
-    costs:[], map:["bali"] },
-
-  { id:"t35", fase:"bali", start:"2026-09-18", end:"2026-09-18",
-    title:"Bali dag 6 — Amed & Tulamben",
-    details:["USAT Liberty Wreck: wereldberoemde wrakduik, ook goed te snorkelen","Coral Garden: snorkelspot met kleurrijk rif vlak bij de kust","Freediving sessie: Amed staat bekend om intro's en cursussen","Jemeluk Bay voor een ontspannen snorkelsessie","Uitzicht op Mount Agung vanaf rustige stranden"],
-    costs:[], map:["bali"] },
-
-  { id:"t36", fase:"bali", start:"2026-09-19", end:"2026-09-19",
-    title:"Bali dag 7 — Sidemen & Mount Agung",
-    details:["Sidemen rijstterrassen: rustige wandeling, minder toeristisch dan Ubud","Besakih Temple: moedertempel van Bali, aan de voet van Agung","Mount Agung sunrise hike: middernacht vertrek, 4–6u klimmen, episch uitzicht op Lombok","Verplichte lokale gids (max. 3 pp/gids, verplicht sinds 2025)","Herstel 's middags, eventueel hot springs"],
-    costs:[], map:["bali"] },
-
-  { id:"t37", fase:"terug", start:"2026-09-19", end:"2026-09-20",
-    title:"Bali → Vietnam (Mathias, Willem, Momo) — TBD",
-    details:["Na het volledige 7-daagse programma vliegen Mathias, Willem en Momo door naar Vietnam","Exacte vluchtdatum en bestemming nog te bevestigen"],
-    costs:[], map:["bali"], openNote: true },
-
-  { id:"t38", fase:"terug", start:"2026-09-19", end:"2026-09-20",
-    title:"Terugvlucht Bali → Brussel (Arne, Eliott, Jens, Kamiel, Kasper) — TBD",
-    details:["Alle 5 vliegen terug naar Brussel na afloop van het volledige 7-daagse Bali-programma","Exacte datum/tijd TBD"],
-    costs:[], map:["bali"], openNote: true },
-
-  { id:"t39", fase:"heen", start:"2026-09-07", end:"2026-09-08",
-    title:"Brussel → Jakarta (Maurice, Mathias, Jens)",
-    details:["Maurice, Mathias en Jens vliegen vanuit Brussel naar Jakarta om zich bij de groep te voegen."],
-    costs:[], map:["jakarta"] },
-
-  { id:"t41", fase:"heen", start:"2026-09-13", end:"2026-09-14",
-    title:"Brussel → Singapore → Surabaya (Hinke)",
-    details:["Vlucht Hinke naar Surabaya om daar bij Matthew aan te sluiten."],
-    costs:[], map:["surabaya"] }
-];
-
-/* ---------------- HELPERS ---------------- */
-const MONTHS = ["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
-function fmtShort(d){ const dt=new Date(d+"T00:00:00"); return dt.getDate()+" "+MONTHS[dt.getMonth()]; }
-function fmtRange(s,e){ return s===e ? fmtShort(s) : (s.slice(0,7)===e.slice(0,7) ? new Date(s+"T00:00:00").getDate()+"–"+fmtShort(e) : fmtShort(s)+" – "+fmtShort(e)); }
-
-function today(){ return new Date(new Date().toDateString()); }
-function dateOf(s){ return new Date(s+"T00:00:00"); }
-
-function statusOf(item){
-  const t = today();
-  const s = dateOf(item.start), e = dateOf(item.end);
-  if (e < t) return "voltooid";
-  if (s <= t && t <= e) return "bezig";
-  const days = (s - t) / 86400000;
-  if (days <= 10) return "binnenkort";
-  return "gepland";
-}
-const STATUS_LABEL = { voltooid:"voltooid", bezig:"nu bezig", binnenkort:"binnenkort", gepland:"gepland" };
-
-function ls_get(key, fallback){ try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); } catch(e){ return fallback; } }
-function ls_set(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
-
-/* ── NEW ITINERARY HELPERS ── */
-const TRIP_START_DATE = "2026-08-28";
-
-function getTripDayRange(startStr, endStr) {
-  const tripStart = new Date(TRIP_START_DATE + "T00:00:00");
+  const tripStart = new Date(personTripStart + "T00:00:00");
   const s = new Date(startStr + "T00:00:00");
   const e = new Date(endStr + "T00:00:00");
   const startDay = Math.round((s - tripStart) / 86400000) + 1;
@@ -346,23 +103,31 @@ function parseDetails(detailsArray) {
     
     // Transport & Flights
     if (
-      lower.includes("vlucht") || 
-      lower.includes("vliegen") || 
-      lower.includes("overstap") || 
-      lower.includes("reistijd") || 
-      lower.includes("trein") || 
-      lower.includes("nachttrein") || 
-      lower.includes("taxi") || 
-      lower.includes("minibus") || 
-      lower.includes("transfer") || 
-      lower.includes("rit van") || 
-      lower.includes("mrt") || 
+      lower.includes("vlucht") ||
+      lower.includes("vliegen") ||
+      lower.includes("overstap") ||
+      lower.includes("layover") ||
+      lower.includes("reistijd") ||
+      lower.includes("trein") ||
+      lower.includes("nachttrein") ||
+      lower.includes("taxi") ||
+      lower.includes("minibus") ||
+      lower.includes("transfer") ||
+      lower.includes("ferry") ||
+      lower.includes("doorrijden") ||
+      lower.includes("rit van") ||
+      lower.includes("mrt") ||
       lower.includes("ov-kaart") ||
       lower.includes("tg935") ||
       lower.includes("tg403") ||
       lower.includes("lion air") ||
       lower.includes("denpasar") ||
-      lower.includes("brussel → bangkok")
+      lower.includes("brussel → bangkok") ||
+      lower.includes("soekarno") ||
+      lower.includes("airbus") ||
+      lower.includes("boeing") ||
+      lower.includes("landt") ||
+      /(^|\W)(sq|tg|ga|jt|qz)\s?\d{3,4}\b/.test(lower)
     ) {
       transport.push(d);
       return;
@@ -377,7 +142,8 @@ function parseDetails(detailsArray) {
       lower.includes("inchecken") || 
       lower.includes("check-in") || 
       lower.includes("verblijf") ||
-      lower.includes("stay")
+      lower.includes("stay") ||
+      lower.includes("confirmation code")
     ) {
       stay.push(d);
       return;
@@ -415,18 +181,18 @@ function getAccommodationUrl(item) {
   return null;
 }
 
-function getPhaseStats(faseKey, tripIds) {
+function getPhaseStats(faseKey, tripIds, personKey) {
   const phaseItems = TRIP.filter(item => item.fase === faseKey && tripIds.includes(item.id));
   if (phaseItems.length === 0) return null;
-  
+
   let minDate = phaseItems[0].start;
   let maxDate = phaseItems[0].end;
   let totalCost = 0;
-  
+
   phaseItems.forEach(item => {
     if (item.start < minDate) minDate = item.start;
     if (item.end > maxDate) maxDate = item.end;
-    
+
     item.costs.forEach(cid => {
       const v = costValue(cid);
       if (v !== null) {
@@ -434,53 +200,17 @@ function getPhaseStats(faseKey, tripIds) {
       }
     });
   });
-  
+
   const tripStart = new Date(minDate + "T00:00:00");
   const tripEnd = new Date(maxDate + "T00:00:00");
   const days = Math.round((tripEnd - tripStart) / 86400000) + 1;
-  
+
   return {
     dateRange: fmtRange(minDate, maxDate),
     days,
     totalCost: totalCost > 0 ? totalCost.toFixed(2) : null
   };
 }
-
-function costValue(id){
-  const stored = ls_get("cost_"+id, undefined);
-  if (stored !== undefined && stored !== "") return Number(stored);
-  const def = COSTS[id].amount;
-  return def === null ? null : def;
-}
-function isBooked(id){ return ls_get("booked_"+id, false); }
-
-const PERSONS = {
-  matthew: { name: "Matthew", color: "#0F6B5C" },
-  hinke:   { name: "Hinke",   color: "#C8567D" },
-  arne:    { name: "Arne",    color: "#5B7FB5" },
-  eliott:  { name: "Eliott",  color: "#D97A2B" },
-  jens:    { name: "Jens",    color: "#6B4E9C" },
-  kamiel:  { name: "Kamiel",  color: "#4A8B3B" },
-  maurice: { name: "Maurice", color: "#C8932B" },
-  mathias: { name: "Mathias", color: "#1C8AA0" },
-  willem:  { name: "Willem",  color: "#C75D3A" },
-  kasper:  { name: "Kasper",  color: "#8A6D3B" }
-};
-
-const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
-
-const PERSON_TRIPS = {
-  matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  hinke:   ["t41", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  jens:    ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  maurice: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  mathias: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
-};
 
 /* ---------------- RENDER: phase nav ---------------- */
 function renderPhaseNav(){
@@ -505,6 +235,19 @@ function isFlight(item) {
   if (item.costs.some(cid => COSTS[cid] && COSTS[cid].cat === 'vlucht')) return true;
   if (item.details.some(d => d.toLowerCase().includes('vlucht') || d.toLowerCase().includes('vliegen') || d.toLowerCase().includes('vliegtuig'))) return true;
   return false;
+}
+
+/* ---------------- TRANSPORT ICON ---------------- */
+function transportIcon(item, parsed) {
+  const text = (item.title + " " + parsed.transport.join(" ")).toLowerCase();
+  if (/vlucht|vliegen|vliegtuig|layover|\blandt\b|airbus|boeing|(^|\W)(sq|tg|ga|jt|qz)\s?\d{3,4}\b/.test(text)) return "✈️";
+  if (text.includes("trein")) return "🚆";
+  if (/ferry|boot/.test(text)) return "⛴️";
+  if (/\bmrt\b|metro/.test(text)) return "🚇";
+  if (/\bminibus\b|\bbus\b/.test(text)) return "🚌";
+  if (/taxi|transfer|grab|gojek/.test(text)) return "🚕";
+  if (isFlight(item)) return "✈️";
+  return "🚗";
 }
 
 /* ---------------- COLLAPSE PHASE FUNCTION ---------------- */
@@ -534,7 +277,7 @@ function getCompactBadgesHtml(item, parsed) {
   let html = `<div class="compact-badges">`;
   const isFlightItem = isFlight(item);
   if (isFlightItem || parsed.transport.length > 0) {
-    html += `<span class="c-badge transport" title="Vervoer/Vlucht">✈️</span>`;
+    html += `<span class="c-badge transport" title="Vervoer">${transportIcon(item, parsed)}</span>`;
   }
   if (parsed.stay.length > 0) {
     html += `<span class="c-badge stay" title="Verblijf/Overnachting">🏨</span>`;
@@ -576,7 +319,7 @@ function renderTimeline(){
       }
       const f = FASES[item.fase];
       const isCollapsed = ls_get("collapsed_fase_" + item.fase, false);
-      const stats = getPhaseStats(item.fase, tripIds);
+      const stats = getPhaseStats(item.fase, tripIds, personKey);
       let statsHtml = "";
       if (stats) {
         statsHtml = `
@@ -603,9 +346,14 @@ function renderTimeline(){
     }
     const st = statusOf(item);
     const note = ls_get("note_"+item.id, "");
-    const nDays = Math.round((dateOf(item.end) - dateOf(item.start)) / 86400000) + 1;
-    const durStr = nDays > 1 ? `<span class="dur">${nDays} dagen</span>` : "";
-    const dayRange = getTripDayRange(item.start, item.end);
+    let durStr = "";
+    if (item.duration) {
+      durStr = `<span class="dur">⏱️ ${item.duration}</span>`;
+    } else {
+      const nDays = Math.round((dateOf(item.end) - dateOf(item.start)) / 86400000) + 1;
+      durStr = nDays > 1 ? `<span class="dur">${nDays} dagen</span>` : "";
+    }
+    const dayRange = getTripDayRange(item.start, item.end, personKey);
     
     const parsed = parseDetails(item.details);
     const compactBadgesHtml = getCompactBadgesHtml(item, parsed);
@@ -617,7 +365,7 @@ function renderTimeline(){
       
       let transportHtml = parsed.transport.length ? `
         <div class="card-section transport-section">
-          <div class="section-title">✈️ Vervoer &amp; Reisdetails</div>
+          <div class="section-title">${transportIcon(item, parsed)} Vervoer &amp; Reisdetails</div>
           <ul class="transport-list">
             ${parsed.transport.map(t => `<li>${t}</li>`).join("")}
           </ul>

@@ -5,7 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Indonesië — Dashboard</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+/* Custom Leaflet Map styling for Home Page */
+#routemap {
+  width: 100%;
+  height: 380px;
+  border-radius: 12px;
+  z-index: 10;
+  background-color: #07090e;
+  border: 1px solid var(--border);
+}
+.map-city-container {
+  pointer-events: none !important;
+}
+.map-city-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.map-city-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--phase-color, var(--teal));
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--phase-color, var(--teal));
+  flex-shrink: 0;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+.map-city-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  transition: font-weight 0.25s ease, color 0.25s ease;
+}
+.is-active .map-city-text {
+  font-weight: 700;
+  color: #fff;
+}
+.is-context .map-city-text {
+  color: #77839a;
+}
+@keyframes routeFlow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+.active-route-flow {
+  stroke-dasharray: 8 6;
+  animation: routeFlow 1.2s linear infinite;
+}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -60,8 +116,8 @@
         <div class="route-stepper" id="routeStepper"></div>
       </div>
       <div class="route-right">
-        <div class="map-wrap">
-          <svg id="routemap" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="map-wrap" style="padding: 0; overflow: hidden; border: none; background: transparent;">
+          <div id="routemap"></div>
         </div>
         <div class="map-legend" id="mapLegend"></div>
         <div id="lockedPhotosPanel" class="locked-photos-panel" style="display:none"></div>
@@ -82,305 +138,15 @@
   <button class="lightbox-close" onclick="closeLightbox()">×</button>
   <img id="lightboxImg" src="" alt="">
 </div>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="data.js"></script>
 <script>
-/* ================================================================
-   DATA & SCHEDULING (SHARED LOGIC)
-   ================================================================ */
-const FASES = {
-  heen:    { label: "Vlucht heen",  color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Heenreis vanuit Brussel naar Medan, met korte overstap in Singapore.", desc: "Matthew en Arne vliegen op 29 augustus met Singapore Airlines (SQ303) vanuit Brussel naar Singapore, waar ze op 30 augustus om 06:40 landen. Na een korte overstap van 50 minuten in Changi vliegen ze door met SQ990 naar Medan, waar ze om 08:00 aankomen. Geen tussenstop om te chillen — de reis gaat rechtstreeks door richting het avontuur." },
-  sumatra: { label: "Sumatra",      color: "#4ad66d", soft: "rgba(74, 214, 109, 0.1)", uitleg: "Intense 5-daagse jungle trekking in Ketambe met de hele crew.", desc: "Na een vlucht naar Medan volgt een marathon rit van 7-8 uur de oerwouden in naar Ketambe, diep in het hart van Sumatra. Met 6 man — Matthew, Arne, Kamiel, Eliott, Kasper en Willem — wordt een intensieve 5-daagse all-in jungle trekking gedaan, compleet met orang-oetans, nachtelijke geluiden en jungle overnachtingen. Een van de meest avontuurlijke en onvergetelijke onderdelen van de hele reis." },
-  jakarta: { label: "Jakarta",      color: "#f77f00", soft: "rgba(247, 127, 0, 0.1)", uitleg: "Aankomst in de hoofdstad en samenkomst van de complete groep van 9.", desc: "Na de jungle is het tijd voor de bruisende hoofdstad Jakarta, waar Maurice, Mathias en Jens de groep versterken — nu zijn alle 9 reizigers voor het eerst bij elkaar. Eén nacht in de stad: bijkomen, Kota Tua verkennen en de groep samenvoegen. Het is ook het moment om bij te trekken voor de avontuurlijke Java-etappe die volgt." },
-  java:    { label: "Java",         color: "#9d4edd", soft: "rgba(157, 78, 221, 0.1)", uitleg: "Reis langs Yogyakarta, Borobudur, Prambanan en Bromo/Ijen vulkanen.", desc: "Java biedt een indrukwekkend programma: Yogyakarta, Borobudur en Prambanan, gevolgd door een nachttrein naar Malang. Matthew wacht in Surabaya op Hinke terwijl de jongens Tumpak Sewu en Mount Bromo verkennen. Zodra Hinke landt op 14 september reizen ze samen verder — Kawah Ijen blauwvuur, daarna Flores." },
-  flores:  { label: "Flores",       color: "#f72585", soft: "rgba(247, 37, 133, 0.1)", uitleg: "Verkenning van het bergachtige Flores, Ruteng en spinnenwebvelden.", desc: "Na een vlucht via Bali landen Matthew en Hinke in het betoverende Labuan Bajo aan de westkust van Flores. Een uitstap naar het bergachtige binnenland brengt hen naar Ruteng, bekend om zijn spinnenweb-rijstvelden en mistige berglandschappen. Terug in Labuan Bajo is het rustig wachten op de spectaculaire Komodo-boottocht." },
-  komodo:  { label: "Komodo",       color: "#00f5d4", soft: "rgba(0, 245, 212, 0.1)", uitleg: "Boottocht naar Padar Island, Pink Beach en Komodovaranen.", desc: "Een volle dag boottour naar het wereldberoemde Komodo Nationaal Park: Padar Island met zijn iconische bergsilhouet, roze koraal op Pink Beach en een confrontatie met de machtige Komodovaranen. Als bonus snorkelen bij Manta Point, waar zijdezachte mantaroggen langzij zwemmen. Een van de absolute hoogtepunten van de hele reis." },
-  bali:    { label: "Bali",         color: "#ffb703", soft: "rgba(255, 183, 3, 0.1)", uitleg: "Afsluitende ontspanning met luxe villa, strand en gezellig uit eten.", desc: "Na weken van avontuur is Bali de perfecte afsluiting: een luxe villa, tropische zwembaden en heerlijk eten bij de lokale warongs. Matthew en Hinke genieten van de rust en schoonheid van het eiland na alles wat ze hebben beleefd." },
-  terug:   { label: "Vlucht terug", color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Terugreis naar huis of doorreis naar Vietnam.", desc: "De reis zit erop! Vliegtuig terug naar Brussel of doorvliegen naar Vietnam voor wie daar nog op doorreis gaat. Tijd om terug te kijken op een fantastische reis door Indonesië." },
-};
 
-const FASE_PHOTOS = {
-  heen:    [],
-  sumatra: ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", "images/sumatra_Waterval.jpg"],
-  jakarta: ["images/jakartanightskyline.jpg", "images/jakarta.jpg"],
-  java:    ["images/airbnbM&H/15-16.avif", "images/Yogyakartatempel.jpg", "images/mountbromo.webp", "images/Ijen.jpeg", "images/tumpaksewuwaterval.webp", "images/airbnbM&H/15-16a.avif", "images/Yogyakartamonument.jpeg", "images/bromo.jpg", "images/bromoblauwvuur.jpeg", "images/airbnbM&H/15-16b.avif", "images/airbnbM&H/15-16c.avif", "images/airbnbM&H/15-16d.avif", "images/Yogyakartahandmonument.jpg"],
-  flores:  ["images/Labuanbajo.jpg", "images/Flores.jpg"],
-  komodo:  ["images/Komodovaraan.jpg", "images/komodo-national-park-1250x488.jpg.webp"],
-  bali:    ["images/balivilla.jpg", "images/bali.jpg", "images/bali2.jpg", "images/bali4.jpg"],
-  terug:   [],
-};
-
-const PERSONS = {
-  matthew: { name: "Matthew", color: "#0F6B5C" },
-  hinke:   { name: "Hinke",   color: "#C8567D" },
-  arne:    { name: "Arne",    color: "#5B7FB5" },
-  eliott:  { name: "Eliott",  color: "#D97A2B" },
-  jens:    { name: "Jens",    color: "#6B4E9C" },
-  kamiel:  { name: "Kamiel",  color: "#4A8B3B" },
-  maurice: { name: "Maurice", color: "#C8932B" },
-  mathias: { name: "Mathias", color: "#1C8AA0" },
-  willem:  { name: "Willem",  color: "#C75D3A" },
-  kasper:  { name: "Kasper",  color: "#8A6D3B" }
-};
-
-const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
-
-const PERSON_TRIPS = {
-  matthew: ["t1", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  hinke:   ["t41", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  arne:    ["t1", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  jens:    ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  maurice: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  mathias: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
-};
-
-const PERSON_GROUP_INFO = {
-  matthew: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>29/08 – 30/08:</b> Matthew + Arne (Brussel → Singapore → Medan, SQ303+SQ990, korte overstap Changi); 30-31/08 overnachting in Medan, wachten op de rest</li>
-      <li><b>01/09, Medan:</b> Ontmoeting met Kamiel, Eliott, Kasper & Willem (vlucht vanuit Jakarta) — alle 6 man naar Ketambe</li>
-      <li><b>08/09, Jakarta:</b> Maurice, Mathias & Jens sluiten aan — crew compleet met 9 man voor Java</li>
-      <li><b>11/09, Malang:</b> Matthew splitst af naar Surabaya; de jongens gaan naar Tumpak Sewu/Bromo</li>
-      <li><b>14/09, Surabaya:</b> Hinke landt, vanaf hier reizen Matthew & Hinke samen</li>
-      <li><b>29/09:</b> Terugvlucht Bali → Brussel (samen met Hinke)</li>
-    </ul>
-    <div style="margin-top:14px; font-size:13px; color:var(--text-soft); background:rgba(0,0,0,0.18); border:1px solid var(--border); border-radius:12px; padding:12px 14px;">
-      📎 Matthew splitst af om Bromo/Ijen later samen met Hinke te doen.
-    </div>
-  `,
-  hinke: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>13/09 – 14/09:</b> Vlucht Brussel → Singapore → Surabaya (Hinke)</li>
-      <li><b>14/09:</b> Hinke landt om 08:00 uur in Surabaya.</li>
-      <li><b>14/09 – 29/09:</b> Reist samen met Matthew (Surabaya → Bromo/Ijen → Flores → Komodo → Bali).</li>
-      <li><b>Reisgezelschap:</b> Exclusief met Matthew. De andere jongens zijn al eerder naar huis of reizen apart.</li>
-      <li><b>29/09:</b> Terugvlucht Bali → Brussel (samen met Matthew)</li>
-    </ul>
-    <div style="margin-top:14px; font-size:13px; color:var(--text-soft); background:rgba(0,0,0,0.18); border:1px solid var(--border); border-radius:12px; padding:12px 14px;">
-      📎 Hinke sluit halverwege aan in Surabaya voor het tweede deel van de reis.
-    </div>
-  `,
-  arne: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>29/08 – 30/08:</b> Samen met Matthew (Brussel → Singapore → Medan, SQ303+SQ990, korte overstap Changi); 30-31/08 overnachting in Medan, wachten op de rest</li>
-      <li><b>01/09 – 07/09:</b> Met de jongens de Sumatra-jungle in (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
-      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep compleet met 9 man)</li>
-      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
-      <li><b>13/09:</b> Kawah Ijen ('s nachts), taxi → Ketapang, ferry → Bali; aankomst Canggu</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Terugvlucht Bali → Brussel (samen met Eliott, Jens, Kamiel & Kasper) — TBD</li>
-    </ul>
-  `,
-  eliott: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
-      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
-      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe</li>
-      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
-      <li><b>07/09:</b> Ketambe → Medan → Jakarta</li>
-      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
-      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
-      <li><b>13/09:</b> Kawah Ijen ('s nachts), taxi → Ketapang, ferry → Bali; aankomst Canggu</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Terugvlucht Bali → Brussel (samen met Arne, Jens, Kamiel & Kasper) — TBD</li>
-    </ul>
-  `,
-  jens: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>07/09 – 08/09:</b> Vlucht Brussel → Jakarta (samen met Maurice & Mathias)</li>
-      <li><b>08/09:</b> Sluit aan in Jakarta bij de jongens crew (samen met Maurice & Mathias).</li>
-      <li><b>08/09 – 10/09:</b> Java-etappe met de groep (Jakarta → Yogyakarta → Malang).</li>
-      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo.</li>
-      <li><b>13/09:</b> Kawah Ijen ('s nachts), taxi → Ketapang, ferry → Bali; aankomst Canggu</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Terugvlucht Bali → Brussel (samen met Arne, Eliott, Kamiel & Kasper) — TBD</li>
-    </ul>
-  `,
-  kamiel: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
-      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
-      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe</li>
-      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
-      <li><b>07/09:</b> Ketambe → Medan → Jakarta</li>
-      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
-      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
-      <li><b>13/09:</b> Kawah Ijen ('s nachts), taxi → Ketapang, ferry → Bali; aankomst Canggu</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Terugvlucht Bali → Brussel (samen met Arne, Eliott, Jens & Kasper) — TBD</li>
-    </ul>
-  `,
-  maurice: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>07/09 – 08/09:</b> Vlucht Brussel → Jakarta (samen met Mathias & Jens)</li>
-      <li><b>08/09:</b> Sluit aan in Jakarta bij de jongens crew (samen met Mathias & Jens).</li>
-      <li><b>08/09 – 10/09:</b> Java-etappe met de groep (Jakarta → Yogyakarta → Malang).</li>
-      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo.</li>
-      <li><b>13/09:</b> Kawah Ijen ('s nachts), taxi → Ketapang, ferry → Bali; aankomst Canggu</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Vlucht Bali → Vietnam (samen met Willem & Mathias) — TBD</li>
-    </ul>
-  `,
-  kasper: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
-      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
-      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe</li>
-      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (alle 6: Matthew, Arne, Willem, Kasper, Eliott, Kamiel)</li>
-      <li><b>07/09:</b> Ketambe → Medan → Jakarta</li>
-      <li><b>08/09 – 10/09:</b> Maurice, Mathias & Jens sluiten aan in Jakarta (groep van 9 man)</li>
-      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo</li>
-      <li><b>13/09:</b> Kawah Ijen ('s nachts), taxi → Ketapang, ferry → Bali; aankomst Canggu</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Terugvlucht Bali → Brussel (samen met Arne, Eliott, Jens & Kamiel) — TBD</li>
-    </ul>
-  `,
-  willem: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>29/08 – 30/08:</b> Vlucht Brussel → Singapore → Jakarta (SQ 303 + SQ 956); aankomst Jakarta Soekarno T3 om 09:55</li>
-      <li><b>30/08 – 31/08:</b> Jakarta — acclimatiseren en stad verkennen</li>
-      <li><b>01/09:</b> Vlucht Jakarta → Medan; ontmoeting met Matthew & Arne; taxi naar Ketambe (7-8u)</li>
-      <li><b>02/09 – 06/09:</b> Jungle trekking Ketambe (5d/4n, all-in ~160 €/pp) — met Matthew, Arne, Kasper, Eliott, Kamiel</li>
-      <li><b>07/09:</b> Taxi Ketambe → Medan, vlucht Medan → Jakarta</li>
-      <li><b>08/09:</b> Jakarta — Maurice & Mathias komen toe (08:25), groep compleet</li>
-      <li><b>09/09:</b> Trein Jakarta → Yogyakarta, Prambanan tempel, Malioboro</li>
-      <li><b>10/09:</b> Borobudur vroeg 's ochtends, nachttrein Yogyakarta → Malang</li>
-      <li><b>11/09:</b> Tumpak Sewu waterval (2,5u rijden), dan naar Combu Lawang</li>
-      <li><b>12/09:</b> 3u 's nachts op voor Mount Bromo, taxi Bromo → Banyuwangi</li>
-      <li><b>13/09:</b> 1u 's nachts op voor Kawah Ijen, taxi → Ketapang, ferry → Bali</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Vlucht Bali → Vietnam (samen met Mathias & Momo) — TBD</li>
-    </ul>
-  `,
-  mathias: `
-    <ul class="details" style="font-size:14.5px">
-      <li><b>07/09 – 08/09:</b> Vlucht Brussel → Jakarta (samen met Maurice & Jens)</li>
-      <li><b>08/09:</b> Sluit aan in Jakarta bij de jongens crew (samen met Maurice & Jens).</li>
-      <li><b>08/09 – 10/09:</b> Java-etappe met de groep (Jakarta → Yogyakarta → Malang).</li>
-      <li><b>11/09 – 12/09:</b> Zonder Matthew naar Tumpak Sewu & Bromo.</li>
-      <li><b>13/09:</b> Kawah Ijen ('s nachts), taxi → Ketapang, ferry → Bali; aankomst Canggu</li>
-      <li><b>13–19/09:</b> Bali 7-daags (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — volledig programma</li>
-      <li><b>Na 19/09:</b> Vlucht Bali → Vietnam (samen met Willem & Momo) — TBD</li>
-    </ul>
-  `
-};
-
-const COSTS = {
-  c1:  { label: "Vlucht BRU → Singapore → Medan (Singapore Airlines, SQ303+SQ990)", cat: "vlucht", amount: null },
-  c3:  { label: "Taxi/minibus Medan → Ketambe", cat: "transport", amount: 20 },
-  c4:  { label: "Jungle trekking Ketambe (5d/4n, all-in)", cat: "activiteit", amount: 160 },
-  c5:  { label: "Taxi/minibus Ketambe → Medan", cat: "transport", amount: 20 },
-  c6:  { label: "Vlucht Jakarta ↔ Medan (Lion Air)", cat: "vlucht", amount: 212 },
-  c7:  { label: "Trein Jakarta → Yogyakarta", cat: "transport", amount: 20 },
-  c7b: { label: "Tempels entree (Borobudur + Prambanan)", cat: "activiteit", amount: 40 },
-  c8:  { label: "Nachttrein Yogyakarta → Malang", cat: "transport", amount: 15 },
-  c9:  { label: "Overnachting Surabaya (1n)", cat: "accommodatie", amount: 40 },
-  c10: { label: "Overnachting Banyuwangi (2n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1420571119911855020" },
-  c11: { label: "Vlucht Java → Denpasar → Labuan Bajo", cat: "vlucht", amount: null },
-  c12: { label: "Overnachting Labuan Bajo (3n)", cat: "accommodatie", amount: 55, url: "https://www.airbnb.com/rooms/1202849662764744783" },
-  c13: { label: "Overnachting Ruteng (2n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/50427330" },
-  c14: { label: "Overnachting Labuan Bajo, terugkeer (3n)", cat: "accommodatie", amount: null, url: "https://www.airbnb.com/rooms/1202849662764744783" },
-  c15: { label: "Vlucht Labuan Bajo → Bali", cat: "vlucht", amount: null },
-  c16: { label: "Bali villa (26-29 sep)", cat: "accommodatie", amount: 101 },
-  c17: { label: "Terugvlucht Bali → huis", cat: "vlucht", amount: null },
-  c19: { label: "Hotel Jakarta (1n)", cat: "accommodatie", amount: 35 },
-  c20: { label: "Hotel Yogyakarta (1n)", cat: "accommodatie", amount: 30 },
-  c21: { label: "Bromo + Tumpak Sewu (jeep-tour + entree, met Hinke)", cat: "activiteit", amount: 25 },
-  c22: { label: "Kawah Ijen (entree + gids)", cat: "activiteit", amount: 18 },
-  c23: { label: "Komodo dagtour (boot, Padar + Pink Beach + Komodo + Manta)", cat: "activiteit", amount: 68 },
-  c24: { label: "Hotel Surabaya (11–13/09, 3n, wachten op Hinke)", cat: "accommodatie", amount: 75 },
-  c25: { label: "Villa Blimbing, Wonderhouz Premium (15-16/09, 1n, met Hinke)", cat: "accommodatie", amount: 40, url: "https://www.airbnb.com/rooms/1574650852556499790" },
-};
-
-const PTS = {
-  singapore:  { x: 304, y: 112, label: "Singapore", dx: 9, dy: 3, anchor: "start" },
-  medan:      { x: 143, y: 61,  label: "Medan", dx: 9, dy: 3, anchor: "start" },
-  ketambe:    { x: 112, y: 58,  label: "Ketambe", dx: -9, dy: 3, anchor: "end" },
-  jakarta:    { x: 399, y: 285, label: "Jakarta", dx: 9, dy: 3, anchor: "start" },
-  yogya:      { x: 508, y: 321, label: "Yogyakarta", dx: -9, dy: 10, anchor: "end" },
-  malang:     { x: 579, y: 325, label: "Malang", dx: 9, dy: 14, anchor: "start" },
-  surabaya:   { x: 583, y: 309, label: "Surabaya", dx: 9, dy: -6, anchor: "start" },
-  banyuwangi: { x: 634, y: 331, label: "Banyuwangi", dx: 9, dy: -6, anchor: "start" },
-  bali:       { x: 660, y: 341, label: "Bali (Denpasar)", dx: 9, dy: 6, anchor: "start" },
-  labuanbajo: { x: 806, y: 337, label: "Labuan Bajo", dx: -9, dy: -6, anchor: "end" },
-  ruteng:     { x: 824, y: 340, label: "Ruteng", dx: 9, dy: 8, anchor: "start" }
-};
-
-const TRIP = [
-  { id:"t1", fase:"heen", start:"2026-08-29", end:"2026-08-30", title:"Brussel → Singapore → Medan (met Arne)", details:["SQ303: BRU 11:45 (29/08) → SIN 06:40 (30/08), Singapore Airlines. Overstap 50 min in Changi. SQ990: SIN 07:30 → Medan (KNO) 08:00 (30/08)."], costs:["c1"], map:["singapore","medan"] },
-  { id:"t3", fase:"sumatra", start:"2026-08-30", end:"2026-08-31", title:"Medan — aankomst & wachten op de rest", details:["Matthew & Arne overnachten twee nachten in Medan. Op 01/09 ontmoeten zij Kamiel, Eliott, Kasper & Willem die arriveren vanuit Jakarta, waarna ze samen naar Ketambe vertrekken."], costs:[], map:["medan"] },
-  { id:"t4", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Medan → Ketambe — alle 6 man samen", details:["Alle 6 man: Matthew, Arne, Willem, Kasper, Eliott, Kamiel. Matthew & Arne sliepen de nacht ervoor al in Medan. Kamiel, Eliott, Kasper & Willem arriveren met vlucht vanuit Jakarta. Na aankomst samen taxi naar Ketambe (rit ±7-8u)."], costs:["c3"], map:["medan","ketambe"] },
-  { id:"t5", fase:"sumatra", start:"2026-09-02", end:"2026-09-06", title:"Jungle trekking — Ketambe", details:[], costs:["c4"], map:["ketambe"] },
-  { id:"t6", fase:"sumatra", start:"2026-09-07", end:"2026-09-07", title:"Ketambe → Medan → Jakarta", details:[], costs:["c5","c6"], map:["ketambe","medan","jakarta"] },
-  { id:"t7", fase:"jakarta", start:"2026-09-08", end:"2026-09-08", title:"Jakarta — Maurice & Mathias sluiten aan", details:[], costs:["c19"], map:["jakarta"] },
-  { id:"t8", fase:"java", start:"2026-09-09", end:"2026-09-09", title:"Jakarta → Yogyakarta", details:[], costs:["c7","c7b","c20"], map:["jakarta","yogya"] },
-  { id:"t9", fase:"java", start:"2026-09-10", end:"2026-09-10", title:"Yogyakarta → nachttrein naar Malang", details:[], costs:["c8"], map:["yogya","malang"] },
-  { id:"t10", fase:"java", start:"2026-09-11", end:"2026-09-13", title:"Splitsingspunt — Matthew wacht in Surabaya, jongens → Bromo", details:[], costs:["c24"], map:["malang","surabaya"] },
-  { id:"t11", fase:"java", start:"2026-09-14", end:"2026-09-15", title:"Hinke landt in Surabaya — ze zijn samen", details:[], costs:["c9"], map:["surabaya"] },
-  { id:"t11b", fase:"java", start:"2026-09-15", end:"2026-09-16", title:"Villa in Blimbing (met Hinke) — rustdag", details:["Wonderhouz Premium Villa, hosted by Irene Iola Auxilia. Check-in Tue Sep 15 at 3:00 PM, check-out Wed Sep 16 at 12:00 PM. Adres: No 2C Breezia Villa, Allegro Cluster, Blimbing. Confirmation: HMJFAKQ8FH."], costs:["c25"], map:["malang"] },
-  { id:"t12", fase:"java", start:"2026-09-16", end:"2026-09-16", title:"Bromo + Tumpak Sewu (met Hinke)", details:[], costs:["c10","c21"], map:["surabaya","banyuwangi"] },
-  { id:"t13", fase:"java", start:"2026-09-17", end:"2026-09-17", title:"Kawah Ijen (met Hinke)", details:[], costs:["c22"], map:["banyuwangi"] },
-  { id:"t14", fase:"flores", start:"2026-09-18", end:"2026-09-18", title:"Java → Bali → Flores", details:[], costs:["c11"], map:["banyuwangi","bali","labuanbajo"] },
-  { id:"t15", fase:"flores", start:"2026-09-19", end:"2026-09-19", title:"Labuan Bajo — aankomen & relax", details:[], costs:["c12"], map:["labuanbajo"] },
-  { id:"t16", fase:"flores", start:"2026-09-20", end:"2026-09-20", title:"Labuan Bajo — chill + omgeving", details:[], costs:[], map:["labuanbajo"] },
-  { id:"t17", fase:"flores", start:"2026-09-21", end:"2026-09-22", title:"Ruteng (binnenland)", details:[], costs:["c13"], map:["labuanbajo","ruteng"] },
-  { id:"t18", fase:"flores", start:"2026-09-23", end:"2026-09-23", title:"Terug naar Labuan Bajo regio", details:[], costs:["c14"], map:["ruteng","labuanbajo"] },
-  { id:"t19", fase:"komodo", start:"2026-09-24", end:"2026-09-24", title:"Komodo — full day boottour", details:[], costs:["c23"], map:["labuanbajo"] },
-  { id:"t20", fase:"komodo", start:"2026-09-25", end:"2026-09-25", title:"Relaxdag Labuan Bajo", details:[], costs:[], map:["labuanbajo"] },
-  { id:"t21", fase:"bali", start:"2026-09-26", end:"2026-09-26", title:"Labuan Bajo → Bali", details:[], costs:["c15"], map:["labuanbajo","bali"] },
-  { id:"t22", fase:"bali", start:"2026-09-26", end:"2026-09-28", title:"Bali — luxe & chill", details:[], costs:["c16"], map:["bali"] },
-  { id:"t23", fase:"terug", start:"2026-09-29", end:"2026-09-29", title:"Terug naar huis", details:[], costs:["c17"], map:["bali"] },
-  { id:"t27", fase:"heen", start:"2026-08-29", end:"2026-08-30", title:"Brussel → Singapore → Jakarta (Kamiel, Eliott, Kasper, Willem)", details:["SQ 303: BRU 11:45 (29/08) → SIN 06:40 (30/08). Layover 2u25 in Changi (Singapore). SQ 956: SIN 09:05 → CGK 09:55 (30/08), aankomst Jakarta Soekarno Intl T3. Beide segmenten: Airbus A350-900, Economy."], costs:[], map:["singapore","jakarta"] },
-  { id:"t28", fase:"heen", start:"2026-08-30", end:"2026-08-31", title:"Jakarta — aankomst & acclimatiseren (Kamiel, Eliott, Kasper, Willem)", details:["Aankomst 30/08 om 09:55 op Jakarta Soekarno Intl T3. Twee nachten Jakarta (30 en 31 aug): stad verkennen."], costs:[], map:["jakarta"] },
-  { id:"t29", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Jakarta → Medan (Kamiel, Eliott, Kasper, Willem)", details:["Vlucht Jakarta (CGK) → Medan. Ontmoeting met Matthew & Arne in Medan. Aansluitend met alle 6 man taxi naar Ketambe (±7-8u)."], costs:["c6"], map:["jakarta","medan"] },
-  { id:"t30", fase:"bali", start:"2026-09-13", end:"2026-09-13", title:"Kawah Ijen → ferry → Bali (alle jongens)", details:["Na de Kawah Ijen-hike taxi naar Ketapang, dan ferry naar Gilimanuk (Bali), en doorrijden naar Canggu."], costs:[], map:["banyuwangi","bali"] },
-  { id:"t31", fase:"bali", start:"2026-09-13", end:"2026-09-14", title:"Bali dag 1–2 — Canggu", details:["Surfen: Batu Bolong Beach (zachte golven, ideaal voor beginners), Echo Beach (iets pittiger), Old Man's (relaxte sfeer). Zonsondergang bij beachclubs: Old Man's, La Brisa of Finns. Optioneel stop: Tanah Lot klieftempel in zee."], costs:[], map:["bali"] },
-  { id:"t32", fase:"bali", start:"2026-09-14", end:"2026-09-15", title:"Bali dag 2–3 — Uluwatu", details:["Uluwatu Temple: klieftempel + Kecak dance bij zonsondergang. Surfen op Uluwatu/Padang Padang (gevorderde reef breaks) en Bingin & Impossibles. Single Fin: legendarische sunset-bar boven de golven. Suluban (Blue Point) strand bereikbaar via een grot. Bingin Beach: chille vibe met warungs en cliffside cafés."], costs:[], map:["bali"] },
-  { id:"t33", fase:"bali", start:"2026-09-16", end:"2026-09-16", title:"Bali dag 4 — Nusa Penida", details:["Vroege boot vanaf Sanur. Kelingking Beach: iconisch T-rex-uitzicht, eventueel afdalen. Broken Beach: natuurlijke rotsboog boven turquoise water. Angel's Billabong: natuurlijk zwembad in de rotsen. Snorkelen met manta rays (beroemde mantapunt). Crystal Bay voor extra snorkelen."], costs:[], map:["bali"] },
-  { id:"t34", fase:"bali", start:"2026-09-17", end:"2026-09-17", title:"Bali dag 5 — Ubud", details:["Tegalalang Rice Terrace: iconische groene terrassen met swings. Tirta Empul: heilige waterbrontempel, reinigingsritueel mogelijk. Monkey Forest: bosreservaat met apen en oude tempels. Campuhan Ridge Walk bij zonsopgang. Optioneel: Balinese kookles met marktbezoek of Tegenungan waterval."], costs:[], map:["bali"] },
-  { id:"t35", fase:"bali", start:"2026-09-18", end:"2026-09-18", title:"Bali dag 6 — Amed & Tulamben", details:["USAT Liberty Wreck: wereldberoemde wrakduik, ook goed te snorkelen. Coral Garden: snorkelspot met kleurrijk rif vlak bij de kust. Freediving sessie: Amed staat bekend om intro's en cursussen. Jemeluk Bay voor een ontspannen snorkelsessie. Uitzicht op Mount Agung vanaf rustige stranden."], costs:[], map:["bali"] },
-  { id:"t36", fase:"bali", start:"2026-09-19", end:"2026-09-19", title:"Bali dag 7 — Sidemen & Mount Agung", details:["Sidemen rijstterrassen: rustige wandeling, minder toeristisch dan Ubud. Besakih Temple: moedertempel van Bali, aan de voet van Agung. Mount Agung sunrise hike: middernacht vertrek, 4–6u klimmen, episch uitzicht op Lombok. Verplichte lokale gids (max. 3 pp/gids, verplicht since 2025). Herstel 's middags, eventueel hot springs."], costs:[], map:["bali"] },
-  { id:"t37", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"Bali → Vietnam (Mathias, Willem, Momo) — TBD", details:["Na het volledige 7-daagse programma vliegen Mathias, Willem en Momo door naar Vietnam. Exacte vluchtdatum en bestemming nog te bevestigen."], costs:[], map:["bali"], openNote: true },
-  { id:"t38", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"Terugvlucht Bali → Brussel (Arne, Eliott, Jens, Kamiel, Kasper) — TBD", details:["Alle 5 vliegen terug naar Brussel na afloop van het volledige 7-daagse Bali-programma. Exacte datum/tijd TBD."], costs:[], map:["bali"], openNote: true },
-  { id:"t39", fase:"heen", start:"2026-09-07", end:"2026-09-08", title:"Brussel → Jakarta (Maurice, Mathias, Jens)", details:["Maurice, Mathias en Jens vliegen vanuit Brussel naar Jakarta om zich bij de groep te voegen."], costs:[], map:["jakarta"] },
-  { id:"t41", fase:"heen", start:"2026-09-13", end:"2026-09-14", title:"Brussel → Singapore → Surabaya (Hinke)", details:["Vlucht Hinke naar Surabaya om daar bij Matthew aan te sluiten."], costs:[], map:["surabaya"] },
-];
-
-/* ---------------- HELPERS ---------------- */
-const MONTHS = ["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
-function fmtShort(d){ const dt=new Date(d+"T00:00:00"); return dt.getDate()+" "+MONTHS[dt.getMonth()]; }
-function fmtRange(s,e){ return s===e ? fmtShort(s) : (s.slice(0,7)===e.slice(0,7) ? new Date(s+"T00:00:00").getDate()+"–"+fmtShort(e) : fmtShort(s)+" – "+fmtShort(e)); }
-
-function today(){ return new Date(new Date().toDateString()); }
-function dateOf(s){ return new Date(s+"T00:00:00"); }
-
-function statusOf(item){
-  const t = today();
-  const s = dateOf(item.start), e = dateOf(item.end);
-  if (e < t) return "voltooid";
-  if (s <= t && t <= e) return "bezig";
-  const days = (s - t) / 86400000;
-  if (days <= 10) return "binnenkort";
-  return "gepland";
-}
-
-function ls_get(key, fallback){ try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); } catch(e){ return fallback; } }
-function ls_set(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
-
-function costValue(id){
-  const stored = ls_get("cost_"+id, undefined);
-  if (stored !== undefined && stored !== "") return Number(stored);
-  const def = COSTS[id].amount;
-  return def === null ? null : def;
-}
-function isBooked(id){ return ls_get("booked_"+id, false); }
 
 let chartRef = null;
 let lockedTripIds = null;
 let lockedFaseKey = null;
+let lockedGroupKey = null;
 
 function getCostsForPerson(personKey) {
   const tripIds = PERSON_TRIPS[personKey] || [];
@@ -512,222 +278,326 @@ function recalcAll(){
   `;
 }
 
-/* ---------------- RENDER: map & ZOOM ---------------- */
-let mapZoom = {
-  currentX: 0,
-  currentY: 0,
-  currentW: 900,
-  currentH: 400,
-  targetX: 0,
-  targetY: 0,
-  targetW: 900,
-  targetH: 400,
-  animationFrameId: null
+/* ---------------- GEOGRAPHIC LOCATIONS (LAT/LNG) ---------------- */
+const LOCS = {
+  brussel:    { lat: 50.9009, lng: 4.4855, name: "✈️ Brussel" },
+  singapore:  { lat: 1.3521, lng: 103.8198, name: "🇸🇬 Singapore" },
+  medan:      { lat: 3.5952, lng: 98.6722, name: "🏙️ Medan" },
+  ketambe:    { lat: 3.6763, lng: 97.6497, name: "🌴 Ketambe" },
+  jakarta:    { lat: -6.2088, lng: 106.8456, name: "🏙️ Jakarta" },
+  yogya:      { lat: -7.7956, lng: 110.3695, name: "🕌 Yogyakarta" },
+  malang:     { lat: -7.9797, lng: 112.6304, name: "🏡 Malang" },
+  surabaya:   { lat: -7.2575, lng: 112.7521, name: "🏙️ Surabaya" },
+  banyuwangi: { lat: -8.2191, lng: 114.3691, name: "⚓ Banyuwangi" },
+  bali:       { lat: -8.6705, lng: 115.2126, name: "🏝️ Bali" },
+  labuanbajo: { lat: -8.4539, lng: 119.8842, name: "🌅 Labuan Bajo" },
+  ruteng:     { lat: -8.6271, lng: 120.4718, name: "⛰️ Ruteng" },
+  padar:      { lat: -8.6534, lng: 119.5772, name: "⛰️ Padar Island" },
+  pink_beach: { lat: -8.6015, lng: 119.5222, name: "🏖️ Pink Beach" },
+  komodo:     { lat: -8.5503, lng: 119.4880, name: "🦎 Komodo" },
+  manta_point:{ lat: -8.5833, lng: 119.5000, name: "🤿 Manta Point" },
+  borobudur:  { lat: -7.6079, lng: 110.2038, name: "🛕 Borobudur" },
+  prambanan:  { lat: -7.7520, lng: 110.4914, name: "🛕 Prambanan" },
+  tumpak_sewu:{ lat: -8.2307, lng: 112.9167, name: "🌊 Tumpak Sewu" },
+  bromo:      { lat: -7.9425, lng: 112.9530, name: "🌋 Mount Bromo" },
+  ijen:       { lat: -8.0583, lng: 114.2430, name: "🔥 Kawah Ijen" },
+  canggu:     { lat: -8.6478, lng: 115.1385, name: "🏄 Canggu" },
+  uluwatu:    { lat: -8.8291, lng: 115.0849, name: "🛕 Uluwatu" },
+  nusa_penida:{ lat: -8.7275, lng: 115.5444, name: "🏝️ Nusa Penida" },
+  ubud:       { lat: -8.5069, lng: 115.2625, name: "🌾 Ubud" },
+  amed:       { lat: -8.3375, lng: 115.6563, name: "🤿 Amed" },
+  sidemen:    { lat: -8.4503, lng: 115.4326, name: "🌾 Sidemen" },
+  agung:      { lat: -8.3433, lng: 115.5089, name: "🌋 Mount Agung" }
 };
 
-function setMapZoomTarget(x, y, w, h) {
-  mapZoom.targetX = x;
-  mapZoom.targetY = y;
-  mapZoom.targetW = w;
-  mapZoom.targetH = h;
-  
-  if (mapZoom.animationFrameId === null) {
-    animateZoom();
+/* Perpendicular Bezier curvature helper for overlapping round-trip lines */
+function getCurvePoints(from, to, factor = 0.12) {
+  const p0 = [from.lat, from.lng];
+  const p2 = [to.lat, to.lng];
+  const dist = Math.hypot(p2[0] - p0[0], p2[1] - p0[1]);
+  if (dist < 0.05 || factor === 0) {
+    return [p0, p2];
   }
+  const mid = [(p0[0] + p2[0]) / 2, (p0[1] + p2[1]) / 2];
+  const dx = p2[0] - p0[0];
+  const dy = p2[1] - p0[1];
+  
+  // Perpendicular offset (bends line to the right of direction vector)
+  const offsetLat = -dy * factor;
+  const offsetLng = dx * factor;
+  
+  const p1 = [mid[0] + offsetLat, mid[1] + offsetLng];
+  
+  const points = [];
+  const steps = 30;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const mt = 1 - t;
+    const lat = mt * mt * p0[0] + 2 * mt * t * p1[0] + t * t * p2[0];
+    const lng = mt * mt * p0[1] + 2 * mt * t * p1[1] + t * t * p2[1];
+    points.push([lat, lng]);
+  }
+  return points;
 }
 
-function animateZoom() {
-  const dx = mapZoom.targetX - mapZoom.currentX;
-  const dy = mapZoom.targetY - mapZoom.currentY;
-  const dw = mapZoom.targetW - mapZoom.currentW;
-  const dh = mapZoom.targetH - mapZoom.currentH;
+/* ---------------- RENDER: map & Leaflet ---------------- */
+let map;
+let cityLabelsGroup;
+let routesGroup;
+let activeTileLayer;
+let mapBuiltFor = null;
+
+const MAP = {
+  route: [],
+  personTrips: [],
+  markers: {},
+  polylines: [],
+  defaultBounds: null
+};
+
+function initLeafletMap() {
+  map = L.map('routemap', {
+    center: [-2.5, 115],
+    zoom: 5,
+    zoomControl: false,
+    attributionControl: true
+  });
   
-  const ease = 0.12;
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
   
-  mapZoom.currentX += dx * ease;
-  mapZoom.currentY += dy * ease;
-  mapZoom.currentW += dw * ease;
-  mapZoom.currentH += dh * ease;
+  // Minimalist Donker kaartlaag
+  activeTileLayer = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
+    { attribution: '© OpenStreetMap contributors, © CARTO', maxZoom: 19 }
+  ).addTo(map);
   
-  const svg = document.getElementById("routemap");
-  if (svg) {
-    svg.setAttribute("viewBox", `${mapZoom.currentX} ${mapZoom.currentY} ${mapZoom.currentW} ${mapZoom.currentH}`);
-  }
-  
-  if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1 && Math.abs(dw) < 0.1 && Math.abs(dh) < 0.1) {
-    mapZoom.currentX = mapZoom.targetX;
-    mapZoom.currentY = mapZoom.targetY;
-    mapZoom.currentW = mapZoom.targetW;
-    mapZoom.currentH = mapZoom.targetH;
-    if (svg) {
-      svg.setAttribute("viewBox", `${mapZoom.currentX} ${mapZoom.currentY} ${mapZoom.currentW} ${mapZoom.currentH}`);
-    }
-    mapZoom.animationFrameId = null;
-  } else {
-    mapZoom.animationFrameId = requestAnimationFrame(animateZoom);
-  }
+  cityLabelsGroup = L.layerGroup().addTo(map);
+  routesGroup = L.layerGroup().addTo(map);
 }
 
-function renderMap(highlightTripIds = null){
-  const svg = document.getElementById("routemap");
-  const personKey = ls_get("selected_person", "matthew");
+function buildMap(personKey) {
+  if (!map) initLeafletMap();
+  
+  // Maak bestaande lagen leeg
+  cityLabelsGroup.clearLayers();
+  routesGroup.clearLayers();
+  MAP.markers = {};
+  MAP.polylines = [];
+  
   const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+  const personTrips = tripIds.map(id => TRIP.find(t => t.id === id)).filter(Boolean);
+  MAP.personTrips = personTrips;
 
-  const seq = [];
+  // Route bepalen: opeenvolgende unieke locaties
+  const route = [];
   for (const item of personTrips) {
     for (const k of item.map) {
-      seq.push({k, item});
+      if (!LOCS[k]) continue;
+      const last = route[route.length - 1];
+      if (last && last.k === k) {
+        last.fases.add(item.fase);
+        continue;
+      }
+      route.push({ k, fases: new Set([item.fase]) });
     }
   }
+  MAP.route = route;
 
-  let hoveredPhase = null;
-  const activeMapKeys = new Set();
-  
-  if (highlightTripIds && highlightTripIds.length > 0) {
-    const firstTrip = TRIP.find(i => i.id === highlightTripIds[0]);
-    if (firstTrip) {
-      hoveredPhase = firstTrip.fase;
-      
-      const personPhases = [];
-      const seenPhases = new Set();
-      for (const item of personTrips) {
-        if (!seenPhases.has(item.fase)) {
-          seenPhases.add(item.fase);
-          personPhases.push(item.fase);
-        }
-      }
-      
-      const idx = personPhases.indexOf(hoveredPhase);
-      const relevantPhases = [];
-      if (idx !== -1) {
-        if (idx > 0) relevantPhases.push(personPhases[idx - 1]);
-        relevantPhases.push(personPhases[idx]);
-        if (idx < personPhases.length - 1) relevantPhases.push(personPhases[idx + 1]);
-      }
-      
-      for (const item of personTrips) {
-        if (relevantPhases.includes(item.fase)) {
-          for (const mk of item.map) {
-            activeMapKeys.add(mk);
-          }
-        }
+  // Eerste fase per locatie (bepaalt de dot kleur van de stad)
+  const firstFase = {};
+  for (const item of personTrips) {
+    for (const k of item.map) {
+      if (LOCS[k] && !(k in firstFase)) {
+        firstFase[k] = item.fase;
       }
     }
   }
 
-  let svgContent = "";
-  if (seq.length > 0) {
-    if (highlightTripIds && highlightTripIds.length > 0) {
-      for (let i = 0; i < seq.length - 1; i++) {
-        const p1 = PTS[seq[i].k];
-        const p2 = PTS[seq[i+1].k];
-        const isActiveSegment = activeMapKeys.has(seq[i].k) && activeMapKeys.has(seq[i+1].k);
-        const opacity = isActiveSegment ? 0.6 : 0.05;
-        svgContent += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="rgba(0, 180, 216, ${opacity})" stroke-width="2" stroke-dasharray="5 4" style="transition: stroke 0.3s, opacity 0.3s" />`;
+  // Lijnen tussen locaties tekenen
+  for (let i = 0; i < route.length - 1; i++) {
+    const k1 = route[i].k, k2 = route[i+1].k;
+    const p1 = LOCS[k1], p2 = LOCS[k2];
+    const phases = new Set([...route[i].fases, ...route[i+1].fases]);
+
+    // Genereer gebogen lijn-coördinaten
+    const curvePoints = getCurvePoints(p1, p2, 0.12);
+
+    const poly = L.polyline(curvePoints, {
+      color: 'rgba(0, 180, 216, 0.4)',
+      weight: 2,
+      dashArray: '5 4'
+    }).addTo(routesGroup);
+
+    MAP.polylines.push({ poly, from: k1, to: k2, fases: phases });
+  }
+
+  // Custom stad markers tekenen
+  Object.keys(firstFase).forEach(k => {
+    const loc = LOCS[k];
+    const phaseColor = FASES[firstFase[k]].color;
+
+    const marker = L.marker([loc.lat, loc.lng], {
+      icon: L.divIcon({
+        html: `
+          <div class="map-city-label" style="--phase-color: ${phaseColor}">
+            <div class="map-city-dot"></div>
+            <span class="map-city-text">${loc.name}</span>
+          </div>
+        `,
+        className: 'map-city-container',
+        iconSize: [120, 20],
+        iconAnchor: [5, 10]
+      }),
+      interactive: true
+    }).addTo(cityLabelsGroup);
+
+    marker.on('click', () => {
+      const trip = personTrips.find(t => t.map.includes(k));
+      if (trip) {
+        window.location.href = `indonesia-timeline.html#${trip.id}`;
       }
+    });
 
-      for (const tid of highlightTripIds) {
-        const hItem = personTrips.find(i => i.id === tid);
-        if (hItem && hItem.map.length > 1) {
-          let hPath = "M " + hItem.map.map(k => `${PTS[k].x} ${PTS[k].y}`).join(" L ");
-          svgContent += `<path d="${hPath}" fill="none" stroke="#ff4d4d" stroke-width="4" stroke-linecap="round" class="glowing-route" style="filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.7)); transition: all 0.3s;" />`;
-        }
-      }
-    } else {
-      let path = "M " + seq.map(s => `${PTS[s.k].x} ${PTS[s.k].y}`).join(" L ");
-      svgContent += `<path d="${path}" fill="none" stroke="rgba(0, 180, 216, 0.4)" stroke-width="2" stroke-dasharray="5 4" />`;
+    MAP.markers[k] = marker;
+  });
+
+  // Bereken bounds (Brussel weglaten uit Indonesië-weergave)
+  const boundsPts = [];
+  Object.keys(firstFase).forEach(k => {
+    if (k !== 'brussel') {
+      boundsPts.push([LOCS[k].lat, LOCS[k].lng]);
     }
-  }
-
-  const seen = {};
-  for (const s of seq) {
-    if (seen[s.k]) continue;
-    seen[s.k] = s.item;
-  }
-  const curItem = personTrips.find(i => statusOf(i) === "bezig");
-
-  for (const k in PTS) {
-    const p = PTS[k];
-    const isVisited = !!seen[k];
-    const item = seen[k];
-    const f = isVisited ? FASES[item.fase] : { color: "#475569" };
-    const isCurrent = isVisited && curItem && curItem.map.includes(k);
-    
-    const isHoveredNode = highlightTripIds && seen[k] && highlightTripIds.includes(seen[k].id);
-    
-    let opacity = isVisited ? "1" : "0.25";
-    let pointerEvents = isVisited ? "auto" : "none";
-    
-    if (highlightTripIds && highlightTripIds.length > 0) {
-      if (activeMapKeys.has(k)) {
-        opacity = "1";
-      } else {
-        opacity = "0.05";
-        pointerEvents = "none";
-      }
-    }
-
-    svgContent += `
-      <g class="map-pt" style="opacity:${opacity}; pointer-events:${pointerEvents}; transition: opacity 0.3s;" ${isVisited ? `onclick="window.location.href='indonesia-timeline.html#${item.id}'"` : ""}>
-        <circle class="halo" cx="${p.x}" cy="${p.y}" r="14" fill="${isHoveredNode ? '#ff4d4d' : f.color}" style="${isHoveredNode ? 'opacity: 0.6' : ''}"/>
-        ${isCurrent ? `<circle cx="${p.x}" cy="${p.y}" r="10" fill="none" stroke="#ff4d4d" stroke-width="2"><animate attributeName="r" values="8;13;8" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite"/></circle>` : ""}
-        <circle cx="${p.x}" cy="${p.y}" r="5.5" fill="${isHoveredNode ? '#ff4d4d' : f.color}" stroke="#07090e" stroke-width="2"/>
-        <text x="${p.x + (p.dx !== undefined ? p.dx : 9)}" y="${p.y + (p.dy !== undefined ? p.dy : 3)}" text-anchor="${p.anchor || 'start'}" style="${isHoveredNode ? 'fill: #ff4d4d; font-weight: 700;' : ''}; transition: fill 0.3s;">${p.label}</text>
-      </g>`;
-  }
-  svg.innerHTML = svgContent;
-
-  document.getElementById("mapLegend").innerHTML = Object.values(FASES).map(f =>
-    `<span><i style="background:${f.color}"></i>${f.label}</span>`
-  ).join("") + `<span><i style="background:#ff4d4d"></i>vandaag</span>`;
-
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  if (highlightTripIds && highlightTripIds.length > 0 && activeMapKeys.size > 0) {
-    for (const key of activeMapKeys) {
-      const pt = PTS[key];
-      if (pt.x < minX) minX = pt.x;
-      if (pt.x > maxX) maxX = pt.x;
-      if (pt.y < minY) minY = pt.y;
-      if (pt.y > maxY) maxY = pt.y;
-    }
-  }
-
-  let targetX, targetY, targetW, targetH;
-  if (minX === Infinity) {
-    targetX = 0;
-    targetY = 0;
-    targetW = 900;
-    targetH = 400;
+  });
+  if (boundsPts.length > 0) {
+    MAP.defaultBounds = L.latLngBounds(boundsPts);
+    map.fitBounds(MAP.defaultBounds, { padding: [30, 30] });
   } else {
-    const padX = 80;
-    const padY = 50;
-    targetX = minX - padX;
-    targetY = minY - padY;
-    targetW = (maxX - minX) + padX * 2;
-    targetH = (maxY - minY) + padY * 2;
+    MAP.defaultBounds = L.latLngBounds([[-10, 95], [10, 140]]);
+    map.fitBounds(MAP.defaultBounds);
+  }
 
-    const aspect = 900 / 400;
-    if (targetW / targetH > aspect) {
-      const newH = targetW / aspect;
-      targetY -= (newH - targetH) / 2;
-      targetH = newH;
-    } else {
-      const newW = targetH * aspect;
-      targetX -= (newW - targetW) / 2;
-      targetW = newW;
-    }
+  // Legenda: alleen fases die deze persoon echt heeft
+  const phaseOrder = [];
+  const seenF = new Set();
+  for (const t of personTrips) {
+    if (!seenF.has(t.fase)) { seenF.add(t.fase); phaseOrder.push(t.fase); }
+  }
+  document.getElementById("mapLegend").innerHTML = phaseOrder.map(fk =>
+    `<span><i style="background:${FASES[fk].color}"></i>${FASES[fk].label}</span>`
+  ).join("") + `<span><i style="background:#ff4d4d"></i>vandaag</span>`;
+}
 
-    if (targetW < 320) {
-      const diffW = 320 - targetW;
-      targetX -= diffW / 2;
-      targetW = 320;
-      targetH = 320 / aspect;
-      targetY -= (targetH - (targetH * (targetW/320))) / 2;
+function updateMapHighlight(highlightTripIds) {
+  if (!map) return;
+  const route = MAP.route;
+  let phase = null;
+  const activeKeys = new Set();
+
+  if (highlightTripIds && highlightTripIds.length > 0) {
+    const firstTrip = MAP.personTrips.find(i => highlightTripIds.includes(i.id));
+    if (firstTrip) phase = firstTrip.fase;
+
+    for (const tid of highlightTripIds) {
+      const item = TRIP.find(t => t.id === tid);
+      if (item) {
+        for (const mk of item.map) {
+          if (LOCS[mk]) activeKeys.add(mk);
+        }
+      }
     }
   }
 
-  setMapZoomTarget(targetX, targetY, targetW, targetH);
+  const phaseColor = phase ? FASES[phase].color : null;
+
+  // Steden updaten
+  Object.entries(MAP.markers).forEach(([k, marker]) => {
+    const el = marker.getElement();
+    if (!el) return;
+
+    el.classList.remove('is-active');
+
+    if (!phase) {
+      marker.setOpacity(k === 'brussel' ? 0 : 1);
+      el.style.opacity = k === 'brussel' ? '0' : '1';
+      const dotEl = el.querySelector('.map-city-dot');
+      if (dotEl) dotEl.style.backgroundColor = '';
+    } else if (activeKeys.has(k)) {
+      el.classList.add('is-active');
+      marker.setOpacity(1);
+      el.style.opacity = '1';
+      const dotEl = el.querySelector('.map-city-dot');
+      if (dotEl) dotEl.style.backgroundColor = phaseColor;
+    } else {
+      marker.setOpacity(0.06);
+      el.style.opacity = '0.06';
+    }
+  });
+
+  // Lijnen updaten
+  MAP.polylines.forEach(item => {
+    const touchesBrussel = item.from === 'brussel' || item.to === 'brussel';
+    const path = item.poly.getElement();
+    if (!phase) {
+      item.poly.setStyle({
+        color: 'rgba(0, 180, 216, 0.4)',
+        weight: 2,
+        dashArray: '5 4',
+        opacity: touchesBrussel ? 0 : 0.8
+      });
+      if (path) path.setAttribute('class', 'leaflet-interactive');
+    } else if (activeKeys.has(item.from) && activeKeys.has(item.to) && item.fases.has(phase)) {
+      item.poly.setStyle({
+        color: phaseColor,
+        weight: 3.5,
+        dashArray: '8 6',
+        opacity: 0.95
+      });
+      if (path) path.setAttribute('class', 'leaflet-interactive active-route-flow');
+    } else if (activeKeys.has(item.from) || activeKeys.has(item.to)) {
+      item.poly.setStyle({
+        color: 'rgba(148, 163, 184, 0.25)',
+        weight: 2,
+        dashArray: '5 4',
+        opacity: 0.5
+      });
+      if (path) path.setAttribute('class', 'leaflet-interactive');
+    } else {
+      item.poly.setStyle({
+        opacity: 0.04
+      });
+      if (path) path.setAttribute('class', 'leaflet-interactive');
+    }
+  });
+
+  // Fit bounds op actieve regio
+  if (phase) {
+    const boundsPts = [];
+    activeKeys.forEach(k => {
+      boundsPts.push([LOCS[k].lat, LOCS[k].lng]);
+    });
+    if (boundsPts.length > 0) {
+      map.fitBounds(L.latLngBounds(boundsPts), { padding: [40, 40], animate: true });
+    }
+  } else {
+    if (MAP.defaultBounds) {
+      map.fitBounds(MAP.defaultBounds, { padding: [30, 30], animate: true });
+    }
+  }
+}
+
+function renderMap(highlightTripIds = null) {
+  const personKey = ls_get("selected_person", "matthew");
+  if (mapBuiltFor !== personKey) {
+    buildMap(personKey);
+    mapBuiltFor = personKey;
+    if (lockedTripIds !== null) {
+      lockedTripIds = null;
+      lockedFaseKey = null;
+      lockedGroupKey = null;
+      updateLockedPhotos(null, null);
+    }
+  }
+  updateMapHighlight(highlightTripIds);
 }
 
 /* ---------------- STEPPER HOVER & LOCK ---------------- */
@@ -741,15 +611,16 @@ function resetHoverPhase() {
   renderMap(null);
 }
 
-function toggleLockPhase(tripIds, faseKey) {
-  const isSame = lockedFaseKey === faseKey;
+function toggleLockPhase(tripIds, faseKey, groupKey) {
+  const isSame = lockedGroupKey === groupKey;
   lockedTripIds = isSame ? null : tripIds;
   lockedFaseKey = isSame ? null : faseKey;
+  lockedGroupKey = isSame ? null : groupKey;
   renderMap(lockedTripIds);
   updateLockedPhotos(lockedFaseKey, lockedTripIds);
   document.querySelectorAll(".simple-step").forEach(el => el.classList.remove("locked"));
-  if (lockedFaseKey) {
-    document.querySelectorAll(`.simple-step[data-fase="${lockedFaseKey}"]`).forEach(el => el.classList.add("locked"));
+  if (lockedGroupKey) {
+    document.querySelectorAll(`.simple-step[data-group="${lockedGroupKey}"]`).forEach(el => el.classList.add("locked"));
   }
 }
 
@@ -775,7 +646,12 @@ function updateLockedPhotos(faseKey, tripIds) {
   if (!faseKey) { panel.style.display = "none"; return; }
 
   const fase = FASES[faseKey];
-  const photos = FASE_PHOTOS[faseKey] || [];
+  const personKey = ls_get("selected_person", "matthew");
+  const tekstOv = getGroupUitleg(faseKey, tripIds, personKey);
+  let photos = FASE_PHOTOS[faseKey] || [];
+  if (personKey !== "matthew" && personKey !== "hinke") {
+    photos = photos.filter(p => !p.includes("airbnbM&H"));
+  }
   const faseTrips = TRIP.filter(i => i.fase === faseKey && (tripIds || []).includes(i.id));
   const starts = faseTrips.map(i => i.start).sort();
   const ends = faseTrips.map(i => i.end).sort();
@@ -795,7 +671,7 @@ function updateLockedPhotos(faseKey, tripIds) {
     <div class="locked-phase-info">
       <div class="locked-phase-title" style="color:${fase.color}">${fase.label}</div>
       ${dateStr ? `<div class="locked-phase-dates">${dateStr}</div>` : ""}
-      <div class="locked-phase-desc-text">${fase.desc || fase.uitleg || ""}</div>
+      <div class="locked-phase-desc-text">${tekstOv}</div>
     </div>
   `;
   panel.style.display = "block";
@@ -814,8 +690,8 @@ function updateLockedPhotos(faseKey, tripIds) {
   }
 }
 
-function toggleStepperCollapse(faseKey) {
-  const key = "collapsed_stepper_" + faseKey;
+function toggleStepperCollapse(groupKey) {
+  const key = "collapsed_stepper_" + groupKey;
   const current = ls_get(key, false);
   ls_set(key, !current);
   renderRouteStepper();
@@ -830,27 +706,52 @@ function renderRouteStepper() {
   const tripIds = PERSON_TRIPS[personKey] || [];
   const personTrips = TRIP.filter(i => tripIds.includes(i.id)).sort((a, b) => a.start.localeCompare(b.start));
 
-  // Group trip items by phase
+  // Group trip items by phase (and by companions only for Java) chronologically
   const phases = [];
-  const phaseMap = {};
+  let currentGroup = null;
 
   for (const item of personTrips) {
-    if (!phaseMap[item.fase]) {
-      phaseMap[item.fase] = {
+    const cmps = Object.keys(PERSON_TRIPS).filter(key => PERSON_TRIPS[key].includes(item.id)).sort();
+    const compKey = cmps.join(",");
+
+    let shouldGroup = false;
+    if (currentGroup && currentGroup.faseKey === item.fase) {
+      if (item.fase === "java") {
+        shouldGroup = (currentGroup.compKey === compKey);
+      } else {
+        shouldGroup = true;
+      }
+    }
+
+    if (shouldGroup) {
+      currentGroup.tripIds.push(item.id);
+      if (item.start < currentGroup.start) currentGroup.start = item.start;
+      if (item.end > currentGroup.end) currentGroup.end = item.end;
+      
+      // Update companions union for non-Java phases
+      if (item.fase !== "java") {
+        const unionSet = new Set([...currentGroup.companions, ...cmps]);
+        currentGroup.companions = Array.from(unionSet).sort();
+        currentGroup.compKey = currentGroup.companions.join(",");
+      }
+    } else {
+      currentGroup = {
         faseKey: item.fase,
         faseInfo: FASES[item.fase],
         start: item.start,
         end: item.end,
         tripIds: [item.id],
+        compKey: compKey,
+        companions: cmps
       };
-      phases.push(phaseMap[item.fase]);
-    } else {
-      const p = phaseMap[item.fase];
-      p.tripIds.push(item.id);
-      if (item.start < p.start) p.start = item.start;
-      if (item.end > p.end) p.end = item.end;
+      phases.push(currentGroup);
     }
   }
+
+  // Construct unique groupKeys
+  phases.forEach(p => {
+    p.groupKey = p.faseKey + "_" + p.start + "_" + p.end;
+  });
 
   if (countBadge) {
     countBadge.textContent = `${phases.length} regio's`;
@@ -859,18 +760,7 @@ function renderRouteStepper() {
   let html = `<div class="simple-timeline">`;
   
   for (const p of phases) {
-    // Collect all unique companions during this phase
-    const companionsSet = new Set();
-    for (const tid of p.tripIds) {
-      const cmps = Object.keys(PERSON_TRIPS).filter(key => PERSON_TRIPS[key].includes(tid));
-      for (const c of cmps) {
-        companionsSet.add(c);
-      }
-    }
-    const companions = Array.from(companionsSet);
-
-    const nDays = Math.round((dateOf(p.end) - dateOf(p.start)) / 86400000) + 1;
-    const durStr = nDays > 1 ? `${nDays} dgn` : "1 dag";
+    const companions = p.companions;
 
     let companionsHtml = "";
     if (companions.length > 0) {
@@ -895,8 +785,13 @@ function renderRouteStepper() {
 
     const color = p.faseInfo.color;
     const tripIdsJson = JSON.stringify(p.tripIds);
+    const tekstOv = getGroupUitleg(p.faseKey, p.tripIds, personKey);
 
-    const stepPhotos = (FASE_PHOTOS[p.faseKey] || []).slice(0, 3);
+    let stepPhotos = FASE_PHOTOS[p.faseKey] || [];
+    if (personKey !== "matthew" && personKey !== "hinke") {
+      stepPhotos = stepPhotos.filter(src => !src.includes("airbnbM&H"));
+    }
+    stepPhotos = stepPhotos.slice(0, 3);
     const photoStripHtml = stepPhotos.length > 0
       ? `<div class="stepper-photos">${stepPhotos.map(src => `<img src="${src}" class="stepper-photo" loading="lazy" alt="" onclick="event.stopPropagation(); openLightbox('${src}')">`).join("")}</div>`
       : "";
@@ -924,27 +819,43 @@ function renderRouteStepper() {
       `;
     }
 
-    const isStepperCollapsed = ls_get("collapsed_stepper_" + p.faseKey, false);
+    const isStepperCollapsed = ls_get("collapsed_stepper_" + p.groupKey, false);
+
+    // Bullet points van individuele trips om de sub-fases te duiden
+    let tripTitlesHtml = "";
+    if (p.tripIds.length > 0) {
+      tripTitlesHtml = `
+        <ul class="simple-step-trips" style="margin: 6px 0 0 16px; padding: 0; font-size: 13px; color: var(--text-soft); list-style-type: disc;">
+          ${p.tripIds.map(tid => {
+            const item = TRIP.find(t => t.id === tid);
+            return `<li>${item ? item.title : ""}</li>`;
+          }).join("")}
+        </ul>
+      `;
+    }
+
+    const isLocked = lockedGroupKey === p.groupKey;
 
     html += `
-      <div class="simple-step ${isStepperCollapsed ? 'collapsed' : ''}" data-fase="${p.faseKey}"
-           onclick='toggleLockPhase(${tripIdsJson}, "${p.faseKey}")'
+      <div class="simple-step ${isStepperCollapsed ? 'collapsed' : ''} ${isLocked ? 'locked' : ''}" 
+           data-fase="${p.faseKey}" data-group="${p.groupKey}"
+           onclick='toggleLockPhase(${tripIdsJson}, "${p.faseKey}", "${p.groupKey}")'
            onmouseenter='hoverPhaseSteps(${tripIdsJson})'
            onmouseleave="resetHoverPhase()">
-        <div class="simple-step-line" style="background: ${color}"></div>
-        <div class="simple-step-node" style="color: ${color}"></div>
-        <div class="simple-step-content">
+         <div class="simple-step-line" style="background: ${color}"></div>
+         <div class="simple-step-node" style="color: ${color}"></div>
+         <div class="simple-step-content">
           <div class="simple-step-header">
             <span class="simple-step-title" style="color: ${color}">${p.faseInfo.label}${airbnbHtml}</span>
-            <button class="simple-step-collapse-toggle" onclick="event.stopPropagation(); toggleStepperCollapse('${p.faseKey}')" title="${isStepperCollapsed ? 'Klap open' : 'Klap in'}">
+            <button class="simple-step-collapse-toggle" onclick="event.stopPropagation(); toggleStepperCollapse('${p.groupKey}')" title="${isStepperCollapsed ? 'Klap open' : 'Klap in'}">
               ▼
             </button>
           </div>
           <div class="simple-step-dates">
             <span>${fmtRange(p.start, p.end)}</span>
-            <span class="simple-step-duration">${durStr}</span>
           </div>
-          <div class="simple-step-desc">${p.faseInfo.uitleg || ""}</div>
+          <div class="simple-step-desc">${tekstOv}</div>
+          ${tripTitlesHtml}
           ${companionsHtml}
           ${photoStripHtml}
         </div>
@@ -1037,7 +948,10 @@ function renderDestinationsGallery() {
 
   let html = "";
   for (const p of phases) {
-    const photos = FASE_PHOTOS[p.faseKey] || [];
+    let photos = FASE_PHOTOS[p.faseKey] || [];
+    if (personKey !== "matthew" && personKey !== "hinke") {
+      photos = photos.filter(src => !src.includes("airbnbM&H"));
+    }
     if (photos.length === 0) continue;
     const color = p.faseInfo.color;
     const main = photos[0];

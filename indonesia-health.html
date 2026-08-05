@@ -639,77 +639,14 @@
   </div>
 </div>
 
+<script src="data.js"></script>
 <script>
 /* ================================================================
    DATA & SCHEDULING (SHARED LOGIC)
    ================================================================ */
-const PERSONS = {
-  matthew: { name: "Matthew", color: "#0F6B5C" },
-  hinke:   { name: "Hinke",   color: "#C8567D" },
-  arne:    { name: "Arne",    color: "#5B7FB5" },
-  eliott:  { name: "Eliott",  color: "#D97A2B" },
-  jens:    { name: "Jens",    color: "#6B4E9C" },
-  kamiel:  { name: "Kamiel",  color: "#4A8B3B" },
-  maurice: { name: "Maurice", color: "#C8932B" },
-  mathias: { name: "Mathias", color: "#1C8AA0" },
-  willem:  { name: "Willem",  color: "#C75D3A" },
-  kasper:  { name: "Kasper",  color: "#8A6D3B" }
-};
+/* PERSONS en PERSON_TRIPS geladen vanuit data.js */
 
-const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice","mathias","willem","kasper"];
-
-const PERSON_TRIPS = {
-  matthew: ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  hinke:   ["t41", "t11", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  arne:    ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  jens:    ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  maurice: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  mathias: ["t39", "t7", "t8", "t9", "t10", "t30", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
-};
-
-const TRIP = [
-  { id:"t1", fase:"heen", start:"2026-08-28", end:"2026-08-29", title:"Brussel → Bangkok → Singapore", map:["singapore"] },
-  { id:"t2", fase:"sg", start:"2026-08-29", end:"2026-08-30", title:"Singapore", map:["singapore"] },
-  { id:"t3", fase:"sumatra", start:"2026-08-31", end:"2026-08-31", title:"Singapore → Medan → Ketambe", map:["singapore","medan","ketambe"] },
-  { id:"t4", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Ketambe — aankomst & voorbereiding", map:["ketambe"] },
-  { id:"t5", fase:"sumatra", start:"2026-09-02", end:"2026-09-06", title:"Jungle trekking — Ketambe", map:["ketambe"] },
-  { id:"t6", fase:"sumatra", start:"2026-09-07", end:"2026-09-07", title:"Ketambe → Medan → Jakarta", map:["ketambe","medan","jakarta"] },
-  { id:"t7", fase:"jakarta", start:"2026-09-08", end:"2026-09-08", title:"Jakarta — Momo & Mathias sluiten aan", map:["jakarta"] },
-  { id:"t8", fase:"java", start:"2026-09-09", end:"2026-09-09", title:"Jakarta → Yogyakarta", map:["jakarta","yogya"] },
-  { id:"t9", fase:"java", start:"2026-09-10", end:"2026-09-10", title:"Yogyakarta → nachttrein naar Malang", map:["yogya","malang"] },
-  { id:"t10", fase:"java", start:"2026-09-11", end:"2026-09-13", title:"Splitsingspunt — Matthew wacht in Surabaya, jongens → Bromo", map:["malang","surabaya"] },
-  { id:"t11", fase:"java", start:"2026-09-14", end:"2026-09-15", title:"Hinke landt in Surabaya — ze zijn samen", map:["surabaya"] },
-  { id:"t12", fase:"java", start:"2026-09-16", end:"2026-09-16", title:"Bromo + Tumpak Sewu (met Hinke)", map:["surabaya","banyuwangi"] },
-  { id:"t13", fase:"java", start:"2026-09-17", end:"2026-09-17", title:"Kawah Ijen (met Hinke)", map:["banyuwangi"] },
-  { id:"t14", fase:"flores", start:"2026-09-18", end:"2026-09-18", title:"Java → Bali → Flores", map:["banyuwangi","bali","labuanbajo"] },
-  { id:"t15", fase:"flores", start:"2026-09-19", end:"2026-09-19", title:"Labuan Bajo — aankomen & relax", map:["labuanbajo"] },
-  { id:"t16", fase:"flores", start:"2026-09-20", end:"2026-09-20", title:"Labuan Bajo — chill + omgeving", map:["labuanbajo"] },
-  { id:"t17", fase:"flores", start:"2026-09-21", end:"2026-09-22", title:"Ruteng (binnenland)", map:["labuanbajo","ruteng"] },
-  { id:"t18", fase:"flores", start:"2026-09-23", end:"2026-09-23", title:"Terug naar Labuan Bajo regio", map:["ruteng","labuanbajo"] },
-  { id:"t19", fase:"komodo", start:"2026-09-24", end:"2026-09-24", title:"Komodo — full day boottour", map:["labuanbajo"] },
-  { id:"t20", fase:"komodo", start:"2026-09-25", end:"2026-09-25", title:"Relaxdag Labuan Bajo", map:["labuanbajo"] },
-  { id:"t21", fase:"bali", start:"2026-09-26", end:"2026-09-26", title:"Labuan Bajo → Bali", map:["labuanbajo","bali"] },
-  { id:"t22", fase:"bali", start:"2026-09-26", end:"2026-09-28", title:"Bali — luxe & chill", map:["bali"] },
-  { id:"t23", fase:"terug", start:"2026-09-29", end:"2026-09-29", title:"Terug naar huis", map:["bali"] },
-  { id:"t27", fase:"heen", start:"2026-08-29", end:"2026-08-30", title:"Brussel → Singapore → Jakarta (Kamiel, Eliott, Kasper, Willem)", map:["singapore","jakarta"] },
-  { id:"t28", fase:"heen", start:"2026-08-30", end:"2026-08-31", title:"Jakarta — aankomst & acclimatiseren (Kamiel, Eliott, Kasper, Willem)", map:["jakarta"] },
-  { id:"t29", fase:"sumatra", start:"2026-09-01", end:"2026-09-01", title:"Jakarta → Medan (Kamiel, Eliott, Kasper, Willem)", map:["jakarta","medan"] },
-  { id:"t30", fase:"bali", start:"2026-09-13", end:"2026-09-13", title:"Kawah Ijen → ferry → Bali (alle jongens)", map:["banyuwangi","bali"] },
-  { id:"t31", fase:"bali", start:"2026-09-13", end:"2026-09-14", title:"Bali dag 1–2 — Canggu", map:["bali"] },
-  { id:"t32", fase:"bali", start:"2026-09-14", end:"2026-09-15", title:"Bali dag 2–3 — Uluwatu", map:["bali"] },
-  { id:"t33", fase:"bali", start:"2026-09-16", end:"2026-09-16", title:"Bali dag 4 — Nusa Penida", map:["bali"] },
-  { id:"t34", fase:"bali", start:"2026-09-17", end:"2026-09-17", title:"Bali dag 5 — Ubud", map:["bali"] },
-  { id:"t35", fase:"bali", start:"2026-09-18", end:"2026-09-18", title:"Bali dag 6 — Amed & Tulamben", map:["bali"] },
-  { id:"t36", fase:"bali", start:"2026-09-19", end:"2026-09-19", title:"Bali dag 7 — Sidemen & Mount Agung", map:["bali"] },
-  { id:"t37", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"Bali → Vietnam (Mathias, Willem, Momo) — TBD", map:["bali"] },
-  { id:"t38", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"Terugvlucht Bali → Brussel (Arne, Eliott, Jens, Kamiel, Kasper) — TBD", map:["bali"] },
-  { id:"t39", fase:"heen", start:"2026-09-07", end:"2026-09-08", title:"Brussel → Jakarta (Maurice, Mathias, Jens)", map:["jakarta"] },
-  { id:"t41", fase:"heen", start:"2026-09-13", end:"2026-09-14", title:"Brussel → Singapore → Surabaya (Hinke)", map:["surabaya"] }
-];
+/* TRIP geladen vanuit data.js */
 
 /* ================================================================
    HEALTH & HOSPITAL DIRECTORY DATA
@@ -835,11 +772,7 @@ const PHARMACY_ITEMS = {
   ]
 };
 
-/* ================================================================
-   LOCAL STORAGE UTILITIES
-   ================================================================ */
-function ls_get(key, fallback){ try { const v = localStorage.getItem(key); return v===null ? fallback : JSON.parse(v); } catch(e){ return fallback; } }
-function ls_set(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
 
 /* ================================================================
    STATE MANAGEMENT
