@@ -82,7 +82,6 @@ function isBooked(id) {
 /* ---------------- FASEN VAN DE REIS ---------------- */
 const FASES = {
   heen:    { label: "Vlucht heen",  color: "#4cc9f0", soft: "rgba(76, 201, 240, 0.1)", uitleg: "Heenreis vanuit Brussel naar Medan, met korte overstap in Singapore.", desc: "Matthew en Arne vliegen op 29 augustus met Singapore Airlines (SQ303) vanuit Brussel naar Singapore, waar ze op 30 augustus om 06:40 landen. Na een korte overstap van 50 minuten in Changi vliegen ze door met SQ990 naar Medan, waar ze om 08:00 aankomen. Geen tussenstop om te chillen — de reis gaat rechtstreeks door richting het avontuur." },
-  sg:      { label: "Singapore",    color: "#00b4d8", soft: "rgba(0, 180, 216, 0.1)", uitleg: "Korte overstap in Singapore Changi Airport.", desc: "Overstap op Singapore Changi Airport alvorens door te reizen naar Indonesië." },
   sumatra: { label: "Sumatra",      color: "#4ad66d", soft: "rgba(74, 214, 109, 0.1)", uitleg: "Intense 5-daagse jungle trekking in Ketambe met de hele crew.", desc: "Na een vlucht naar Medan volgt een marathon rit van 7-8 uur de oerwouden in naar Ketambe, diep in het hart van Sumatra. Met 6 man — Matthew, Arne, Kamiel, Eliott, Kasper en Willem — wordt een intensieve 5-daagse all-in jungle trekking gedaan, compleet met orang-oetans, nachtelijke geluiden en jungle overnachtingen. Een van de meest avontuurlijke en onvergetelijke onderdelen van de hele reis." },
   jakarta: { label: "Jakarta",      color: "#f77f00", soft: "rgba(247, 127, 0, 0.1)", uitleg: "Aankomst in de hoofdstad en samenkomst van de complete groep van 9.", desc: "Na de jungle is het tijd voor de bruisende hoofdstad Jakarta, waar Maurice, Mathias en Jens de groep versterken — nu zijn alle 9 reizigers voor het eerst bij elkaar. Eén nacht in de stad: bijkomen, Kota Tua verkennen en de groep samenvoegen. Het is ook het moment om bij te trekken voor de avontuurlijke Java-etappe die volgt." },
   java:    { label: "Java",         color: "#9d4edd", soft: "rgba(157, 78, 221, 0.1)", uitleg: "Reis langs Yogyakarta, Borobudur, Prambanan en Bromo/Ijen vulkanen.", desc: "Java biedt een indrukwekkend programma: Yogyakarta, Borobudur en Prambanan, gevolgd door een nachttrein naar Malang. Matthew wacht in Surabaya op Hinke terwijl de jongens Tumpak Sewu en Mount Bromo verkennen. Zodra Hinke landt op 14 september reizen ze samen verder — Kawah Ijen blauwvuur, daarna Flores." },
@@ -123,6 +122,26 @@ const FASE_TEKST_PP = {
       uitleg: "Terugvlucht Bali → Brussel na het Bali-programma (datum TBD)." }
   ]
 };
+
+/* Chronologische sortering van trip-items.
+   Bij een gelijke startdatum (bv. t4 "Medan → Ketambe" en t29 "Jakarta → Medan",
+   beide op 01/09) bepaalt de volgorde van FASES de doorslag. Zonder dit springt
+   de fase heen en weer (heen > sumatra > heen > sumatra) voor Eliott, Kamiel,
+   Kasper en Willem, wat dubbele fase-koppen en dubbele DOM-id's oplevert. */
+const FASE_VOLGORDE = Object.keys(FASES);
+
+function compareTrips(a, b) {
+  const d = a.start.localeCompare(b.start);
+  if (d !== 0) return d;
+  const fa = FASE_VOLGORDE.indexOf(a.fase);
+  const fb = FASE_VOLGORDE.indexOf(b.fase);
+  if (fa !== fb) return fa - fb;
+  return a.end.localeCompare(b.end);
+}
+
+function sortTrips(items) {
+  return [...items].sort(compareTrips);
+}
 
 function faseTekst(faseKey, personKey) {
   for (const row of (FASE_TEKST_PP[faseKey] || [])) {
@@ -197,14 +216,14 @@ const PERSON_ORDER = ["matthew","hinke","arne","eliott","jens","kamiel","maurice
 const PERSON_TRIPS = {
   matthew: ["t1", "t3", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
   hinke:   ["t41", "t11", "t11b", "t12", "t13", "t14", "t15", "t16", "t17", "t18", "t19", "t20", "t21", "t22", "t23"],
-  arne:    ["t1", "t3", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  jens:    ["t39", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  maurice: ["t39", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
-  willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
-  mathias: ["t39", "t7", "t8", "t9", "t10b", "t30", "t30b", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
+  arne:    ["t1", "t3", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  eliott:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  jens:    ["t39", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  kamiel:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  maurice: ["t39", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
+  kasper:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t38"],
+  willem:  ["t27", "t28", "t29", "t4", "t5", "t6", "t6b", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t37"],
+  mathias: ["t39", "t7", "t8", "t9", "t10b", "t30", "t30b", "t30c", "t31", "t32", "t33", "t34", "t35", "t36", "t37"]
 };
 
 const PERSON_GROUP_INFO = {
@@ -332,15 +351,79 @@ const PERSON_GROUP_INFO = {
   `
 };
 
+/* ---------------- GEDEELDE PERSONENKIEZER ----------------
+   Eén implementatie voor tracker, reisschema, transport en gezondheid.
+   Elke pagina registreert via initPersonSelector() wat er na een wissel
+   opnieuw getekend moet worden. */
+const PERSON_SELECTOR = {
+  label: "Bekijk weergave van",
+  onChange: null,
+  mountId: "personSelector"
+};
+
+function getSelectedPerson() {
+  return ls_get("selected_person", "matthew");
+}
+
+function initPersonSelector(opts = {}) {
+  if (opts.label) PERSON_SELECTOR.label = opts.label;
+  if (opts.onChange) PERSON_SELECTOR.onChange = opts.onChange;
+  if (opts.mountId) PERSON_SELECTOR.mountId = opts.mountId;
+  renderPersonSelector();
+}
+
+function renderPersonSelector() {
+  const container = document.getElementById(PERSON_SELECTOR.mountId);
+  if (!container) return;
+
+  const active = getSelectedPerson();
+  const collapsed = ls_get("person_selector_collapsed", false);
+
+  const cards = PERSON_ORDER.map(key => {
+    const p = PERSONS[key];
+    const isActive = key === active;
+    const photo = localStorage.getItem(`mapphoto_${key}`);
+    const avatar = photo
+      ? `<img src="${photo}" alt="">`
+      : `<span class="avatar-initials" style="color:${p.color}">${p.name.substring(0, 2)}</span>`;
+    return `<button type="button" class="person-card ${isActive ? "active" : ""}"
+        role="radio" aria-checked="${isActive}" onclick="selectPerson('${key}')">
+        <div class="person-card-avatar" style="border-color:${p.color}">${avatar}</div>
+        <span class="person-card-name">${p.name}</span>
+      </button>`;
+  }).join("");
+
+  container.innerHTML = `
+    <button type="button" class="person-selector-header" onclick="togglePersonSelector()"
+            aria-expanded="${!collapsed}" aria-controls="personGrid">
+      <span class="person-selector-label">${PERSON_SELECTOR.label}:
+        <strong class="person-selector-active">${PERSONS[active].name}</strong></span>
+      <span class="person-selector-toggle-arrow"${collapsed ? ' data-collapsed="true"' : ""}>▼</span>
+    </button>
+    <div class="person-grid" id="personGrid" role="radiogroup"
+         aria-label="Kies reiziger"${collapsed ? " hidden" : ""}>${cards}</div>`;
+}
+
+function togglePersonSelector() {
+  ls_set("person_selector_collapsed", !ls_get("person_selector_collapsed", false));
+  renderPersonSelector();
+}
+
+function selectPerson(key) {
+  ls_set("selected_person", key);
+  renderPersonSelector();
+  if (PERSON_SELECTOR.onChange) PERSON_SELECTOR.onChange(key);
+}
+
 /* ---------------- KOSTEN (VOLLEDIG SYNC MET HOME PAGE) ---------------- */
 const COSTS = {
   c1:  { label: "Vlucht BRU → Singapore → Medan (Singapore Airlines, SQ303+SQ990)", cat: "vlucht", amount: null },
-  c2:  { label: "Vlucht Singapore → Medan (Scoot)", cat: "vlucht", amount: 71 },
   c3:  { label: "Taxi/minibus Medan → Ketambe", cat: "transport", amount: 20 },
   c4:  { label: "Jungle trekking Ketambe (5d/4n, all-in)", cat: "activiteit", amount: 196 },
   c4b: { label: "Overnachting guesthouse Ketambe (2n, vóór + na trek)", cat: "accommodatie", amount: null },
   c5:  { label: "Taxi/minibus Ketambe → Medan", cat: "transport", amount: 20 },
-  c6:  { label: "Vlucht Jakarta ↔ Medan (Lion Air)", cat: "vlucht", amount: 212 },
+  c6:  { label: "Vlucht Medan → Jakarta (Lion Air JT383, enkel)", cat: "vlucht", amount: 106 },
+  c6b: { label: "Vlucht Jakarta → Medan (Lion Air JT204, enkel)", cat: "vlucht", amount: 106 },
   c7:  { label: "Trein Jakarta → Yogyakarta", cat: "transport", amount: 20 },
   c7b: { label: "Tempels entree (Borobudur + Prambanan)", cat: "activiteit", amount: 40 },
   c8:  { label: "Nachttrein Yogyakarta → Malang", cat: "transport", amount: 15 },
@@ -353,7 +436,6 @@ const COSTS = {
   c15: { label: "Vlucht Labuan Bajo → Bali", cat: "vlucht", amount: null },
   c16: { label: "Bali villa (26-29 sep)", cat: "accommodatie", amount: 101 },
   c17: { label: "Terugvlucht Bali → huis", cat: "vlucht", amount: null },
-  c18: { label: "Hotel Singapore (2n)", cat: "accommodatie", amount: 90 },
   c19: { label: "Hotel Jakarta (1n)", cat: "accommodatie", amount: 35 },
   c20: { label: "Hotel Yogyakarta (1n)", cat: "accommodatie", amount: 30 },
   c21: { label: "Bromo + Tumpak Sewu (jeep-tour + entree, met Hinke)", cat: "activiteit", amount: 25 },
@@ -361,7 +443,67 @@ const COSTS = {
   c23: { label: "Komodo dagtour (boot, Padar + Pink Beach + Komodo + Manta)", cat: "activiteit", amount: 68 },
   c24: { label: "Hotel Surabaya (11–13/09, 3n, wachten op Hinke)", cat: "accommodatie", amount: 75 },
   c25: { label: "Villa Blimbing, Wonderhouz Premium (15-16/09, 1n, met Hinke)", cat: "accommodatie", amount: 40, url: "https://www.airbnb.com/rooms/1574650852556499790" },
+  c26: { label: "Vlucht BRU → Singapore → Jakarta (SQ303+SQ956)", cat: "vlucht", amount: null },
+  c27: { label: "Hotel Jakarta (30-31/08, 2n, acclimatiseren)", cat: "accommodatie", amount: null },
+  c28: { label: "Vlucht BRU → Singapore → Jakarta (SQ303+SQ952, ref. FSXOOZ)", cat: "vlucht", amount: 680.77 },
+  c29: { label: "Vlucht BRU → Singapore → Surabaya (Hinke)", cat: "vlucht", amount: null },
+  c30: { label: "Villa Canggu (13-19/09, 6n, gedeeld door 8)", cat: "accommodatie", amount: 226.87, url: "https://www.airbnb.com/" },
+  c31: { label: "Terugvlucht Bali → Brussel (jongens)", cat: "vlucht", amount: null },
+  c32: { label: "Vlucht Bali → Vietnam (doorreis)", cat: "vlucht", amount: null },
 };
+
+/* ---------------- GEOGRAFISCHE COÖRDINATEN ----------------
+   Eén bron voor de Leaflet-kaarten (home + reiskaart) en voor de
+   afstandsberekening op de transportpagina. "brussel" en "brussels" bestaan
+   allebei omdat TRIP.map en de reiskaart-schema's verschillende sleutels
+   gebruiken. */
+const GEO = {
+  brussel:    { lat: 50.9009, lng: 4.4855, name: "✈️ Brussel" },
+  brussels:   { lat: 50.9009, lng: 4.4855, name: "✈️ Brussel" },
+  bru:        { lat: 50.9009, lng: 4.4855, name: "✈️ Brussel" },
+  singapore:  { lat: 1.3521, lng: 103.8198, name: "🇸🇬 Singapore" },
+  medan:      { lat: 3.5952, lng: 98.6722, name: "🏙️ Medan" },
+  ketambe:    { lat: 3.6763, lng: 97.6497, name: "🌴 Ketambe" },
+  jakarta:    { lat: -6.2088, lng: 106.8456, name: "🏙️ Jakarta" },
+  yogya:      { lat: -7.7956, lng: 110.3695, name: "🕌 Yogyakarta" },
+  malang:     { lat: -7.9797, lng: 112.6304, name: "🏡 Malang" },
+  surabaya:   { lat: -7.2575, lng: 112.7521, name: "🏙️ Surabaya" },
+  banyuwangi: { lat: -8.2191, lng: 114.3691, name: "⚓ Banyuwangi" },
+  bali:       { lat: -8.6705, lng: 115.2126, name: "🏝️ Bali" },
+  labuanbajo: { lat: -8.4539, lng: 119.8842, name: "🌅 Labuan Bajo" },
+  ruteng:     { lat: -8.6271, lng: 120.4718, name: "⛰️ Ruteng" },
+  padar:      { lat: -8.6534, lng: 119.5772, name: "⛰️ Padar Island" },
+  pink_beach: { lat: -8.6015, lng: 119.5222, name: "🏖️ Pink Beach" },
+  komodo:     { lat: -8.5503, lng: 119.4880, name: "🦎 Komodo" },
+  manta_point:{ lat: -8.5833, lng: 119.5000, name: "🤿 Manta Point" },
+  borobudur:  { lat: -7.6079, lng: 110.2038, name: "🛕 Borobudur" },
+  prambanan:  { lat: -7.7520, lng: 110.4914, name: "🛕 Prambanan" },
+  tumpak_sewu:{ lat: -8.2307, lng: 112.9167, name: "🌊 Tumpak Sewu" },
+  bromo:      { lat: -7.9425, lng: 112.9530, name: "🌋 Mount Bromo" },
+  ijen:       { lat: -8.0583, lng: 114.2430, name: "🔥 Kawah Ijen" },
+  canggu:     { lat: -8.6478, lng: 115.1385, name: "🏄 Canggu" },
+  uluwatu:    { lat: -8.8291, lng: 115.0849, name: "🛕 Uluwatu" },
+  nusa_penida:{ lat: -8.7275, lng: 115.5444, name: "🏝️ Nusa Penida" },
+  ubud:       { lat: -8.5069, lng: 115.2625, name: "🌾 Ubud" },
+  amed:       { lat: -8.3375, lng: 115.6563, name: "🤿 Amed" },
+  sidemen:    { lat: -8.4503, lng: 115.4326, name: "🌾 Sidemen" },
+  agung:      { lat: -8.3433, lng: 115.5089, name: "🌋 Mount Agung" },
+  vietnam:    { lat: 10.8231, lng: 106.6297, name: "🇻🇳 Vietnam (Saigon)" }
+};
+
+/* Hemelsbrede afstand in km tussen twee GEO-sleutels */
+function geoDistanceKm(keyA, keyB) {
+  const a = GEO[keyA], b = GEO[keyB];
+  if (!a || !b) return 0;
+  const R = 6371;
+  const toRad = d => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
 
 /* ---------------- SVG KAART COÖRDINATEN ---------------- */
 const PTS = {
@@ -423,21 +565,22 @@ const TRIP = [
   { id:"t21", fase:"bali", start:"2026-09-26", end:"2026-09-26", title:"✈️ Labuan Bajo → Bali", details:[], costs:["c15"], map:["labuanbajo","bali"] },
   { id:"t22", fase:"bali", start:"2026-09-26", end:"2026-09-28", title:"🏖️ Bali — luxe & chill", details:[], costs:["c16"], map:["bali"] },
   { id:"t23", fase:"terug", start:"2026-09-29", end:"2026-09-29", title:"✈️ Terug naar huis", details:["✈️ Vertrekt: 29 sep (TBD) | Aankomst: 29 sep (TBD)"], costs:["c17"], map:["bali","brussel"], duration: "~20u" },
-  { id:"t27", fase:"heen", start:"2026-08-29", end:"2026-08-30", title:"✈️ Brussel → Singapore → Jakarta (Kamiel, Eliott, Kasper, Willem)", details:["✈️ Vertrekt: 29 aug om 11:45 | Aankomst: 30 aug om 09:55", "SQ 303: BRU 11:45 (29/08) → SIN 06:40 (30/08). Layover 2u25 in Changi (Singapore). SQ 956: SIN 09:05 → CGK 09:55 (30/08), aankomst Jakarta Soekarno Intl T3. Beide segmenten: Airbus A350-900, Economy."], costs:[], map:["brussel","singapore","jakarta"], duration: "12u (4u +2.5u +7u)" },
-  { id:"t28", fase:"heen", start:"2026-08-30", end:"2026-08-31", title:"🏙️ Jakarta — aankomst & acclimatiseren (Kamiel, Eliott, Kasper, Willem)", details:["Aankomst 30/08 om 09:55 op Jakarta Soekarno Intl T3. Twee nachten Jakarta (30 en 31 aug): stad verkennen."], costs:[], map:["jakarta"] },
-  { id:"t29", fase:"heen", start:"2026-09-01", end:"2026-09-01", title:"✈️ Jakarta → Medan (Kamiel, Eliott, Kasper, Willem)", details:["Vlucht Jakarta (CGK) → Medan. Ontmoeting met Matthew & Arne in Medan. Aansluitend met alle 6 man taxi naar Ketambe (±7-8u)."], costs:["c6"], map:["jakarta","medan"], duration: "~1.5u vlucht + 7-8u taxi" },
+  { id:"t27", fase:"heen", start:"2026-08-29", end:"2026-08-30", title:"✈️ Brussel → Singapore → Jakarta (Kamiel, Eliott, Kasper, Willem)", details:["✈️ Vertrekt: 29 aug om 11:45 | Aankomst: 30 aug om 09:55", "SQ 303: BRU 11:45 (29/08) → SIN 06:40 (30/08). Layover 2u25 in Changi (Singapore). SQ 956: SIN 09:05 → CGK 09:55 (30/08), aankomst Jakarta Soekarno Intl T3. Beide segmenten: Airbus A350-900, Economy."], costs:["c26"], map:["brussel","singapore","jakarta"], duration: "12u (4u +2.5u +7u)" },
+  { id:"t28", fase:"heen", start:"2026-08-30", end:"2026-08-31", title:"🏙️ Jakarta — aankomst & acclimatiseren (Kamiel, Eliott, Kasper, Willem)", details:["Aankomst 30/08 om 09:55 op Jakarta Soekarno Intl T3. Twee nachten Jakarta (30 en 31 aug): stad verkennen."], costs:["c27"], map:["jakarta"] },
+  { id:"t29", fase:"heen", start:"2026-09-01", end:"2026-09-01", title:"✈️ Jakarta → Medan (Kamiel, Eliott, Kasper, Willem)", details:["Vlucht Jakarta (CGK) → Medan. Ontmoeting met Matthew & Arne in Medan. Aansluitend met alle 6 man taxi naar Ketambe (±7-8u)."], costs:["c6b"], map:["jakarta","medan"], duration: "~1.5u vlucht + 7-8u taxi" },
   { id:"t30", fase:"java", start:"2026-09-13", end:"2026-09-13", title:"🔥 Kawah Ijen 's nachts (alle jongens)", details:["Om 1u 's nachts op voor de Kawah Ijen-hike: blauwvuur en zwavelmeer bij zonsopgang."], costs:["c22"], map:["banyuwangi","ijen"], duration: "~4-5u hike" },
   { id:"t30b", fase:"bali", start:"2026-09-13", end:"2026-09-13", title:"🚢 Ferry naar Bali → Canggu (alle jongens)", details:["Na de Kawah Ijen-hike taxi naar Ketapang, dan ferry naar Gilimanuk (Bali), en doorrijden naar Canggu."], costs:[], map:["banyuwangi","canggu"], duration: "~3-4u totaal" },
+  { id:"t30c", fase:"bali", start:"2026-09-13", end:"2026-09-19", title:"🏡 Villa in Canggu — basis voor de Bali-week (8p)", details:["Airbnb geboekt: superbe villa moderne, 4 slaapkamers, 400 m van het strand (4,92★, 49 reviews, 'Coup de cœur voyageurs'). Check-in 13/09, check-out 19/09 (6 nachten), voor 8 personen: Willem, Eliott, Jens, Arne, Maurice, Kamiel, Kasper & Mathias.", "Prijs: 6 nachten × €398,01 = €2.388,06, min. speciale korting €573,12 → totaal €1.814,94. Betaling gesplitst: €907,50 nu, €907,44 op 29/08. Gratis annulering binnen 24u.", "Dit is de accommodatie voor de jongens tijdens het volledige 7-daagse Bali-programma (Canggu → Uluwatu → Nusa Penida → Ubud → Amed → Sidemen/Agung) — niet inbegrepen in Matthews eigen kostendashboard, want Matthew & Hinke doen op dat moment de Flores/Komodo-route."], costs:["c30"], map:["canggu"] },
   { id:"t31", fase:"bali", start:"2026-09-13", end:"2026-09-14", title:"🏄 Bali dag 1–2 — Canggu", details:["Surfen: Batu Bolong Beach (zachte golven, ideaal voor beginners), Echo Beach (iets pittiger), Old Man's (relaxte sfeer). Zonsondergang bij beachclubs: Old Man's, La Brisa of Finns. Optioneel stop: Tanah Lot klieftempel in zee."], costs:[], map:["canggu"] },
   { id:"t32", fase:"bali", start:"2026-09-14", end:"2026-09-15", title:"🛕 Bali dag 2–3 — Uluwatu", details:["Uluwatu Temple: klieftempel + Kecak dance bij zonsondergang. Surfen op Uluwatu/Padang Padang (gevorderde reef breaks) en Bingin & Impossibles. Single Fin: legendarische sunset-bar boven de golven. Suluban (Blue Point) strand bereikbaar via een grot. Bingin Beach: chille vibe met warungs en cliffside cafés."], costs:[], map:["canggu","uluwatu"] },
   { id:"t33", fase:"bali", start:"2026-09-16", end:"2026-09-16", title:"🏝️ Bali dag 4 — Nusa Penida", details:["Vroege boot vanaf Sanur. Kelingking Beach: iconisch T-rex-uitzicht, eventueel afdalen. Broken Beach: natuurlijke rotsboog boven turquoise water. Angel's Billabong: natuurlijk zwembad in de rotsen. Snorkelen met manta rays (beroemde mantapunt). Crystal Bay voor extra snorkelen."], costs:[], map:["uluwatu","nusa_penida"] },
   { id:"t34", fase:"bali", start:"2026-09-17", end:"2026-09-17", title:"🌾 Bali dag 5 — Ubud", details:["Tegalalang Rice Terrace: iconische groene terrassen met swings. Tirta Empul: heilige waterbrontempel, reinigingsritueel mogelijk. Monkey Forest: bosreservaat met apen en oude tempels. Campuhan Ridge Walk bij zonsopgang. Optioneel: Balinese kookles met marktbezoek of Tegenungan waterval."], costs:[], map:["nusa_penida","ubud"] },
   { id:"t35", fase:"bali", start:"2026-09-18", end:"2026-09-18", title:"🤿 Bali dag 6 — Amed & Tulamben", details:["USAT Liberty Wreck: wereldberoemde wrakduik, ook goed te snorkelen. Coral Garden: snorkelspot met kleurrijk rif vlak bij de kust. Freediving sessie: Amed staat bekend om intro's en cursussen. Jemeluk Bay voor een ontspannen snorkelsessie. Uitzicht op Mount Agung vanaf rustige stranden."], costs:[], map:["ubud","amed"] },
   { id:"t36", fase:"bali", start:"2026-09-19", end:"2026-09-19", title:"🌋 Bali dag 7 — Sidemen & Mount Agung", details:["Sidemen rijstterrassen: rustige wandeling, minder toeristisch dan Ubud. Besakih Temple: moedertempel van Bali, aan de voet van Agung. Mount Agung sunrise hike: middernacht vertrek, 4–6u klimmen, episch uitzicht op Lombok. Verplichte lokale gids (max. 3 pp/gids, verplicht since 2025). Herstel 's middags, eventueel hot springs."], costs:[], map:["amed","sidemen","agung"] },
-  { id:"t37", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"✈️ Bali → Vietnam (Mathias, Willem, Momo) — TBD", details:["✈️ Vertrekt: 19 sep (TBD) | Aankomst: 20 sep (TBD)", "Na het volledige 7-daagse programma vliegen Mathias, Willem en Momo door naar Vietnam. Exacte vluchtdatum en bestemming nog te bevestigen."], costs:[], map:["agung","bali"], openNote: true, duration: "~2-3u vlucht" },
-  { id:"t38", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"✈️ Terugvlucht Bali → Brussel (Arne, Eliott, Jens, Kamiel, Kasper) — TBD", details:["✈️ Vertrekt: 19 sep (TBD) | Aankomst: 20 sep (TBD)", "Alle 5 vliegen terug naar Brussel na afloop van het volledige 7-daagse Bali-programma. Exacte datum/tijd TBD."], costs:[], map:["agung","bali","brussel"], openNote: true, duration: "~20u" },
-  { id:"t39", fase:"heen", start:"2026-09-07", end:"2026-09-08", title:"✈️ Brussel → Jakarta (Maurice, Mathias, Jens)", details:["✈️ Vertrekt: 7 sep om 11:45 | Aankomst: 8 sep om 08:25", "SQ303: BRU 11:45 (07/09) → SIN 06:40 (08/09), Singapore Airlines Airbus A350-900. Overstap 1u in Changi T2. SQ952: SIN 07:40 → CGK 08:25 (08/09), Airbus A350-900, aankomst Soekarno-Hatta T3.", "Boekingsref. Jens: FSXOOZ (ticket 618-2479864879), ticketprijs €680,77 pp. Maurice en Mathias nemen dezelfde vlucht."], costs:[], map:["brussel","jakarta"], duration: "15u40" },
-  { id:"t41", fase:"heen", start:"2026-09-13", end:"2026-09-14", title:"✈️ Brussel → Singapore → Surabaya (Hinke)", details:["✈️ Vertrekt: 13 sep om ~13:00 | Aankomst: 14 sep om 08:00", "Vlucht Hinke naar Surabaya om daar bij Matthew aan te sluiten."], costs:[], map:["brussel","singapore","surabaya"], duration: "~19u" },
+  { id:"t37", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"✈️ Bali → Vietnam (Mathias, Willem, Momo) — TBD", details:["✈️ Vertrekt: 19 sep (TBD) | Aankomst: 20 sep (TBD)", "Na het volledige 7-daagse programma vliegen Mathias, Willem en Momo door naar Vietnam. Exacte vluchtdatum en bestemming nog te bevestigen."], costs:["c32"], map:["agung","bali"], openNote: true, duration: "~2-3u vlucht" },
+  { id:"t38", fase:"terug", start:"2026-09-19", end:"2026-09-20", title:"✈️ Terugvlucht Bali → Brussel (Arne, Eliott, Jens, Kamiel, Kasper) — TBD", details:["✈️ Vertrekt: 19 sep (TBD) | Aankomst: 20 sep (TBD)", "Alle 5 vliegen terug naar Brussel na afloop van het volledige 7-daagse Bali-programma. Exacte datum/tijd TBD."], costs:["c31"], map:["agung","bali","brussel"], openNote: true, duration: "~20u" },
+  { id:"t39", fase:"heen", start:"2026-09-07", end:"2026-09-08", title:"✈️ Brussel → Jakarta (Maurice, Mathias, Jens)", details:["✈️ Vertrekt: 7 sep om 11:45 | Aankomst: 8 sep om 08:25", "SQ303: BRU 11:45 (07/09) → SIN 06:40 (08/09), Singapore Airlines Airbus A350-900. Overstap 1u in Changi T2. SQ952: SIN 07:40 → CGK 08:25 (08/09), Airbus A350-900, aankomst Soekarno-Hatta T3.", "Boekingsref. Jens: FSXOOZ (ticket 618-2479864879), ticketprijs €680,77 pp. Maurice en Mathias nemen dezelfde vlucht."], costs:["c28"], map:["brussel","jakarta"], duration: "15u40" },
+  { id:"t41", fase:"heen", start:"2026-09-13", end:"2026-09-14", title:"✈️ Brussel → Singapore → Surabaya (Hinke)", details:["✈️ Vertrekt: 13 sep om ~13:00 | Aankomst: 14 sep om 08:00", "Vlucht Hinke naar Surabaya om daar bij Matthew aan te sluiten."], costs:["c29"], map:["brussel","singapore","surabaya"], duration: "~19u" },
 ];
 
 /* ---------------- TRANSPORT LEGS (GESYNCHRONISEERD MET HOME PAGE) ---------------- */
@@ -464,7 +607,7 @@ const TRANSPORT_LEGS = [
     sub:"Singapore Airlines · SQ303 (BRU→SIN) + SQ956 (SIN→CGK)",
     operator:"Singapore Airlines", flightNum:"SQ303 + SQ956",
     terminal:"Pier B → Changi T3",
-    times:"11:45 (29/08) → 09:55 (30/08)", cost_id:null, ref:"SQ-EKWK29",
+    times:"11:45 (29/08) → 09:55 (30/08)", cost_id:"c26", ref:"SQ-EKWK29",
     fromPt:"brussel", toPt:"jakarta", qx:150, qy:45,
     persons:["eliott","kamiel","willem","kasper"]
   },
@@ -477,7 +620,7 @@ const TRANSPORT_LEGS = [
     sub:"Lion Air · JT204 · ±2u 15m",
     operator:"Lion Air", flightNum:"JT204",
     terminal:"Terminal 2D, Gate 7",
-    times:"08:05 → 10:20", cost_id:"c6", ref:"JTJK9A",
+    times:"08:05 → 10:20", cost_id:"c6b", ref:"JTJK9A",
     fromPt:"jakarta", toPt:"medan", qx:250, qy:130,
     persons:["eliott","kamiel","willem","kasper"]
   },
@@ -576,7 +719,7 @@ const TRANSPORT_LEGS = [
     title:"Brussel → Surabaya (Hinke)",
     sub:"Singapore Airlines · aankomst 14/09 om 08:00",
     operator:"Singapore Airlines", flightNum:"SQ303 + SQ930",
-    terminal:"Pier B", times:"13:00 → 08:00+1", cost_id:null, ref:"HNKE-SQ",
+    terminal:"Pier B", times:"13:00 → 08:00+1", cost_id:"c29", ref:"HNKE-SQ",
     fromPt:"brussel", toPt:"surabaya", qx:150, qy:45,
     persons:["hinke"]
   },
@@ -672,7 +815,7 @@ const TRANSPORT_LEGS = [
     title:"Bali → Brussel (terugvlucht 5 jongens)",
     sub:"Diverse airlines · na 7-daags Bali programma",
     operator:"Diverse airlines", flightNum:"—",
-    terminal:null, times:"TBD", cost_id:null, ref:null,
+    terminal:null, times:"TBD", cost_id:"c31", ref:null,
     fromPt:"bali", toPt:"brussel", qx:350, qy:55,
     persons:["arne","eliott","jens","kamiel","kasper"]
   },
@@ -684,7 +827,7 @@ const TRANSPORT_LEGS = [
     title:"Bali → Vietnam (doorreis Momo, Mathias & Willem)",
     sub:"Diverse airlines · doorreis na 7-daags Bali programma",
     operator:"Diverse airlines", flightNum:"—",
-    terminal:null, times:"TBD", cost_id:null, ref:null,
+    terminal:null, times:"TBD", cost_id:"c32", ref:null,
     fromPt:"bali", toPt:"brussel", qx:350, qy:55,
     persons:["maurice","mathias","willem"]
   },
@@ -697,7 +840,7 @@ const TRANSPORT_LEGS = [
     sub:"Singapore Airlines · SQ303 (BRU→SIN) + SQ952 (SIN→CGK)",
     operator:"Singapore Airlines", flightNum:"SQ303 + SQ952",
     terminal:"Pier B → Changi T2",
-    times:"11:45 (07/09) → 08:25 (08/09)", cost_id:null, ref:"FSXOOZ",
+    times:"11:45 (07/09) → 08:25 (08/09)", cost_id:"c28", ref:"FSXOOZ",
     fromPt:"brussel", toPt:"jakarta", qx:150, qy:45,
     persons:["jens","maurice","mathias"]
   }
@@ -709,14 +852,29 @@ const FLIGHT_DB = {
   SQ990: {flight:"SQ990",airline:"Singapore Airlines",aircraft:"Boeing 737 MAX 8",altitude:"35,000 ft",speed:"840 km/h",duration:"1u 30m",route:"SIN (Singapore Changi) → KNO (Medan Kualanamu)",gate:"Terminal 2",baggage:"Arrival Hall, Belt 1",risk:"Zeer Laag (0.8%)",status:"Scheduled",blipPos:{top:80,left:160}},
   SQ956: {flight:"SQ956",airline:"Singapore Airlines",aircraft:"Airbus A350-900",altitude:"37,000 ft",speed:"860 km/h",duration:"1u 50m",route:"SIN (Singapore Changi) → CGK (Jakarta Soekarno-Hatta)",gate:"Terminal 3",baggage:"Terminal 3 Arrival Hall",risk:"Zeer Laag (0.6%)",status:"Scheduled",blipPos:{top:120,left:240}},
   SQ952: {flight:"SQ952",airline:"Singapore Airlines",aircraft:"Airbus A350-900",altitude:"37,000 ft",speed:"860 km/h",duration:"1u 45m",route:"SIN (Singapore Changi T2) → CGK (Jakarta Soekarno-Hatta T3)",gate:"Terminal 2",baggage:"Terminal 3 Arrival Hall",risk:"Zeer Laag (0.6%)",status:"Scheduled",blipPos:{top:120,left:240}},
-  TG935: {flight:"TG935",airline:"Thai Airways",aircraft:"Boeing 777-300ER (HS-TKK)",altitude:"36,000 ft",speed:"905 km/h",duration:"11u 15m",route:"BRU (Brussel Airport) → BKK (Suvarnabhumi Airport)",gate:"Pier B, Gate B20",baggage:"Baggage Hall 3, Band 4",risk:"Laag (2.5%)",status:"Scheduled",blipPos:{top:60,left:120}},
-  TG403: {flight:"TG403",airline:"Thai Airways",aircraft:"Airbus A350-900 (HS-THC)",altitude:"38,000 ft",speed:"840 km/h",duration:"2u 25m",route:"BKK (Suvarnabhumi Airport) → SIN (Singapore Changi)",gate:"Concourse D, Gate D5",baggage:"Terminal 1, Belt 18",risk:"Gemiddeld (12.4%)",status:"Scheduled",blipPos:{top:120,left:240}},
-  TR220: {flight:"TR220",airline:"Scoot",aircraft:"Airbus A320-neo (9V-TNC)",altitude:"28,000 ft",speed:"710 km/h",duration:"1u 30m",route:"SIN (Singapore Changi) → KNO (Medan Kualanamu)",gate:"Terminal 2, Gate F38",baggage:"Main Hall, Belt 2",risk:"Laag (1.8%)",status:"Scheduled",blipPos:{top:80,left:160}},
+  SQ930: {flight:"SQ930",airline:"Singapore Airlines",aircraft:"Boeing 737-800",altitude:"35,000 ft",speed:"830 km/h",duration:"2u 30m",route:"SIN (Singapore Changi) → SUB (Surabaya Juanda)",gate:"Terminal 2",baggage:"Terminal 1 Arrival Hall",risk:"Zeer Laag (0.7%)",status:"Scheduled",blipPos:{top:150,left:470}},
+  SQ963: {flight:"SQ963",airline:"Singapore Airlines",aircraft:"Boeing 737-800",altitude:"34,000 ft",speed:"820 km/h",duration:"2u 45m",route:"DPS (Bali Denpasar) → SIN (Singapore Changi)",gate:"International Terminal",baggage:"Terminal 3 Transit",risk:"Laag (1.2%)",status:"Scheduled",blipPos:{top:180,left:640}},
+  SQ304: {flight:"SQ304",airline:"Singapore Airlines",aircraft:"Airbus A350-900",altitude:"38,000 ft",speed:"900 km/h",duration:"13u 30m",route:"SIN (Singapore Changi) → BRU (Brussel Airport)",gate:"Terminal 3",baggage:"Baggage Hall 3",risk:"Zeer Laag (0.6%)",status:"Scheduled",blipPos:{top:60,left:120}},
   JT204: {flight:"JT204",airline:"Lion Air",aircraft:"Boeing 737-900ER (PK-LGO)",altitude:"36,000 ft",speed:"820 km/h",duration:"2u 15m",route:"CGK (Jakarta Soekarno-Hatta) → KNO (Medan Kualanamu)",gate:"Terminal 2D, Gate 7",baggage:"Main Arrival Hall, Belt 2",risk:"Gemiddeld (5.8%)",status:"Scheduled",blipPos:{top:130,left:320}},
   JT383: {flight:"JT383",airline:"Lion Air",aircraft:"Boeing 737-900ER (PK-LGP)",altitude:"35,000 ft",speed:"810 km/h",duration:"2u 25m",route:"KNO (Medan Kualanamu) → CGK (Jakarta Soekarno-Hatta)",gate:"Terminal 2D, Gate 3",baggage:"Terminal 2D, Band 4",risk:"Gemiddeld (6.2%)",status:"Scheduled",blipPos:{top:150,left:380}},
   GA402: {flight:"GA402",airline:"Garuda Indonesia",aircraft:"Boeing 737-800 (PK-GFM)",altitude:"34,000 ft",speed:"810 km/h",duration:"1u 45m",route:"SUB (Surabaya Juanda) → LBJ (Labuan Bajo Komodo)",gate:"Terminal 1, Gate 5",baggage:"Arrival Hall, Belt A",risk:"Zeer Laag (0.5%)",status:"Scheduled",blipPos:{top:165,left:550}},
   QZ503: {flight:"QZ503",airline:"Indonesia AirAsia",aircraft:"Airbus A320-200 (PK-AXV)",altitude:"24,000 ft",speed:"680 km/h",duration:"1u 10m",route:"LBJ (Labuan Bajo Komodo) → DPS (Bali Denpasar)",gate:"Gate 2 (Platformloopbrug)",baggage:"Domestic Arrivals, Belt 1",risk:"Gemiddeld (14.2%)",status:"Scheduled",blipPos:{top:172,left:630}}
 };
+
+/* ---------------- TOETSENBORDBEDIENING ----------------
+   Verschillende pagina's gebruiken een <div onclick=...> als knop. Deze
+   gedelegeerde listener maakt die met Enter en spatie bedienbaar, zodat de
+   pagina's ook zonder muis bruikbaar zijn. Elementen doen mee zodra ze
+   role="button" én tabindex hebben. */
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+  const el = e.target;
+  if (!el || typeof el.getAttribute !== "function") return;
+  if (el.getAttribute("role") !== "button") return;
+  if (el.hasAttribute("disabled")) return;
+  e.preventDefault();
+  el.click();
+});
 
 /* Bevestiging dat data.js succesvol geladen is */
 window.DATA_JS_LOADED = true;

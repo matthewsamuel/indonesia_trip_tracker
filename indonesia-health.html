@@ -376,7 +376,7 @@
   <header class="app-header">
     <div class="app-brand">
       <h1>🧭 Reis naar Indonesië</h1>
-      <div class="sub">28 aug – 29 sep 2026</div>
+      <div class="sub">29 aug – 29 sep 2026</div>
     </div>
     <nav class="app-nav">
       <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
@@ -652,7 +652,7 @@
    HEALTH & HOSPITAL DIRECTORY DATA
    ================================================================ */
 const MALARIA_REGIONS = [
-  { id: "singapore", label: "Singapore", risk: "geen", desc: "Geen risico. Normale muggenpreventie tegen dengue.", phases: ["sg", "heen"] },
+  { id: "singapore", label: "Singapore", risk: "geen", desc: "Geen risico. Normale muggenpreventie tegen dengue.", phases: ["heen"] },
   { id: "sumatra", label: "Sumatra (Ketambe)", risk: "laag", desc: "Muggenwerende middelen (DEET). Noodbehandeling bij koorts.", phases: ["sumatra"] },
   { id: "jakarta", label: "Jakarta (Stad)", risk: "geen", desc: "Geen malaria-risico. Wel risico op dengue.", phases: ["jakarta"] },
   { id: "java", label: "Java (Yogya, Malang, Bromo)", risk: "laag", desc: "Laag risico. DEET smeren. Vulkaangassen bij Ijen/Bromo.", phases: ["java"] },
@@ -672,7 +672,7 @@ const HOSPITALS = [
   {
     name: "Singapore General Hospital (SGH)",
     region: "Singapore",
-    phases: ["sg", "heen"],
+    phases: ["heen"],
     tagColor: "#4cc9f0",
     phone: "+65 6222 3322",
     address: "Outram Rd, Singapore 169608",
@@ -794,48 +794,6 @@ function getPersonPhases(personKey) {
 /* ================================================================
    RENDERING
    ================================================================ */
-function renderPersonSelector() {
-  const container = document.getElementById("personSelector");
-  if (!container) return;
-  
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-  
-  let html = `
-    <div class="person-selector-header" onclick="togglePersonSelector()" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; width:100%;">
-      <span class="person-selector-label" style="margin-bottom:0;">Gezondheidsprofiel van: <strong style="color:var(--teal); text-transform:none; font-size:12px; margin-left:6px;">${PERSONS[selectedPerson].name}</strong></span>
-      <span class="person-selector-toggle-arrow" style="font-size:10px; color:var(--text-soft); transition: transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}">▼</span>
-    </div>
-  `;
-  
-  html += `<div class="person-grid" style="${isCollapsed ? 'display:none;' : ''}">`;
-  html += PERSON_ORDER.map(key => {
-    const p = PERSONS[key];
-    const isActive = key === selectedPerson;
-    const photo = localStorage.getItem(`mapphoto_${key}`);
-    const avatarHtml = photo 
-      ? `<img src="${photo}" alt="">` 
-      : `<span class="avatar-initials" style="color:${p.color}">${p.name.substring(0, 2)}</span>`;
-
-    return `
-      <button class="person-card ${isActive ? 'active' : ''}" onclick="selectPerson('${key}')">
-        <div class="person-card-avatar" style="border-color:${p.color}">
-          ${avatarHtml}
-        </div>
-        <span class="person-card-name">${p.name}</span>
-      </button>
-    `;
-  }).join("");
-  html += `</div>`;
-  
-  container.innerHTML = html;
-}
-
-function togglePersonSelector() {
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-  ls_set("person_selector_collapsed", !isCollapsed);
-  renderPersonSelector();
-}
-
 function renderVaccines() {
   const container = document.getElementById("vaccineList");
   if (!container) return;
@@ -1080,11 +1038,8 @@ function resetPharmacy() {
   renderPharmacy();
 }
 
-function selectPerson(key) {
+function onPersonChange(key) {
   selectedPerson = key;
-  ls_set("selected_person", key);
-  
-  renderPersonSelector();
   renderVaccines();
   renderMalariaRisks();
   renderPharmacy();
@@ -1143,7 +1098,7 @@ function switchHealthTab(tabId, btn) {
    INITIALIZATION
    ================================================================ */
 function init() {
-  renderPersonSelector();
+  initPersonSelector({ label: "Gezondheidsprofiel van", onChange: onPersonChange });
   renderVaccines();
   renderMalariaRisks();
   renderPharmacy();

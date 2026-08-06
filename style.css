@@ -1244,6 +1244,22 @@ ul.history .hdel:hover {
   padding: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
+/* De kop is een echte <button>, zodat hij met het toetsenbord bedienbaar is */
+.person-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  border-radius: 8px;
+}
 .person-selector-label {
   font-size: 11px;
   text-transform: uppercase;
@@ -1251,6 +1267,20 @@ ul.history .hdel:hover {
   color: var(--text-soft);
   font-weight: 600;
 }
+.person-selector-active {
+  color: var(--teal);
+  text-transform: none;
+  font-size: 12px;
+  margin-left: 6px;
+}
+.person-selector-toggle-arrow {
+  font-size: 10px;
+  color: var(--text-soft);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.person-selector-toggle-arrow[data-collapsed] { transform: rotate(-90deg); }
+.person-grid[hidden] { display: none; }
 .person-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -2225,3 +2255,496 @@ textarea.note::placeholder {
 }
 
 
+
+/* ================================================================
+   MOBIELE WEERGAVE — SAMENHANGENDE LAAG
+   Volgorde: tablet (1024/900) -> telefoon (680) -> smal (430)
+   Staat bewust achteraan zodat deze regels de pagina-specifieke
+   inline <style>-blokken kunnen corrigeren.
+   ================================================================ */
+
+/* Voorkomt dat iOS de layout herschaalt bij het draaien van het toestel */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Geen enkele pagina mag horizontaal scrollen */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* ── TABLET ── */
+@media (max-width: 900px) {
+  /* 280px + 3 kolommen wordt te krap voor de aftelklok en de periode */
+  .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* Transport: de twee kolommen in de luchthaven- en bagagekaarten */
+  .airport-content-card > div[style*="grid-template-columns"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+}
+
+/* ── TELEFOON ── */
+@media (max-width: 680px) {
+  /* Formuliervelden op 16px: onder die grens zoomt iOS Safari bij focus in */
+  input[type="number"], input[type="text"], input[type="date"],
+  textarea.note, select {
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+
+  /* Aanraakvlakken minstens 40px hoog */
+  .control-btn, .btn, .i-btn, .tbtn, .sbtn,
+  nav.tabs button, .airport-tab-btn, .fase-nav-btn, .sim-btn {
+    min-height: 40px;
+  }
+  .simple-step-collapse-toggle { min-width: 34px; min-height: 34px; }
+
+  /* Kaart op de homepagina niet het halve scherm laten innemen */
+  #routemap { height: 260px !important; }
+  .chart-container { height: 190px; }
+
+  /* Tabbladenrijen horizontaal scrollbaar i.p.v. wrappen tot een blok.
+     .timeline-controls-bar hoort hier bewust niet bij: die wordt op 768px al
+     opgesplitst in twee volle rijen. */
+  nav.tabs, .airport-tabs, .fase-nav-container {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  nav.tabs::-webkit-scrollbar,
+  .airport-tabs::-webkit-scrollbar,
+  .fase-nav-container::-webkit-scrollbar { display: none; }
+  nav.tabs button, .airport-tab-btn, .fase-nav-btn { flex: 0 0 auto; }
+
+  /* Horizontale stroken laten inklikken op een kaart */
+  .tickets-scroll, .destinations-row {
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 2px;
+  }
+  .boarding-pass, .dest-card { scroll-snap-align: start; }
+
+  /* Transportblok: van een rij naar een compacte kaart */
+  .transport-block-item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    row-gap: 8px;
+  }
+  .transport-block-item .tbi-sep { display: none; }
+  .transport-block-item .tbi-info { flex: 1 1 100%; order: 3; }
+  .transport-block-item .tbi-cost {
+    order: 2;
+    margin-left: auto;
+    text-align: right;
+  }
+  .tbi-title, .tbi-sub { white-space: normal; }
+  .tbi-sched-tags { gap: 6px; }
+  .tbi-sched-tag { font-size: 11px; padding: 4px 8px; }
+
+  /* Vertrekoverzicht */
+  .departure-grid { grid-template-columns: minmax(0, 1fr); }
+
+  /* Bagagekaart en scraper */
+  .baggage-tag-grid { grid-template-columns: minmax(0, 1fr); }
+  .scraper-input-group { flex-wrap: wrap; }
+  .scraper-input-group input { flex: 1 1 100%; }
+  .scraper-input-group button { flex: 1 1 100%; min-height: 44px; padding: 10px 20px; }
+
+  /* Live tracker: datumregel mag wrappen i.p.v. de knoppen te pletten */
+  .slider-row { flex-wrap: wrap; row-gap: 10px; }
+  .slider-container { flex: 1 1 100%; order: 3; }
+  .sim-header { flex-wrap: wrap; gap: 8px; }
+  .groups-list { max-height: none; }
+
+  /* Overzichtstegels: 2 per rij blijft leesbaar tot ~430px */
+  .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+  /* Ziekenhuislijst en fase-uitleg niet laten afknellen */
+  .hospital-list { grid-template-columns: minmax(0, 1fr); }
+
+  /* Lange tabellen/codeblokken scrollen binnen hun eigen kader */
+  .panel table, .panel pre { display: block; overflow-x: auto; max-width: 100%; }
+
+  /* Afbeeldingen nooit breder dan hun kader */
+  img { max-width: 100%; height: auto; }
+}
+
+/* ── SMALLE TELEFOONS ── */
+@media (max-width: 430px) {
+  .wrap { padding: 12px 10px 56px; }
+  .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .person-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+
+  /* Eén tegel per rij: bij twee wordt de locatienaam afgekapt */
+  .overview-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .boarding-pass { flex: 0 0 min(88vw, 280px); }
+  .dest-card { flex: 0 0 min(80vw, 220px); height: 165px; }
+
+  .panel { padding: 14px; }
+  .panel h2 { font-size: 15px; }
+  .app-brand h1 { font-size: 16px; }
+
+  /* Kostenregel: label boven, invoer eronder */
+  .cost-line .cost-input { flex: 1 1 90px; min-width: 0; }
+  .cost-line .booked { flex: 0 0 auto; }
+
+  #routemap { height: 220px !important; }
+  .radar-container { height: 150px; }
+}
+
+/* ── VERTREKOVERZICHT (indonesia-transport.html) ── */
+.departure-panel {
+  background: linear-gradient(135deg, rgba(76,201,240,0.08) 0%, rgba(0,180,216,0.04) 100%);
+  border: 1px solid rgba(76,201,240,0.2);
+  margin-bottom: 24px;
+}
+.departure-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.departure-card {
+  background: rgba(0,0,0,0.22);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent, var(--teal));
+  border-radius: 12px;
+  padding: 13px 15px;
+  min-width: 0;
+}
+.departure-card.is-mine {
+  background: rgba(0,180,216,0.06);
+  border-color: rgba(0,180,216,0.3);
+  border-left-color: var(--accent, var(--teal));
+}
+.dep-who {
+  font-weight: 700;
+  color: #fff;
+  font-size: 13px;
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+.dep-date {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  margin-bottom: 9px;
+}
+.dep-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  padding: 2.5px 0;
+  min-width: 0;
+}
+.dep-k { color: var(--text-soft); flex-shrink: 0; }
+.dep-v {
+  color: #cbd5e1;
+  font-weight: 600;
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dep-v em { color: #a5b4fc; font-style: normal; font-weight: 500; font-size: 10.5px; }
+.dep-v.dep-arr { color: #4ad66d; }
+.dep-v.is-tbd { color: #f59e0b; }
+.dep-tbd { font-size: 12px; color: #ffb703; margin-bottom: 6px; }
+.tbd-chip {
+  background: rgba(255,183,3,0.2);
+  border: 1px solid rgba(255,183,3,0.4);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  margin-right: 4px;
+}
+.dep-ref {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px dashed rgba(255,255,255,0.07);
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+/* ── NOG TE BOEKEN (indonesia-tracker.html) ── */
+.todo-intro {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-bottom: 14px;
+}
+.todo-intro strong { color: #fff; font-weight: 600; }
+.todo-empty {
+  font-size: 13.5px;
+  color: #4ad66d;
+}
+.todo-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+}
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border);
+  border-left: 3px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 0;
+}
+.todo-item.is-urgent { border-left-color: #ffb703; }
+.todo-item.is-late   { border-left-color: #ff4d4d; }
+.todo-type {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-soft);
+}
+.todo-type.prijs { background: rgba(255, 183, 3, 0.14); color: #ffb703; }
+.todo-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.todo-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.todo-label:hover { color: var(--teal); text-decoration: underline; }
+.todo-meta {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+.todo-amount {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--teal);
+}
+.todo-amount.is-tbd { color: #f59e0b; font-size: 12px; }
+.todo-link {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  color: var(--teal);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.todo-link:hover { text-decoration: underline; }
+
+@media (max-width: 680px) {
+  .todo-item { flex-wrap: wrap; row-gap: 6px; padding: 10px 12px; }
+  .todo-body { flex: 1 1 calc(100% - 38px); }
+  .todo-amount { margin-left: 38px; }
+  .todo-link { margin-left: auto; }
+}
+
+/* ── ZOEKBALK REISSCHEMA (indonesia-timeline.html) ── */
+.timeline-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.tl-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 260px;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.tl-search-field:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 8px rgba(0, 180, 216, 0.15);
+}
+.tl-search-icon { font-size: 13px; opacity: 0.6; flex-shrink: 0; }
+.tl-search-field input {
+  flex: 1;
+  min-width: 0;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 11px 8px !important;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+}
+.tl-search-clear {
+  background: none;
+  border: none;
+  color: var(--text-soft);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.tl-search-clear:hover { color: #fff; }
+.tl-search-count {
+  font-size: 12px;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.tl-no-results {
+  font-size: 14px;
+  color: var(--text-soft);
+  padding: 28px 0;
+  text-align: center;
+}
+
+/* Korte markering na 'Naar vandaag' */
+.timeline-item.is-flashed .item-card {
+  animation: flashCard 1.6s ease-out;
+}
+@keyframes flashCard {
+  0%, 30% {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.18);
+  }
+  100% {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .timeline-search-bar { gap: 8px; }
+  .tl-search-field { flex: 1 1 100%; }
+  .tl-search-field input { font-size: 16px !important; }
+}
+
+/* ── CO₂-PANEEL (indonesia-transport.html) ── */
+.carbon-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.carbon-stat {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.carbon-stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+.carbon-stat-value {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+.carbon-stat-value.is-warn { color: #ff6b6b; }
+.carbon-stat-value.is-good { color: #4ad66d; }
+.carbon-context {
+  font-size: 12.5px;
+  color: var(--text-soft);
+  margin-bottom: 14px;
+}
+.carbon-context strong { color: #fff; }
+.carbon-breakdown {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.carbon-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 8px 13px;
+  font-size: 12.5px;
+  align-items: baseline;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.carbon-row:last-child { border-bottom: none; }
+.carbon-row.is-head {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-soft);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.02);
+}
+.carbon-route { color: #fff; font-weight: 600; min-width: 0; }
+.carbon-km { color: var(--text-soft); white-space: nowrap; }
+.carbon-kg { color: #ff9f68; font-weight: 700; white-space: nowrap; min-width: 52px; text-align: right; }
+.carbon-note {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 430px) {
+  .carbon-summary { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ================================================================
+   TOETSENBORDFOCUS
+   Er was nergens een zichtbare focusring: met Tab navigeren was blind.
+   :focus-visible toont de ring alleen bij toetsenbordgebruik, niet bij klik.
+   ================================================================ */
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.person-card:focus-visible,
+.app-nav-link:focus-visible,
+.control-btn:focus-visible {
+  outline-offset: 1px;
+}
+/* Divs die als knop dienen krijgen ook een cursor en focusbaarheid */
+[role="button"] { cursor: pointer; }
+
+/* Respecteert de systeeminstelling voor minder beweging */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

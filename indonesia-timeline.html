@@ -13,7 +13,7 @@
   <header class="app-header">
     <div class="app-brand">
       <h1>🧭 Reis naar Indonesië</h1>
-      <div class="sub">28 aug – 29 sep 2026</div>
+      <div class="sub">29 aug – 29 sep 2026</div>
     </div>
     <nav class="app-nav">
       <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
@@ -42,6 +42,19 @@
       <button class="control-btn secondary" onclick="toggleAllDetails(true)">➕ Alles uitklappen</button>
       <button class="control-btn secondary" onclick="toggleAllDetails(false)">➖ Alles inklappen</button>
     </div>
+  </div>
+
+  <!-- ZOEKEN & SNEL NAVIGEREN -->
+  <div class="timeline-search-bar">
+    <label class="tl-search-field">
+      <span class="tl-search-icon" aria-hidden="true">🔍</span>
+      <input type="text" id="timelineSearch" placeholder="Zoek op plaats, activiteit of vlucht…"
+             aria-label="Zoek in het reisschema" oninput="onSearchInput(this.value)">
+      <button type="button" class="tl-search-clear" id="tlSearchClear" onclick="clearSearch()"
+              aria-label="Zoekopdracht wissen" hidden>×</button>
+    </label>
+    <button class="control-btn secondary" onclick="jumpToToday()">📍 Naar vandaag</button>
+    <span class="tl-search-count" id="tlSearchCount"></span>
   </div>
 
   <!-- TIMELINE CONTAINER -->
@@ -122,7 +135,6 @@ function parseDetails(detailsArray) {
       lower.includes("tg403") ||
       lower.includes("lion air") ||
       lower.includes("denpasar") ||
-      lower.includes("brussel → bangkok") ||
       lower.includes("soekarno") ||
       lower.includes("airbus") ||
       lower.includes("boeing") ||
@@ -303,22 +315,100 @@ function getCompactBadgesHtml(item, parsed) {
   return html;
 }
 
+/* ---------------- ZOEKEN & SNEL NAVIGEREN ---------------- */
+let searchQuery = "";
+
+/* Alle tekst waarop een etappe gevonden mag worden */
+function searchHaystack(item) {
+  const parts = [
+    item.title,
+    FASES[item.fase] ? FASES[item.fase].label : "",
+    ...item.details,
+    ...item.costs.map(cid => (COSTS[cid] ? COSTS[cid].label : ""))
+  ];
+  return parts.join(" ").toLowerCase();
+}
+
+function matchesSearch(item) {
+  if (!searchQuery) return true;
+  const hay = searchHaystack(item);
+  // Alle losse woorden moeten voorkomen, zodat "bromo jeep" gericht filtert
+  return searchQuery.split(/\s+/).filter(Boolean).every(term => hay.includes(term));
+}
+
+function onSearchInput(value) {
+  searchQuery = value.trim().toLowerCase();
+  const clearBtn = document.getElementById("tlSearchClear");
+  if (clearBtn) clearBtn.hidden = searchQuery.length === 0;
+  renderTimeline();
+}
+
+function clearSearch() {
+  searchQuery = "";
+  const input = document.getElementById("timelineSearch");
+  if (input) input.value = "";
+  const clearBtn = document.getElementById("tlSearchClear");
+  if (clearBtn) clearBtn.hidden = true;
+  renderTimeline();
+}
+
+/* Springt naar de etappe van vandaag, of naar de eerstvolgende als de reis
+   nog niet begonnen is. */
+function jumpToToday() {
+  const personKey = getSelectedPerson();
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const trips = sortTrips(TRIP.filter(i => tripIds.includes(i.id)));
+  if (trips.length === 0) return;
+
+  clearSearch();
+
+  const target =
+    trips.find(i => statusOf(i) === "bezig") ||
+    trips.find(i => dateOf(i.start) >= today()) ||
+    trips[trips.length - 1];
+
+  ls_set("collapsed_fase_" + target.fase, false);
+  renderTimeline();
+
+  setTimeout(() => {
+    const el = document.getElementById(target.id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("is-flashed");
+    setTimeout(() => el.classList.remove("is-flashed"), 1600);
+  }, 60);
+}
+
 function renderTimeline(){
   const el = document.getElementById("timeline");
-  const personKey = ls_get("selected_person", "matthew");
+  const personKey = getSelectedPerson();
   const tripIds = PERSON_TRIPS[personKey] || [];
 
   let html = "";
   let lastFase = null;
-  const sortedTrips = [...TRIP].sort((a, b) => a.start.localeCompare(b.start));
+  const sortedTrips = sortTrips(TRIP).filter(i => tripIds.includes(i.id) && matchesSearch(i));
+
+  const countEl = document.getElementById("tlSearchCount");
+  if (countEl) {
+    countEl.textContent = searchQuery
+      ? `${sortedTrips.length} van ${tripIds.length} etappes`
+      : "";
+  }
+
+  if (searchQuery && sortedTrips.length === 0) {
+    el.innerHTML = `<p class="tl-no-results">Geen etappes gevonden voor “${searchQuery}”.</p>`;
+    return;
+  }
+
   for (const item of sortedTrips) {
-    if (!tripIds.includes(item.id)) continue;
     if (item.fase !== lastFase) {
       if (lastFase !== null) {
         html += `</div>`; // Close previous phase items container
       }
       const f = FASES[item.fase];
-      const isCollapsed = ls_get("collapsed_fase_" + item.fase, false);
+      // Tijdens het zoeken altijd openklappen, anders verdwijnen treffers
+      // in een ingeklapte fase
+      const isCollapsed = searchQuery ? false : ls_get("collapsed_fase_" + item.fase, false);
       const stats = getPhaseStats(item.fase, tripIds, personKey);
       let statsHtml = "";
       if (stats) {
@@ -332,7 +422,10 @@ function renderTimeline(){
       }
       
       html += `
-      <div class="fase-header collapsible ${isCollapsed ? 'collapsed' : ''}" id="fase-${item.fase}" onclick="toggleFaseCollapse('${item.fase}')" style="--phase-color: ${f.color}">
+      <div class="fase-header collapsible ${isCollapsed ? 'collapsed' : ''}" id="fase-${item.fase}"
+        role="button" tabindex="0" aria-expanded="${!isCollapsed}"
+        aria-label="Fase ${f.label} in- of uitklappen"
+        onclick="toggleFaseCollapse('${item.fase}')" style="--phase-color: ${f.color}">
         <div class="fase-title-group">
           <span class="dot" style="color:${f.color}; background:${f.color}"></span>
           <span class="fase-name">${f.label}</span>
@@ -510,7 +603,8 @@ function photoStripHtml(item){
   const photos = getPhotos(item.id);
   if (photos.length === 0) return "";
   const slots = photos.map(src =>
-    `<div class="photo-slot" onclick="openLightbox('${src}')"><img src="${src}" alt="foto" loading="lazy"></div>`
+    `<div class="photo-slot" role="button" tabindex="0" aria-label="Foto vergroten"
+       onclick="openLightbox('${src}')"><img src="${src}" alt="" loading="lazy"></div>`
   );
   return `<div class="photo-strip">${slots.join("")}</div>`;
 }
@@ -527,56 +621,6 @@ function costLineHtml(cid){
     <input class="cost-input" type="number" step="0.01" data-cost="${cid}" value="${v===null?'':v}" placeholder="?">
     <label class="booked"><input type="checkbox" class="booked-cb" data-cost="${cid}" ${booked?"checked":""}> geboekt</label>
   </div>`;
-}
-
-function renderPersonSelector() {
-  const container = document.getElementById("personSelector");
-  if (!container) return;
-  
-  const activePerson = ls_get("selected_person", "matthew");
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-  
-  let html = `
-    <div class="person-selector-header" onclick="togglePersonSelector()" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; width:100%;">
-      <span class="person-selector-label" style="margin-bottom:0;">Bekijk weergave van: <strong style="color:var(--teal); text-transform:none; font-size:12px; margin-left:6px;">${PERSONS[activePerson].name}</strong></span>
-      <span class="person-selector-toggle-arrow" style="font-size:10px; color:var(--text-soft); transition: transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}">▼</span>
-    </div>
-  `;
-  
-  html += `<div class="person-grid" style="${isCollapsed ? 'display:none;' : ''}">`;
-  html += PERSON_ORDER.map(key => {
-    const p = PERSONS[key];
-    const isActive = key === activePerson;
-    const photo = localStorage.getItem(`mapphoto_${key}`);
-    const avatarHtml = photo 
-      ? `<img src="${photo}" alt="">` 
-      : `<span class="avatar-initials" style="color:${p.color}">${p.name.substring(0, 2)}</span>`;
-
-    return `
-      <button class="person-card ${isActive ? 'active' : ''}" onclick="selectPerson('${key}')">
-        <div class="person-card-avatar" style="border-color:${p.color}">
-          ${avatarHtml}
-        </div>
-        <span class="person-card-name">${p.name}</span>
-      </button>
-    `;
-  }).join("");
-  html += `</div>`;
-  
-  container.innerHTML = html;
-}
-
-function togglePersonSelector() {
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-  ls_set("person_selector_collapsed", !isCollapsed);
-  renderPersonSelector();
-}
-
-function selectPerson(key) {
-  ls_set("selected_person", key);
-  renderPersonSelector();
-  renderPhaseNav();
-  renderTimeline();
 }
 
 /* ── VIEW MODE & EXPANSION CONTROL ── */
@@ -617,7 +661,7 @@ function toggleAllDetails(open) {
 
 /* ---------------- INIT ---------------- */
 function init() {
-  renderPersonSelector();
+  initPersonSelector({ onChange: () => { renderPhaseNav(); renderTimeline(); } });
   renderPhaseNav();
   renderTimeline();
   updateViewModeUI();

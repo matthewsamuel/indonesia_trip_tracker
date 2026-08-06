@@ -70,7 +70,7 @@
   <header class="app-header">
     <div class="app-brand">
       <h1>🧭 Reis naar Indonesië</h1>
-      <div class="sub">28 aug – 29 sep 2026</div>
+      <div class="sub">29 aug – 29 sep 2026</div>
     </div>
     <nav class="app-nav">
       <a class="app-nav-link active" href="indonesia-tracker.html">🏠 Home</a>
@@ -107,6 +107,9 @@
       </div>
     </section>
   </div>
+
+  <!-- OPEN TO-DO'S: WAT MOET ER NOG GEBOEKT WORDEN -->
+  <section class="panel todo-panel" id="todoPanel"></section>
 
   <!-- BOTTOM ROW: COMBINED ROUTE MAP & STEPPER -->
   <section class="panel combined-route-panel">
@@ -222,14 +225,19 @@ function recalcAll(){
 
   // Trip stats calculations
   const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
+  // Chronologisch sorteren: de volgorde in TRIP is niet die van de reis, dus
+  // zonder sortering pakken de periode en de aftelklok de verkeerde eerste etappe.
+  const personTrips = sortTrips(TRIP.filter(i => tripIds.includes(i.id)));
 
   let countdownLabel, countdownVal;
   let doneDays = 0, totalDays = 0;
   let periodVal = "—";
 
   if (personTrips.length > 0) {
-    const start = dateOf(personTrips[0].start), end = dateOf(personTrips[personTrips.length-1].end);
+    // Laatste etappe qua startdatum is niet noodzakelijk die met de laatste einddatum
+    const sStr = personTrips[0].start;
+    const eStr = personTrips.reduce((max, i) => (i.end > max ? i.end : max), personTrips[0].end);
+    const start = dateOf(sStr), end = dateOf(eStr);
     const t = today();
     if (t < start) { 
       countdownVal = Math.ceil((start - t)/86400000); 
@@ -244,8 +252,6 @@ function recalcAll(){
     doneDays = personTrips.filter(i => statusOf(i)==="voltooid").length;
     totalDays = personTrips.length;
 
-    const sStr = personTrips[0].start;
-    const eStr = personTrips[personTrips.length - 1].end;
     const sYear = sStr.slice(0, 4);
     const eYear = eStr.slice(0, 4);
     if (sYear === eYear) {
@@ -278,37 +284,91 @@ function recalcAll(){
   `;
 }
 
+/* ---------------- OPEN TO-DO'S ----------------
+   Toont per reiziger wat er nog geboekt of ingevuld moet worden: kosten zonder
+   bedrag (TBD) en geboekte-vinkjes die nog openstaan. De datum van de bijhorende
+   etappe bepaalt de urgentie, zodat het eerstvolgende altijd bovenaan staat. */
+function renderTodoPanel() {
+  const panel = document.getElementById("todoPanel");
+  if (!panel) return;
+
+  const personKey = getSelectedPerson();
+  const tripIds = PERSON_TRIPS[personKey] || [];
+  const trips = sortTrips(TRIP.filter(i => tripIds.includes(i.id)));
+
+  // Eerste etappe waar elke kostenpost aan hangt, voor de datum en de context
+  const costContext = {};
+  for (const item of trips) {
+    for (const cid of item.costs) {
+      if (!costContext[cid]) costContext[cid] = item;
+    }
+  }
+
+  const openItems = [];
+  for (const cid in costContext) {
+    const cost = COSTS[cid];
+    if (!cost) continue;
+    const item = costContext[cid];
+    const value = costValue(cid);
+    const booked = isBooked(cid);
+    if (value === null) {
+      openItems.push({ cid, cost, item, type: "prijs", label: "prijs onbekend" });
+    } else if (!booked) {
+      openItems.push({ cid, cost, item, type: "boeking", label: "nog niet geboekt" });
+    }
+  }
+
+  openItems.sort((a, b) => a.item.start.localeCompare(b.item.start));
+
+  const t = today();
+  const totalKnown = openItems
+    .filter(o => o.type === "boeking")
+    .reduce((sum, o) => sum + (costValue(o.cid) || 0), 0);
+
+  if (openItems.length === 0) {
+    panel.innerHTML = `
+      <h2>✅ Nog te boeken</h2>
+      <p class="todo-empty">Alles is ingevuld en aangevinkt voor ${PERSONS[personKey].name}.</p>`;
+    return;
+  }
+
+  const rows = openItems.map(o => {
+    const dagen = Math.ceil((dateOf(o.item.start) - t) / 86400000);
+    const urgent = dagen >= 0 && dagen <= 21;
+    const verlopen = dagen < 0;
+    const wanneer = verlopen
+      ? "datum voorbij"
+      : dagen === 0 ? "vandaag" : `over ${dagen} ${dagen === 1 ? "dag" : "dagen"}`;
+    const bedrag = o.type === "prijs"
+      ? `<span class="todo-amount is-tbd">TBD</span>`
+      : `<span class="todo-amount">€ ${costValue(o.cid).toFixed(0)}</span>`;
+    const link = o.cost.url
+      ? `<a class="todo-link" href="${o.cost.url}" target="_blank" rel="noopener">openen →</a>`
+      : "";
+    return `
+      <li class="todo-item ${verlopen ? "is-late" : urgent ? "is-urgent" : ""}">
+        <span class="todo-type ${o.type}">${o.type === "prijs" ? "€?" : "☐"}</span>
+        <span class="todo-body">
+          <a class="todo-label" href="indonesia-timeline.html#${o.item.id}">${o.cost.label}</a>
+          <span class="todo-meta">${fmtShort(o.item.start)} · ${wanneer} · ${o.label}</span>
+        </span>
+        ${bedrag}
+        ${link}
+      </li>`;
+  }).join("");
+
+  panel.innerHTML = `
+    <h2>📌 Nog te boeken <span class="tbd-pill">${openItems.length}</span></h2>
+    <p class="todo-intro">
+      Openstaande punten voor <strong>${PERSONS[personKey].name}</strong>, op datum.
+      ${totalKnown > 0 ? `Daarvan staat al <strong>€ ${totalKnown.toFixed(0)}</strong> vast qua prijs maar is nog niet geboekt.` : ""}
+    </p>
+    <ul class="todo-list">${rows}</ul>`;
+}
+
 /* ---------------- GEOGRAPHIC LOCATIONS (LAT/LNG) ---------------- */
-const LOCS = {
-  brussel:    { lat: 50.9009, lng: 4.4855, name: "✈️ Brussel" },
-  singapore:  { lat: 1.3521, lng: 103.8198, name: "🇸🇬 Singapore" },
-  medan:      { lat: 3.5952, lng: 98.6722, name: "🏙️ Medan" },
-  ketambe:    { lat: 3.6763, lng: 97.6497, name: "🌴 Ketambe" },
-  jakarta:    { lat: -6.2088, lng: 106.8456, name: "🏙️ Jakarta" },
-  yogya:      { lat: -7.7956, lng: 110.3695, name: "🕌 Yogyakarta" },
-  malang:     { lat: -7.9797, lng: 112.6304, name: "🏡 Malang" },
-  surabaya:   { lat: -7.2575, lng: 112.7521, name: "🏙️ Surabaya" },
-  banyuwangi: { lat: -8.2191, lng: 114.3691, name: "⚓ Banyuwangi" },
-  bali:       { lat: -8.6705, lng: 115.2126, name: "🏝️ Bali" },
-  labuanbajo: { lat: -8.4539, lng: 119.8842, name: "🌅 Labuan Bajo" },
-  ruteng:     { lat: -8.6271, lng: 120.4718, name: "⛰️ Ruteng" },
-  padar:      { lat: -8.6534, lng: 119.5772, name: "⛰️ Padar Island" },
-  pink_beach: { lat: -8.6015, lng: 119.5222, name: "🏖️ Pink Beach" },
-  komodo:     { lat: -8.5503, lng: 119.4880, name: "🦎 Komodo" },
-  manta_point:{ lat: -8.5833, lng: 119.5000, name: "🤿 Manta Point" },
-  borobudur:  { lat: -7.6079, lng: 110.2038, name: "🛕 Borobudur" },
-  prambanan:  { lat: -7.7520, lng: 110.4914, name: "🛕 Prambanan" },
-  tumpak_sewu:{ lat: -8.2307, lng: 112.9167, name: "🌊 Tumpak Sewu" },
-  bromo:      { lat: -7.9425, lng: 112.9530, name: "🌋 Mount Bromo" },
-  ijen:       { lat: -8.0583, lng: 114.2430, name: "🔥 Kawah Ijen" },
-  canggu:     { lat: -8.6478, lng: 115.1385, name: "🏄 Canggu" },
-  uluwatu:    { lat: -8.8291, lng: 115.0849, name: "🛕 Uluwatu" },
-  nusa_penida:{ lat: -8.7275, lng: 115.5444, name: "🏝️ Nusa Penida" },
-  ubud:       { lat: -8.5069, lng: 115.2625, name: "🌾 Ubud" },
-  amed:       { lat: -8.3375, lng: 115.6563, name: "🤿 Amed" },
-  sidemen:    { lat: -8.4503, lng: 115.4326, name: "🌾 Sidemen" },
-  agung:      { lat: -8.3433, lng: 115.5089, name: "🌋 Mount Agung" }
-};
+/* Coordinaten komen uit GEO in data.js (single source of truth) */
+const LOCS = GEO;
 
 /* Perpendicular Bezier curvature helper for overlapping round-trip lines */
 function getCurvePoints(from, to, factor = 0.12) {
@@ -704,7 +764,7 @@ function renderRouteStepper() {
 
   const personKey = ls_get("selected_person", "matthew");
   const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = TRIP.filter(i => tripIds.includes(i.id)).sort((a, b) => a.start.localeCompare(b.start));
+  const personTrips = sortTrips(TRIP.filter(i => tripIds.includes(i.id)));
 
   // Group trip items by phase (and by companions only for Java) chronologically
   const phases = [];
@@ -867,63 +927,6 @@ function renderRouteStepper() {
   container.innerHTML = html;
 }
 
-function renderPersonSelector() {
-  const container = document.getElementById("personSelector");
-  if (!container) return;
-  
-  const activePerson = ls_get("selected_person", "matthew");
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-  
-  let html = `
-    <div class="person-selector-header" onclick="togglePersonSelector()" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; width:100%;">
-      <span class="person-selector-label" style="margin-bottom:0;">Bekijk weergave van: <strong style="color:var(--teal); text-transform:none; font-size:12px; margin-left:6px;">${PERSONS[activePerson].name}</strong></span>
-      <span class="person-selector-toggle-arrow" style="font-size:10px; color:var(--text-soft); transition: transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}">▼</span>
-    </div>
-  `;
-  
-  html += `<div class="person-grid" style="${isCollapsed ? 'display:none;' : ''}">`;
-  html += PERSON_ORDER.map(key => {
-    const p = PERSONS[key];
-    const isActive = key === activePerson;
-    const photo = localStorage.getItem(`mapphoto_${key}`);
-    const avatarHtml = photo 
-      ? `<img src="${photo}" alt="">` 
-      : `<span class="avatar-initials" style="color:${p.color}">${p.name.substring(0, 2)}</span>`;
-
-    return `
-      <button class="person-card ${isActive ? 'active' : ''}" onclick="selectPerson('${key}')">
-        <div class="person-card-avatar" style="border-color:${p.color}">
-          ${avatarHtml}
-        </div>
-        <span class="person-card-name">${p.name}</span>
-      </button>
-    `;
-  }).join("");
-  html += `</div>`;
-  
-  container.innerHTML = html;
-}
-
-function togglePersonSelector() {
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-  ls_set("person_selector_collapsed", !isCollapsed);
-  renderPersonSelector();
-}
-
-function selectPerson(key) {
-  ls_set("selected_person", key);
-  renderPersonSelector();
-  recalcAll();
-  renderMap();
-  renderRouteStepper();
-  renderDestinationsGallery();
-  
-  const groupPanel = document.getElementById("groupPanel");
-  if (groupPanel) {
-    groupPanel.innerHTML = PERSON_GROUP_INFO[key] || "";
-  }
-}
-
 /* ---------------- RENDER: destinations gallery ---------------- */
 function renderDestinationsGallery() {
   const container = document.getElementById("destinationsGallery");
@@ -931,7 +934,7 @@ function renderDestinationsGallery() {
 
   const personKey = ls_get("selected_person", "matthew");
   const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = TRIP.filter(i => tripIds.includes(i.id)).sort((a, b) => a.start.localeCompare(b.start));
+  const personTrips = sortTrips(TRIP.filter(i => tripIds.includes(i.id)));
 
   const phases = [];
   const seen = new Set();
@@ -979,10 +982,20 @@ function renderDestinationsGallery() {
 }
 
 /* ---------------- INIT ---------------- */
+function onPersonChange(key) {
+  recalcAll();
+  renderTodoPanel();
+  renderMap();
+  renderRouteStepper();
+  renderDestinationsGallery();
+  const groupPanel = document.getElementById("groupPanel");
+  if (groupPanel) groupPanel.innerHTML = PERSON_GROUP_INFO[key] || "";
+}
+
 function init() {
-  renderPersonSelector();
-  
-  const activePerson = ls_get("selected_person", "matthew");
+  initPersonSelector({ onChange: onPersonChange });
+
+  const activePerson = getSelectedPerson();
   const groupPanel = document.getElementById("groupPanel");
   if (groupPanel) {
     groupPanel.innerHTML = PERSON_GROUP_INFO[activePerson] || "";
@@ -990,6 +1003,7 @@ function init() {
   
   renderMap();
   recalcAll();
+  renderTodoPanel();
   renderRouteStepper();
   renderDestinationsGallery();
 }

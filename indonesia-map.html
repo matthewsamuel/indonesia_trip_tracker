@@ -423,7 +423,7 @@
 <header class="app-header">
   <div class="app-brand">
     <h1>🧭 Reiskaart</h1>
-    <div class="sub">Indonesië · 28 aug – 29 sep 2026</div>
+    <div class="sub">Indonesië · 29 aug – 29 sep 2026</div>
   </div>
   <nav class="app-nav">
     <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
@@ -443,7 +443,7 @@
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div id="sb-head">
-    <div id="sb-date">28 aug 2026</div>
+    <div id="sb-date">29 aug 2026</div>
     <div id="sb-sub">Dag 1 · klik avatar voor foto</div>
   </div>
   <div id="people-list"></div>
@@ -452,8 +452,8 @@
 <!-- TIMELINE CONTROL BAR -->
 <div id="tbar">
   <button id="btn-play">▶</button>
-  <span class="dlabel">28 aug</span>
-  <input type="range" id="scrubber" min="0" max="32" value="0" step="1">
+  <span class="dlabel">29 aug</span>
+  <input type="range" id="scrubber" min="0" max="31" value="0" step="1">
   <span class="dlabel">29 sep</span>
   <div class="spd-btns" id="spd-btns">
     <button class="sbtn active" data-speed="1">1×</button>
@@ -472,63 +472,35 @@
 /* ================================================================
    DATA & COORDINATES
    ================================================================ */
-const LOCS = {
-  brussels:   { lat: 50.8503, lng:  4.3517, name: "✈️ Brussel" },
-  bangkok:    { lat: 13.7563, lng: 100.5018, name: "🇹🇭 Bangkok" },
-  singapore:  { lat:  1.3521, lng: 103.8198, name: "🇸🇬 Singapore" },
-  medan:      { lat:  3.5952, lng:  98.6722, name: "🏙️ Medan" },
-  ketambe:    { lat:  3.6763, lng:  97.6497, name: "🌴 Ketambe" },
-  jakarta:    { lat: -6.2088, lng: 106.8456, name: "🏙️ Jakarta" },
-  yogya:      { lat: -7.7956, lng: 110.3695, name: "🕌 Yogyakarta" },
-  malang:     { lat: -7.9797, lng: 112.6304, name: "🏡 Malang" },
-  surabaya:   { lat: -7.2575, lng: 112.7521, name: "🏙️ Surabaya" },
-  banyuwangi: { lat: -8.2191, lng: 114.3691, name: "⚓ Banyuwangi" },
-  bali:       { lat: -8.6705, lng: 115.2126, name: "🏝️ Bali" },
-  labuanbajo: { lat: -8.4539, lng: 119.8842, name: "🌅 Labuan Bajo" },
-  ruteng:     { lat: -8.6271, lng: 120.4718, name: "⛰️ Ruteng" },
-  komodo:     { lat: -8.5503, lng: 119.4880, name: "🦎 Komodo" },
-  padar:      { lat: -8.6534, lng: 119.5772, name: "⛰️ Padar Island" },
-  pink_beach: { lat: -8.6015, lng: 119.5222, name: "🏖️ Pink Beach" },
-  manta_point:{ lat: -8.5833, lng: 119.5000, name: "🤿 Manta Point" },
-  borobudur:  { lat: -7.6079, lng: 110.2038, name: "🛕 Borobudur" },
-  prambanan:  { lat: -7.7520, lng: 110.4914, name: "🛕 Prambanan" },
-  tumpak_sewu:{ lat: -8.2307, lng: 112.9167, name: "🌊 Tumpak Sewu" },
-  bromo:      { lat: -7.9425, lng: 112.9530, name: "🌋 Mount Bromo" },
-  ijen:       { lat: -8.0583, lng: 114.2430, name: "🔥 Kawah Ijen" },
-  canggu:     { lat: -8.6478, lng: 115.1385, name: "🏄 Canggu" },
-  uluwatu:    { lat: -8.8291, lng: 115.0849, name: "🛕 Uluwatu" },
-  nusa_penida:{ lat: -8.7275, lng: 115.5444, name: "🏝️ Nusa Penida" },
-  ubud:       { lat: -8.5069, lng: 115.2625, name: "🌾 Ubud" },
-  amed:       { lat: -8.3375, lng: 115.6563, name: "🤿 Amed" },
-  sidemen:    { lat: -8.4503, lng: 115.4326, name: "🌾 Sidemen" },
-  agung:      { lat: -8.3433, lng: 115.5089, name: "🌋 Mount Agung" }
-};
+/* Coordinaten komen uit GEO in data.js (single source of truth) */
+const LOCS = GEO;
 
-const PEOPLE = {
-  matthew: { name: "Matthew",  initials: "M",  color: "#00b4d8" },
-  hinke:   { name: "Hinke",    initials: "H",  color: "#f72585" },
-  arne:    { name: "Arne",     initials: "A",  color: "#4cc9f0" },
-  eliott:  { name: "Eliott",   initials: "E",  color: "#f77f00" },
-  jens:    { name: "Jens",     initials: "J",  color: "#9d4edd" },
-  kamiel:  { name: "Kamiel",   initials: "K",  color: "#4ad66d" },
-  maurice: { name: "Maurice",  initials: "Mo", color: "#ffb703" },
-  mathias: { name: "Mathias",  initials: "Ma", color: "#00f5d4" },
-  willem:  { name: "Willem",   initials: "W",  color: "#e2e8f0" },
-  kasper:  { name: "Kasper",   initials: "Ks", color: "#cbd5e1" },
+/* Initialen lokaal; kleuren komen uit PERSONS in data.js zodat een persoon
+   op elke pagina dezelfde kleur heeft. */
+const INITIALS = {
+  matthew:"M", hinke:"H", arne:"A", eliott:"E", jens:"J",
+  kamiel:"K", maurice:"Mo", mathias:"Ma", willem:"W", kasper:"Ks"
 };
+const PEOPLE = Object.fromEntries(
+  PERSON_ORDER.map(k => [k, { name: PERSONS[k].name, initials: INITIALS[k], color: PERSONS[k].color }])
+);
 
+/* Schema's gelijkgetrokken met TRIP/TRANSPORT_LEGS in data.js.
+   Matthew & Arne vliegen BRU→SIN→Medan (SQ303+SQ990) en slapen in Medan;
+   er is geen verblijf van twee nachten in Singapore meer. */
 const SCHED_MATTHEW = [
-  { date: "2026-08-28", loc: "brussels",   transit: true,  to: "singapore" },
-  { date: "2026-08-29", loc: "singapore" },
-  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
-  { date: "2026-09-01", loc: "ketambe" },
+  { date: "2026-08-29", loc: "brussels",   transit: true,  to: "medan" },
+  { date: "2026-08-30", loc: "medan" },
+  { date: "2026-09-01", loc: "medan",      transit: true,  to: "ketambe" },
+  { date: "2026-09-02", loc: "ketambe" },
   { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
   { date: "2026-09-08", loc: "jakarta" },
   { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
   { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
   { date: "2026-09-11", loc: "malang",     transit: true,  to: "surabaya" },
   { date: "2026-09-12", loc: "surabaya" },
-  { date: "2026-09-16", loc: "surabaya",   transit: true,  to: "banyuwangi" },
+  { date: "2026-09-15", loc: "surabaya",   transit: true,  to: "malang" },
+  { date: "2026-09-16", loc: "malang",     transit: true,  to: "banyuwangi" },
   { date: "2026-09-17", loc: "banyuwangi" },
   { date: "2026-09-18", loc: "banyuwangi", transit: true,  to: "labuanbajo" },
   { date: "2026-09-19", loc: "labuanbajo" },
@@ -542,11 +514,13 @@ const SCHED_MATTHEW = [
   { date: "2026-09-29", loc: "bali",       transit: true,  to: "brussels" },
 ];
 
+/* Hinke vertrekt 13/09 uit Brussel en landt 14/09 om 08:00 in Surabaya. */
 const SCHED_HINKE = [
-  { date: "2026-08-28", loc: "brussels" },
-  { date: "2026-09-14", loc: "brussels",   transit: true,  to: "surabaya" },
-  { date: "2026-09-15", loc: "surabaya" },
-  { date: "2026-09-16", loc: "surabaya",   transit: true,  to: "banyuwangi" },
+  { date: "2026-08-29", loc: "brussels" },
+  { date: "2026-09-13", loc: "brussels",   transit: true,  to: "surabaya" },
+  { date: "2026-09-14", loc: "surabaya" },
+  { date: "2026-09-15", loc: "surabaya",   transit: true,  to: "malang" },
+  { date: "2026-09-16", loc: "malang",     transit: true,  to: "banyuwangi" },
   { date: "2026-09-17", loc: "banyuwangi" },
   { date: "2026-09-18", loc: "banyuwangi", transit: true,  to: "labuanbajo" },
   { date: "2026-09-19", loc: "labuanbajo" },
@@ -560,25 +534,31 @@ const SCHED_HINKE = [
   { date: "2026-09-29", loc: "bali",       transit: true,  to: "brussels" },
 ];
 
+/* Arne reist met Matthew mee tot Malang en doet daarna het jongens-programma. */
 const SCHED_ARNE = [
-  { date: "2026-08-28", loc: "brussels",   transit: true,  to: "singapore" },
-  { date: "2026-08-29", loc: "singapore" },
-  { date: "2026-08-31", loc: "singapore",  transit: true,  to: "ketambe" },
-  { date: "2026-09-01", loc: "ketambe" },
+  { date: "2026-08-29", loc: "brussels",   transit: true,  to: "medan" },
+  { date: "2026-08-30", loc: "medan" },
+  { date: "2026-09-01", loc: "medan",      transit: true,  to: "ketambe" },
+  { date: "2026-09-02", loc: "ketambe" },
   { date: "2026-09-07", loc: "ketambe",    transit: true,  to: "jakarta" },
   { date: "2026-09-08", loc: "jakarta" },
   { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
   { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
-  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
-  { date: "2026-09-12", loc: "banyuwangi" }, 
-  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "bali" },
-  { date: "2026-09-14", loc: "bali" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "tumpak_sewu" },
+  { date: "2026-09-12", loc: "bromo",      transit: true,  to: "banyuwangi" },
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "canggu" },
+  { date: "2026-09-14", loc: "canggu",     transit: true,  to: "uluwatu" },
+  { date: "2026-09-16", loc: "uluwatu",    transit: true,  to: "nusa_penida" },
+  { date: "2026-09-17", loc: "nusa_penida",transit: true,  to: "ubud" },
+  { date: "2026-09-18", loc: "ubud",       transit: true,  to: "amed" },
+  { date: "2026-09-19", loc: "amed",       transit: true,  to: "sidemen" },
   { date: "2026-09-20", loc: "bali",       transit: true,  to: "brussels" },
 ];
 
+/* Eliott, Kamiel, Kasper en Willem vliegen BRU→SIN→Jakarta en
+   acclimatiseren twee nachten in Jakarta voor ze op 01/09 naar Medan vliegen. */
 const SCHED_ELIOTT_KAMIEL_KASPER_WILLEM = [
-  { date: "2026-08-28", loc: "brussels" },
-  { date: "2026-08-29", loc: "brussels",   transit: true,  to: "singapore" },
+  { date: "2026-08-29", loc: "brussels",   transit: true,  to: "jakarta" },
   { date: "2026-08-30", loc: "jakarta" },
   { date: "2026-09-01", loc: "jakarta",    transit: true,  to: "ketambe" },
   { date: "2026-09-02", loc: "ketambe" },
@@ -586,24 +566,44 @@ const SCHED_ELIOTT_KAMIEL_KASPER_WILLEM = [
   { date: "2026-09-08", loc: "jakarta" },
   { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
   { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
-  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
-  { date: "2026-09-12", loc: "banyuwangi" }, 
-  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "bali" },
-  { date: "2026-09-14", loc: "bali" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "tumpak_sewu" },
+  { date: "2026-09-12", loc: "bromo",      transit: true,  to: "banyuwangi" },
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "canggu" },
+  { date: "2026-09-14", loc: "canggu",     transit: true,  to: "uluwatu" },
+  { date: "2026-09-16", loc: "uluwatu",    transit: true,  to: "nusa_penida" },
+  { date: "2026-09-17", loc: "nusa_penida",transit: true,  to: "ubud" },
+  { date: "2026-09-18", loc: "ubud",       transit: true,  to: "amed" },
+  { date: "2026-09-19", loc: "amed",       transit: true,  to: "sidemen" },
   { date: "2026-09-20", loc: "bali",       transit: true,  to: "brussels" },
 ];
 
+/* Maurice, Mathias en Jens vertrekken 07/09 en landen 08/09 in Jakarta. */
 const SCHED_JENS_MAURICE_MATHIAS = [
-  { date: "2026-08-28", loc: "brussels" },
-  { date: "2026-09-08", loc: "brussels",   transit: true,  to: "jakarta" },
+  { date: "2026-08-29", loc: "brussels" },
+  { date: "2026-09-07", loc: "brussels",   transit: true,  to: "jakarta" },
+  { date: "2026-09-08", loc: "jakarta" },
   { date: "2026-09-09", loc: "jakarta",    transit: true,  to: "yogya" },
   { date: "2026-09-10", loc: "yogya",      transit: true,  to: "malang" },
-  { date: "2026-09-11", loc: "malang",     transit: true,  to: "banyuwangi" },
-  { date: "2026-09-12", loc: "banyuwangi" },
-  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "bali" },
-  { date: "2026-09-14", loc: "bali" },
+  { date: "2026-09-11", loc: "malang",     transit: true,  to: "tumpak_sewu" },
+  { date: "2026-09-12", loc: "bromo",      transit: true,  to: "banyuwangi" },
+  { date: "2026-09-13", loc: "banyuwangi", transit: true,  to: "canggu" },
+  { date: "2026-09-14", loc: "canggu",     transit: true,  to: "uluwatu" },
+  { date: "2026-09-16", loc: "uluwatu",    transit: true,  to: "nusa_penida" },
+  { date: "2026-09-17", loc: "nusa_penida",transit: true,  to: "ubud" },
+  { date: "2026-09-18", loc: "ubud",       transit: true,  to: "amed" },
+  { date: "2026-09-19", loc: "amed",       transit: true,  to: "sidemen" },
   { date: "2026-09-20", loc: "bali",       transit: true,  to: "brussels" },
 ];
+
+/* Momo, Mathias en Willem vliegen na Bali door naar Vietnam i.p.v. naar huis. */
+const SCHED_VIETNAM_TAIL = [
+  { date: "2026-09-20", loc: "bali",       transit: true,  to: "vietnam" },
+  { date: "2026-09-21", loc: "vietnam" },
+];
+
+function withVietnamTail(base) {
+  return base.filter(e => e.date < "2026-09-20").concat(SCHED_VIETNAM_TAIL);
+}
 
 const SCHEDULES = {
   matthew: SCHED_MATTHEW,
@@ -612,72 +612,95 @@ const SCHEDULES = {
   eliott:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
   jens:    SCHED_JENS_MAURICE_MATHIAS,
   kamiel:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
-  maurice: SCHED_JENS_MAURICE_MATHIAS,
-  mathias: SCHED_JENS_MAURICE_MATHIAS,
-  willem:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
+  maurice: withVietnamTail(SCHED_JENS_MAURICE_MATHIAS),
+  mathias: withVietnamTail(SCHED_JENS_MAURICE_MATHIAS),
+  willem:  withVietnamTail(SCHED_ELIOTT_KAMIEL_KASPER_WILLEM),
   kasper:  SCHED_ELIOTT_KAMIEL_KASPER_WILLEM,
 };
 
 const ROAD_SEGS = [
-  { id: "r1", from: "medan",      to: "ketambe",    color: "#4ad66d", label: "Minibus 7-8u",  icon: "🚐" },
-  { id: "r2", from: "jakarta",    to: "yogya",      color: "#9d4edd", label: "Trein 6u25",    icon: "🚂" },
-  { id: "r3", from: "yogya",      to: "malang",     color: "#9d4edd", label: "Nachttrein",    icon: "🚂" },
-  { id: "r4", from: "malang",     to: "surabaya",   color: "#9d4edd", label: "Bus ~3u",       icon: "🚐" },
-  { id: "r5", from: "surabaya",   to: "banyuwangi", color: "#9d4edd", label: "Trein ~5u",     icon: "🚂" },
-  { id: "r6", from: "labuanbajo", to: "ruteng",     color: "#f72585", label: "Auto ~3u",      icon: "🚗" },
+  { id: "r1",  from: "medan",       to: "ketambe",     color: "#4ad66d", label: "Minibus 7-8u",   icon: "🚐" },
+  { id: "r2",  from: "jakarta",     to: "yogya",       color: "#9d4edd", label: "Trein ~8u",      icon: "🚂" },
+  { id: "r3",  from: "yogya",       to: "malang",      color: "#9d4edd", label: "Nachttrein",     icon: "🚂" },
+  { id: "r4",  from: "malang",      to: "surabaya",    color: "#9d4edd", label: "Taxi ~2u",       icon: "🚖" },
+  { id: "r6",  from: "labuanbajo",  to: "ruteng",      color: "#f72585", label: "Auto ~4u",       icon: "🚗" },
+  { id: "r7",  from: "malang",      to: "tumpak_sewu", color: "#9d4edd", label: "Jeep ~2,5u",     icon: "🚙" },
+  { id: "r8",  from: "tumpak_sewu", to: "bromo",       color: "#9d4edd", label: "Jeep-tour",      icon: "🚙" },
+  { id: "r9",  from: "bromo",       to: "banyuwangi",  color: "#9d4edd", label: "Taxi ~5u",       icon: "🚖" },
+  { id: "r10", from: "surabaya",    to: "malang",      color: "#9d4edd", label: "Taxi ~2u",       icon: "🚖" },
+  { id: "r11", from: "banyuwangi",  to: "ijen",        color: "#9d4edd", label: "Ijen-hike",      icon: "🥾" },
 ];
 
 const FLIGHT_ARCS = [
-  { id: "f1", from: "brussels",   to: "singapore",  via: "bangkok",    color: "#4cc9f0", label: "BRU→BKK→SIN" },
-  { id: "f2", from: "singapore",  to: "medan",      color: "#4ad66d", label: "SIN→KNO (Scoot)" },
-  { id: "f3", from: "medan",      to: "jakarta",    color: "#f77f00", label: "Medan→JKT" },
-  { id: "f4", from: "banyuwangi", to: "labuanbajo", via: "bali",       color: "#f72585", label: "BWI→DPS→LBJ" },
-  { id: "f5", from: "labuanbajo", to: "bali",       color: "#ffb703", label: "LBJ→DPS" },
+  { id: "f1", from: "brussels",   to: "medan",      via: "singapore", color: "#4cc9f0", label: "BRU→SIN→KNO (SQ303+SQ990)" },
+  { id: "f2", from: "brussels",   to: "jakarta",    via: "singapore", color: "#00f5d4", label: "BRU→SIN→CGK (SQ303+SQ956/952)" },
+  { id: "f3", from: "medan",      to: "jakarta",    color: "#f77f00", label: "KNO→CGK (JT383)" },
+  { id: "f4", from: "banyuwangi", to: "labuanbajo", via: "bali",      color: "#f72585", label: "Java→DPS→LBJ" },
+  { id: "f5", from: "labuanbajo", to: "bali",       color: "#ffb703", label: "LBJ→DPS (QZ503)" },
   { id: "f6", from: "bali",       to: "brussels",   color: "#4cc9f0", label: "DPS→BRU" },
-  { id: "f7", from: "brussels",   to: "jakarta",    color: "#00f5d4", label: "BRU→JKT (Maurice/Mathias/Jens)" },
+  { id: "f7", from: "brussels",   to: "surabaya",   via: "singapore", color: "#C8567D", label: "BRU→SIN→SUB (Hinke)" },
+  { id: "f8", from: "jakarta",    to: "medan",      color: "#f77f00", label: "CGK→KNO (JT204)" },
+  { id: "f9", from: "bali",       to: "vietnam",    color: "#C8932B", label: "DPS→Vietnam" },
 ];
 
 const BOAT_SEGS = [
-  { id: "b1", from: "labuanbajo", to: "komodo", color: "#00f5d4", label: "Boot Komodo" },
+  { id: "b1", from: "labuanbajo", to: "komodo",      color: "#00f5d4", label: "Boot Komodo" },
+  { id: "b2", from: "banyuwangi", to: "canggu",      color: "#4ad66d", label: "Ferry Ketapang→Gilimanuk" },
+  { id: "b3", from: "uluwatu",    to: "nusa_penida", color: "#ffb703", label: "Boot Sanur→Penida" },
 ];
 
 /* ================================================================
    ROUTE SEGMENT ACTIVE DATES & PATH COMBINATIONS
    ================================================================ */
 const SEGMENT_ACTIVE_DAYS = {
-  f1: ["2026-08-28", "2026-08-29", "2026-08-30"],
-  f2: ["2026-08-31"],
-  r1: ["2026-08-31", "2026-09-07"],
-  f3: ["2026-09-07"],
-  f7: ["2026-09-08"],
-  r2: ["2026-09-09"],
-  r3: ["2026-09-10", "2026-09-11"],
-  r4: ["2026-09-11"],
-  r5: ["2026-09-11", "2026-09-16"],
-  f4: ["2026-09-18"],
-  r6: ["2026-09-21", "2026-09-23"],
-  b1: ["2026-09-24"],
-  f5: ["2026-09-13", "2026-09-26"],
-  f6: ["2026-09-20", "2026-09-29"],
+  f1:  ["2026-08-29", "2026-08-30"],
+  f2:  ["2026-08-29", "2026-08-30", "2026-09-07", "2026-09-08"],
+  f7:  ["2026-09-13", "2026-09-14"],
+  f8:  ["2026-09-01"],
+  r1:  ["2026-09-01", "2026-09-07"],
+  f3:  ["2026-09-07"],
+  r2:  ["2026-09-09"],
+  r3:  ["2026-09-10", "2026-09-11"],
+  r4:  ["2026-09-11"],
+  r7:  ["2026-09-11", "2026-09-16"],
+  r8:  ["2026-09-11", "2026-09-12", "2026-09-16"],
+  r9:  ["2026-09-12", "2026-09-16"],
+  r10: ["2026-09-15"],
+  r11: ["2026-09-13", "2026-09-17"],
+  b2:  ["2026-09-13"],
+  b3:  ["2026-09-16", "2026-09-17"],
+  f4:  ["2026-09-18"],
+  r6:  ["2026-09-21", "2026-09-23"],
+  b1:  ["2026-09-24"],
+  f5:  ["2026-09-26"],
+  f6:  ["2026-09-20", "2026-09-29"],
+  f9:  ["2026-09-20", "2026-09-21"],
 };
 
 const TRANSIT_PATHS = {
-  "singapore-ketambe": ["f2", "r1"],
-  "ketambe-jakarta": ["r1", "f3"],
-  "malang-banyuwangi": ["r4", "r5"],
-  "banyuwangi-brussels": ["f5", "f6"],
-  "banyuwangi-bali": ["f5"],
-  "brussels-singapore": ["f1"],
-  "brussels-jakarta": ["f7"],
-  "jakarta-yogya": ["r2"],
-  "yogya-malang": ["r3"],
-  "malang-surabaya": ["r4"],
-  "surabaya-banyuwangi": ["r5"],
-  "banyuwangi-labuanbajo": ["f4"],
-  "labuanbajo-ruteng": ["r6"],
-  "ruteng-labuanbajo": ["r6"],
-  "labuanbajo-bali": ["f5"],
-  "bali-brussels": ["f6"]
+  "brussels-medan":       ["f1"],
+  "brussels-jakarta":     ["f2"],
+  "brussels-surabaya":    ["f7"],
+  "medan-ketambe":        ["r1"],
+  "jakarta-ketambe":      ["f8", "r1"],
+  "ketambe-jakarta":      ["r1", "f3"],
+  "jakarta-yogya":        ["r2"],
+  "yogya-malang":         ["r3"],
+  "malang-surabaya":      ["r4"],
+  "surabaya-malang":      ["r10"],
+  "malang-tumpak_sewu":   ["r7"],
+  "tumpak_sewu-bromo":    ["r8"],
+  "bromo-banyuwangi":     ["r9"],
+  "malang-banyuwangi":    ["r7", "r8", "r9"],
+  "banyuwangi-canggu":    ["b2"],
+  "banyuwangi-labuanbajo":["f4"],
+  "labuanbajo-ruteng":    ["r6"],
+  "ruteng-labuanbajo":    ["r6"],
+  "labuanbajo-komodo":    ["b1"],
+  "labuanbajo-bali":      ["f5"],
+  "uluwatu-nusa_penida":  ["b3"],
+  "bali-brussels":        ["f6"],
+  "bali-vietnam":         ["f9"]
 };
 
 /* ================================================================
@@ -716,7 +739,8 @@ function drawCityLabels() {
   cityLabelsGroup.clearLayers();
   Object.entries(LOCS).forEach(([key, loc]) => {
     // Skip transit hubs outside of Indonesia
-    if (['brussels', 'bangkok', 'singapore'].includes(key)) return;
+    // brussel/brussels/bru zijn aliassen van hetzelfde punt in GEO
+    if (['brussels', 'brussel', 'bru', 'singapore', 'vietnam'].includes(key)) return;
     
     L.marker([loc.lat, loc.lng], {
       icon: L.divIcon({

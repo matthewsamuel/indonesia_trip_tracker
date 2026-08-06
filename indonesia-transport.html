@@ -575,7 +575,7 @@
   <header class="app-header">
     <div class="app-brand">
       <h1>🧭 Reis naar Indonesië</h1>
-      <div class="sub">28 aug – 29 sep 2026</div>
+      <div class="sub">29 aug – 29 sep 2026</div>
     </div>
     <nav class="app-nav">
       <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
@@ -590,47 +590,10 @@
   <!-- PERSON SELECTOR -->
   <div class="person-selector-container" id="personSelector"></div>
 
-  <!-- DEPARTURE OVERVIEW: Iedereen vertrekt vanuit Brussel -->
-  <section class="panel" style="background: linear-gradient(135deg, rgba(76,201,240,0.08) 0%, rgba(0,180,216,0.04) 100%); border: 1px solid rgba(76,201,240,0.2); margin-bottom: 24px;">
-    <h2 style="font-size: 18px; margin-bottom: 16px;">🚀 Vertrek vanuit Brussel — Reisgezelschap Overzicht</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-      <!-- Matthew & Arne -->
-      <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(76,201,240,0.3); border-radius: 12px; padding: 14px;">
-        <div style="font-weight: 700; color: #fff; font-size: 13px; margin-bottom: 8px;">👥 Matthew &amp; Arne</div>
-        <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 6px;">📅 Donderdag 28 aug 2026</div>
-        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;"><strong>Vlucht:</strong> TG935 + TG403 (Thai Airways)</div>
-        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;"><strong>Vertrek:</strong> BRU 21:15</div>
-        <div style="font-size: 12px; color: #4ad66d;"><strong>Aankomst:</strong> SIN 09:30+1 (30/08)</div>
-      </div>
-
-      <!-- Eliott, Kamiel, Willem, Kasper -->
-      <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,183,3,0.3); border-radius: 12px; padding: 14px;">
-        <div style="font-weight: 700; color: #fff; font-size: 13px; margin-bottom: 8px;">👥 Eliott, Kamiel, Willem, Kasper</div>
-        <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 6px;">📅 Vrijdag 29 aug 2026</div>
-        <div style="font-size: 12px; color: #ffb703; font-weight: 600; margin-bottom: 6px;"><span style="background: rgba(255,183,3,0.2); border: 1px solid rgba(255,183,3,0.4); padding: 2px 6px; border-radius: 4px;">TBD</span> Vluchtdetails</div>
-        <div style="font-size: 12px; color: #cbd5e1;"><strong>Bestemming:</strong> BRU → SIN → Jakarta</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 6px;"><em>Exact vluchtnummer en tijd nog in te vullen</em></div>
-      </div>
-
-      <!-- Maurice, Mathias, Jens -->
-      <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(74,214,109,0.3); border-radius: 12px; padding: 14px;">
-        <div style="font-weight: 700; color: #fff; font-size: 13px; margin-bottom: 8px;">👥 Maurice, Mathias, Jens</div>
-        <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 6px;">📅 Maandag 7 sep 2026</div>
-        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;"><strong>Vlucht:</strong> SQ303 + SQ952 (Singapore Airlines)</div>
-        <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;"><strong>Vertrek:</strong> BRU 11:45</div>
-        <div style="font-size: 12px; color: #4ad66d;"><strong>Aankomst:</strong> CGK 08:25 (08/09)</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 6px;"><em>Boekingsref. Jens: FSXOOZ · €680,77 pp</em></div>
-      </div>
-
-      <!-- Hinke -->
-      <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(200,86,125,0.3); border-radius: 12px; padding: 14px;">
-        <div style="font-weight: 700; color: #fff; font-size: 13px; margin-bottom: 8px;">👤 Hinke</div>
-        <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 6px;">📅 Donderdag 13 sep 2026</div>
-        <div style="font-size: 12px; color: #ffb703; font-weight: 600; margin-bottom: 6px;"><span style="background: rgba(255,183,3,0.2); border: 1px solid rgba(255,183,3,0.4); padding: 2px 6px; border-radius: 4px;">TBD</span> Vluchtdetails</div>
-        <div style="font-size: 12px; color: #cbd5e1;"><strong>Bestemming:</strong> BRU → SIN → Surabaya</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 6px;"><em>Sluit aan bij Matthew in Surabaya (14/09)</em></div>
-      </div>
-    </div>
+  <!-- DEPARTURE OVERVIEW: gegenereerd uit data.js -->
+  <section class="panel departure-panel">
+    <h2>🚀 Vertrek vanuit Brussel — Reisgezelschap Overzicht</h2>
+    <div class="departure-grid" id="departureGrid"></div>
   </section>
 
   <div class="transport-grid">
@@ -700,42 +663,41 @@
          4. FLIGHT SCRAPER SIMULATOR
          ══════════════════════════════════════════════════ -->
     <section class="panel col-7">
-      <h2>✈️ Live Flight Scraper Simulator</h2>
+      <h2>✈️ Vluchtdetails opzoeken</h2>
       <p style="font-size:13px;color:var(--text-soft);margin-bottom:15px;">
-        Voer een vluchtnummer in om live telemetrie, ADS-B status, terminal/gate en bagage-informatie te "scrapen".
+        Zoek een vluchtnummer op voor toestel, vliegduur, terminal/gate en bagageband. Referentiegegevens uit de planning — geen live vluchtstatus.
       </p>
       <div class="scraper-input-group">
-        <input type="text" id="flightInput" placeholder="Bv. TG935, TR220, JT383..." value="TG935">
-        <button onclick="simulateScraper()">Scrape Vlucht</button>
+        <input type="text" id="flightInput" placeholder="Bv. SQ303, JT383, QZ503..." value="SQ303">
+        <button onclick="simulateScraper()">Zoek vlucht</button>
       </div>
       <div class="quick-search-labels">
         Aanbevolen:
-        <span onclick="setFlightSearch('TG935')">TG935 (BRU→BKK)</span>
-        <span onclick="setFlightSearch('TG403')">TG403 (BKK→SIN)</span>
-        <span onclick="setFlightSearch('TR220')">TR220 (SIN→KNO)</span>
+        <span onclick="setFlightSearch('SQ303')">SQ303 (BRU→SIN)</span>
+        <span onclick="setFlightSearch('SQ990')">SQ990 (SIN→KNO)</span>
+        <span onclick="setFlightSearch('SQ956')">SQ956 (SIN→CGK)</span>
+        <span onclick="setFlightSearch('SQ952')">SQ952 (SIN→CGK)</span>
         <span onclick="setFlightSearch('JT204')">JT204 (CGK→KNO)</span>
         <span onclick="setFlightSearch('JT383')">JT383 (KNO→CGK)</span>
         <span onclick="setFlightSearch('GA402')">GA402 (SUB→LBJ)</span>
         <span onclick="setFlightSearch('QZ503')">QZ503 (LBJ→DPS)</span>
-        <span onclick="setFlightSearch('QR959')">QR959 (DPS→DOH)</span>
       </div>
       <div class="console-wrapper" id="consoleLogs">
-        <div class="console-line">[Systeem] Console gereed. Voer vluchtnummer in en druk op 'Scrape Vlucht'.</div>
+        <div class="console-line">[Systeem] Klaar. Voer een vluchtnummer in en klik op 'Zoek vlucht'.</div>
       </div>
       <div id="telemetryResult" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:8px;margin-bottom:12px;">
-          <h3 id="resFlightName" style="font-size:16px;color:#fff;">TG935 Details</h3>
-          <span class="badge gepland" id="resFlightStatus">En Route</span>
+          <h3 id="resFlightName" style="font-size:16px;color:#fff;">SQ303 Details</h3>
+          <span class="badge gepland" id="resFlightStatus">Gepland</span>
         </div>
         <div class="flight-telemetry-board">
-          <div class="telemetry-card highlight"><div class="telemetry-label">Luchtvaartmaatschappij</div><div class="telemetry-value" id="resAirline">Thai Airways</div></div>
-          <div class="telemetry-card"><div class="telemetry-label">Vliegtuigtype</div><div class="telemetry-value" id="resAircraft">Boeing 777-300ER</div></div>
-          <div class="telemetry-card highlight"><div class="telemetry-label">Huidige Telemetrie</div><div class="telemetry-value" id="resAltitude">35,992 ft @ 895 km/h</div></div>
-          <div class="telemetry-card"><div class="telemetry-label">Vliegduur / Resterend</div><div class="telemetry-value" id="resDuration">10u 45m</div></div>
+          <div class="telemetry-card highlight"><div class="telemetry-label">Luchtvaartmaatschappij</div><div class="telemetry-value" id="resAirline">Singapore Airlines</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Vliegtuigtype</div><div class="telemetry-value" id="resAircraft">Airbus A350-900</div></div>
+          <div class="telemetry-card highlight"><div class="telemetry-label">Kruishoogte &amp; snelheid (typisch)</div><div class="telemetry-value" id="resAltitude">35,992 ft @ 895 km/h</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Vliegduur</div><div class="telemetry-value" id="resDuration">10u 45m</div></div>
           <div class="telemetry-card"><div class="telemetry-label">Terminal &amp; Gate</div><div class="telemetry-value" id="resGate">Terminal 1, Gate B34</div></div>
           <div class="telemetry-card"><div class="telemetry-label">Baggage Carousel</div><div class="telemetry-value" id="resBaggage">Carousel 8</div></div>
-          <div class="telemetry-card"><div class="telemetry-label">Vertrek → Aankomst</div><div class="telemetry-value" id="resRoute" style="font-size:13.5px;">BRU → BKK</div></div>
-          <div class="telemetry-card"><div class="telemetry-label">Delay Risk Factor</div><div class="telemetry-value live-alert" id="resDelayRisk">Laag (3.2%)</div></div>
+          <div class="telemetry-card"><div class="telemetry-label">Vertrek → Aankomst</div><div class="telemetry-value" id="resRoute" style="font-size:13.5px;">BRU → SIN</div></div>
         </div>
       </div>
     </section>
@@ -760,7 +722,7 @@
       <div style="margin-top:15px;background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.04);border-radius:10px;padding:12px 14px;">
         <span class="telemetry-label">Ontvangen Telemetrieberichten</span>
         <div style="font-size:11px;font-family:monospace;color:#4ad66d;margin-top:4px;" id="liveHexLog">
-          MSG4 ID:THAI935 LAT:13.681 LON:100.750 ALT:32000 SQ:4012
+          MSG4 ID:SIA303 LAT:1.359 LON:103.989 ALT:38000 SQ:2451
         </div>
       </div>
     </section>
@@ -785,72 +747,49 @@
         <div>
           <label style="font-size:11px;text-transform:uppercase;color:var(--text-soft);margin-bottom:4px;display:block;">Actieve Vlucht Etap</label>
           <select id="baggageFlight" onchange="updateBaggageTag()" style="width:100%;">
-            <option value="TG935">TG935 (BRU→BKK)</option>
-            <option value="TR220">TR220 (SIN→KNO)</option>
+            <option value="SQ303">SQ303 (BRU→SIN)</option>
+            <option value="SQ990">SQ990 (SIN→KNO)</option>
+            <option value="SQ956">SQ956 (SIN→CGK)</option>
+            <option value="SQ952">SQ952 (SIN→CGK)</option>
             <option value="JT204">JT204 (CGK→KNO)</option>
             <option value="JT383">JT383 (KNO→CGK)</option>
             <option value="GA402">GA402 (SUB→LBJ)</option>
             <option value="QZ503">QZ503 (LBJ→DPS)</option>
+            <option value="SQ963">SQ963 (DPS→SIN)</option>
+            <option value="SQ304">SQ304 (SIN→BRU)</option>
           </select>
         </div>
       </div>
       <div class="baggage-tag-container">
         <div class="baggage-tag-header">
-          <span class="baggage-tag-title" id="tagAirlineCode">TG - THAI AIRWAYS</span>
+          <span class="baggage-tag-title" id="tagAirlineCode">SQ - SINGAPORE AIRLINES</span>
           <span style="font-size:18px;">✈️</span>
         </div>
         <div class="baggage-tag-grid">
           <div class="baggage-tag-field"><span class="baggage-tag-label">Passagier</span><span class="baggage-tag-value" id="tagPassenger">MATTHEW</span></div>
-          <div class="baggage-tag-field"><span class="baggage-tag-label">Vluchtnr.</span><span class="baggage-tag-value" id="tagFlightNumber">TG935</span></div>
-          <div class="baggage-tag-field"><span class="baggage-tag-label">Van → Naar</span><span class="baggage-tag-value" id="tagRoute">BRU → BKK</span></div>
+          <div class="baggage-tag-field"><span class="baggage-tag-label">Vluchtnr.</span><span class="baggage-tag-value" id="tagFlightNumber">SQ303</span></div>
+          <div class="baggage-tag-field"><span class="baggage-tag-label">Van → Naar</span><span class="baggage-tag-value" id="tagRoute">BRU → SIN</span></div>
           <div class="baggage-tag-field"><span class="baggage-tag-label">Bagage Limiet</span><span class="baggage-tag-value" id="tagLimit" style="color:#b91c1c;">30 KG</span></div>
         </div>
         <div class="baggage-barcode">
           <div class="barcode-stripes"></div>
-          <div class="barcode-number" id="tagBarcodeNumber">TG 935 - 849302</div>
+          <div class="barcode-number" id="tagBarcodeNumber">SQ 303 - 849302</div>
         </div>
       </div>
       <div style="font-size:11px;color:#ffb703;background:rgba(255,183,3,.08);border:1px solid rgba(255,183,3,.2);border-radius:8px;padding:10px;margin-top:12px;">
-        ⚠️ <strong>Let op:</strong> Binnenlandse vluchten (Scoot / AirAsia / Wings Air) hanteren vaak limieten van 10–20 kg voor handbagage!
+        ⚠️ <strong>Let op:</strong> Binnenlandse vluchten (Lion Air / AirAsia / Wings Air) hanteren vaak limieten van 10–20 kg voor handbagage!
       </div>
     </section>
 
     <!-- ══════════════════════════════════════════════════
          7. CO₂ CALCULATOR
          ══════════════════════════════════════════════════ -->
-    <section class="panel col-6" style="display:flex;flex-direction:column;justify-content:space-between;">
-      <div>
-        <h2>🌱 CO₂ Footprint &amp; Eco-compensatie</h2>
-        <p style="font-size:13px;color:var(--text-soft);margin-bottom:12px;">CO₂-uitstoot van alle vluchten en hoe je die compenseert via Indonesische initiatieven.</p>
-        <div style="background:rgba(0,0,0,.2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:15px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-size:13px;color:var(--text-soft);">Totale vluchtkilometers pp:</span>
-            <strong style="color:#fff;" id="carbonKm">24,450 km</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-size:13px;color:var(--text-soft);">Berekende CO₂-uitstoot pp:</span>
-            <strong style="color:#ff4d4d;" id="carbonTons">4.82 Ton</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(255,255,255,.06);padding-top:8px;margin-top:8px;">
-            <span style="font-size:13px;color:var(--text-soft);font-weight:600;">Vereiste Mangrovebomen:</span>
-            <strong style="color:#4ad66d;" id="carbonMangroves">24 Bomen</strong>
-          </div>
-        </div>
-        <h4 style="font-size:12px;text-transform:uppercase;color:var(--text-soft);margin-bottom:8px;font-weight:600;">Eco-compensatie Voortgang</h4>
-        <div class="carbon-bar-container"><div class="carbon-bar" id="carbonBar" style="width:25%;"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-soft);margin-bottom:15px;">
-          <span id="offsetProgressLabel">6 van de 24 bomen geplant</span>
-          <span>25% Gecompenseerd</span>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button class="preset-btn" onclick="offsetMangrove(2)" style="width:100%;display:flex;justify-content:space-between;align-items:center;">
-          <span>🌱 Plant 2 Mangroves in Noord-Sumatra</span><strong>Sponsor €10</strong>
-        </button>
-        <button class="preset-btn" onclick="offsetMangrove(5)" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:rgba(74,214,109,.1);border-color:rgba(74,214,109,.2);color:#4ad66d;">
-          <span>🌳 Plant 5 Bomen in Komodo National Park</span><strong>Sponsor €25</strong>
-        </button>
-      </div>
+    <section class="panel col-6">
+      <h2>🌱 CO₂-voetafdruk van je vluchten</h2>
+      <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px;">
+        Berekend uit de werkelijke vluchtafstanden van de geselecteerde reiziger.
+      </p>
+      <div id="carbonBox"></div>
     </section>
 
     <!-- ══════════════════════════════════════════════════
@@ -861,7 +800,7 @@
       <p style="font-size:13px;color:var(--text-soft);margin-bottom:15px;">Wissel van luchthaven om details te bekijken over layovers, wifi, terminals en het vermijden van taxi-scams.</p>
       <div class="airport-tabs">
         <button class="airport-tab-btn active" onclick="switchAirportTab('BRU',event)">BRU (Brussel)</button>
-        <button class="airport-tab-btn" onclick="switchAirportTab('BKK',event)">BKK (Bangkok)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('SUB',event)">SUB (Surabaya)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('SIN',event)">SIN (Singapore)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('KNO',event)">KNO (Medan)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('CGK',event)">CGK (Jakarta)</button>
@@ -881,297 +820,12 @@
 <script>
 
 
-/* ══════════════════════════════════════════════════════════
-   TRANSPORT LEGS — kern data voor kaart, blokweergave en tickets
-   ══════════════════════════════════════════════════════════ */
-const TRANSPORT_LEGS = [
-  {
-    id:"tl1", type:"int_vlucht", icon:"✈️",
-    date:"2026-08-28", dateD:"28", dateM:"aug",
-    fromIATA:"BRU", toIATA:"SIN",
-    fromLabel:"Brussel Airport", toLabel:"Singapore Changi",
-    title:"Brussel → Singapore (via Bangkok)",
-    sub:"Thai Airways · TG935 (BRU→BKK) + TG403 (BKK→SIN)",
-    operator:"Thai Airways", flightNum:"TG935 + TG403",
-    terminal:"Pier B, Gate B20 → Concourse D Gate D5",
-    times:"21:15 → 09:30+1", cost_id:"c1", ref:"RNHBT4",
-    fromPt:"bru", toPt:"singapore", qx:150, qy:45,
-    persons:["matthew","arne"]
-  },
-  {
-    id:"tl19", type:"int_vlucht", icon:"✈️",
-    date:"2026-08-29", dateD:"29", dateM:"aug",
-    fromIATA:"BRU", toIATA:"SIN",
-    fromLabel:"Brussel Airport", toLabel:"Singapore Changi",
-    title:"Brussel → Singapore (Eliott, Kamiel, Willem, Kasper)",
-    sub:"Diverse airlines · vlucht details TBD · ±12–14u",
-    operator:"Diverse airlines", flightNum:"—",
-    terminal:null,
-    times:"TBD", cost_id:null, ref:null,
-    fromPt:"bru", toPt:"singapore", qx:150, qy:45,
-    persons:["eliott","kamiel","willem","kasper"]
-  },
-  {
-    id:"tl2", type:"int_vlucht", icon:"✈️",
-    date:"2026-08-31", dateD:"31", dateM:"aug",
-    fromIATA:"SIN", toIATA:"KNO",
-    fromLabel:"Singapore Changi T2", toLabel:"Medan Kualanamu",
-    title:"Singapore → Medan",
-    sub:"Scoot · TR220 · ±1u 30m",
-    operator:"Scoot", flightNum:"TR220",
-    terminal:"Terminal 2, Gate F38",
-    times:"08:15 → 09:45", cost_id:"c2", ref:"SC7F4X",
-    fromPt:"singapore", toPt:"medan", qx:220, qy:68,
-    persons:["matthew","arne"]
-  },
-  {
-    id:"tl20", type:"bin_vlucht", icon:"✈️",
-    date:"2026-09-01", dateD:"01", dateM:"sep",
-    fromIATA:"CGK", toIATA:"KNO",
-    fromLabel:"Jakarta Soekarno-Hatta", toLabel:"Medan Kualanamu",
-    title:"Jakarta → Medan",
-    sub:"Lion Air · JT204 · ±2u 15m",
-    operator:"Lion Air", flightNum:"JT204",
-    terminal:"Terminal 2D, Gate 7",
-    times:"08:05 → 10:20", cost_id:"c6", ref:"JTJK9A",
-    fromPt:"jakarta", toPt:"medan", qx:250, qy:130,
-    persons:["eliott","kamiel","willem","kasper"]
-  },
-  {
-    id:"tl3", type:"bus_auto", icon:"🚌",
-    date:"2026-09-01", dateD:"01", dateM:"sep",
-    fromIATA:"MED", toIATA:"KTB",
-    fromLabel:"Medan Kualanamu", toLabel:"Ketambe Guesthouse",
-    title:"Medan → Ketambe (privé minibus)",
-    sub:"Lokaal vervoer · ±7–8u rit door Sumatra",
-    operator:"Privé minibus", flightNum:null,
-    terminal:null, times:"07:00 → ±15:00", cost_id:"c3", ref:"MVK-0901",
-    fromPt:"medan", toPt:"ketambe", qx:null, qy:null,
-    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
-  },
-  {
-    id:"tl4", type:"bus_auto", icon:"🚌",
-    date:"2026-09-07", dateD:"07", dateM:"sep",
-    fromIATA:"KTB", toIATA:"MED",
-    fromLabel:"Ketambe", toLabel:"Medan Kualanamu",
-    title:"Ketambe → Medan (taxi retour)",
-    sub:"Privé taxi · ±7–8u",
-    operator:"Lokale chauffeur", flightNum:null,
-    terminal:null, times:"06:00 → ±14:00", cost_id:"c5", ref:"MVK-0907R",
-    fromPt:"ketambe", toPt:"medan", qx:null, qy:null,
-    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
-  },
-  {
-    id:"tl5", type:"bin_vlucht", icon:"✈️",
-    date:"2026-09-07", dateD:"07", dateM:"sep",
-    fromIATA:"KNO", toIATA:"CGK",
-    fromLabel:"Medan Kualanamu", toLabel:"Jakarta Soekarno-Hatta",
-    title:"Medan → Jakarta",
-    sub:"Lion Air · JT383 · ±2u 25m",
-    operator:"Lion Air", flightNum:"JT383",
-    terminal:"Terminal 2D, Gate 3",
-    times:"19:00 → 21:25", cost_id:"c6", ref:"JT383R",
-    fromPt:"medan", toPt:"jakarta", qx:250, qy:130,
-    persons:["matthew","arne","eliott","kamiel","willem","kasper"]
-  },
-  {
-    id:"tl6", type:"trein", icon:"🚂",
-    date:"2026-09-09", dateD:"09", dateM:"sep",
-    fromIATA:"JKT", toIATA:"YOG",
-    fromLabel:"Jakarta Gambir", toLabel:"Yogyakarta Tugu",
-    title:"Jakarta → Yogyakarta (Argo Bromo Anggrek)",
-    sub:"KAI · Argo Bromo Anggrek · ±8u",
-    operator:"KAI (Kereta Api Indonesia)", flightNum:"Argo Bromo Anggrek",
-    terminal:"Spoor 5, Gambir Station",
-    times:"06:00 → 14:00", cost_id:"c7", ref:"KAI-AG0909",
-    fromPt:"jakarta", toPt:"yogya", qx:null, qy:null,
-    persons:["matthew","arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
-  },
-  {
-    id:"tl7", type:"trein", icon:"🚂",
-    date:"2026-09-10", dateD:"10", dateM:"sep",
-    fromIATA:"YOG", toIATA:"MLG",
-    fromLabel:"Yogyakarta Tugu", toLabel:"Malang Kotalama",
-    title:"Yogyakarta → Malang (nachttrein)",
-    sub:"KAI · Malioboro Express · ±7u 's nachts",
-    operator:"KAI", flightNum:"Malioboro Express",
-    terminal:"Spoor 2, Yogyakarta Tugu",
-    times:"21:30 → 04:30+1", cost_id:"c8", ref:"KAI-ML1009",
-    fromPt:"yogya", toPt:"malang", qx:null, qy:null,
-    persons:["matthew","arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
-  },
-  {
-    id:"tl8", type:"bus_auto", icon:"🚖",
-    date:"2026-09-11", dateD:"11", dateM:"sep",
-    fromIATA:"MLG", toIATA:"SUB",
-    fromLabel:"Malang", toLabel:"Surabaya",
-    title:"Malang → Surabaya (taxi, Matthew apart)",
-    sub:"Lokale taxi · ±2u · Matthew splitst af van de groep",
-    operator:"Lokale taxi", flightNum:null,
-    terminal:null, times:"Ochtend", cost_id:null, ref:null,
-    fromPt:"malang", toPt:"surabaya", qx:null, qy:null,
-    persons:["matthew"],
-    note:"De overige jongens gaan door naar Tumpak Sewu & Bromo."
-  },
-  {
-    id:"tl9", type:"bus_auto", icon:"🚐",
-    date:"2026-09-16", dateD:"16", dateM:"sep",
-    fromIATA:"SUB", toIATA:"BWX",
-    fromLabel:"Surabaya", toLabel:"Bromo / Banyuwangi",
-    title:"Surabaya → Bromo + Banyuwangi (jeep-tour)",
-    sub:"Jeep-tour organisatie · Dag-trip met Hinke",
-    operator:"Jeep-tour", flightNum:null,
-    terminal:null, times:"Vroeg ochtend", cost_id:"c21", ref:"JEP-1609",
-    fromPt:"surabaya", toPt:"banyuwangi", qx:null, qy:null,
-    persons:["matthew","hinke"]
-  },
-  {
-    id:"tl10", type:"bin_vlucht", icon:"✈️",
-    date:"2026-09-18", dateD:"18", dateM:"sep",
-    fromIATA:"SUB", toIATA:"LBJ",
-    fromLabel:"Surabaya/Banyuwangi → Denpasar", toLabel:"Labuan Bajo Komodo",
-    title:"Java → Denpasar → Labuan Bajo",
-    sub:"Garuda / Wings Air · GA402 (via DPS) · TBD",
-    operator:"Garuda Indonesia / Wings Air", flightNum:"GA402",
-    terminal:"Terminal 1, Gate 5",
-    times:"TBD", cost_id:"c11", ref:"TBD",
-    fromPt:"banyuwangi", toPt:"labuanbajo", qx:720, qy:302,
-    persons:["matthew","hinke"]
-  },
-  {
-    id:"tl11", type:"bus_auto", icon:"🚗",
-    date:"2026-09-21", dateD:"21", dateM:"sep",
-    fromIATA:"LBJ", toIATA:"RTG",
-    fromLabel:"Labuan Bajo", toLabel:"Ruteng",
-    title:"Labuan Bajo → Ruteng (bergrit ±3u)",
-    sub:"Privé wagen · slingerende bergwegen van Flores",
-    operator:"Lokaal vervoer", flightNum:null,
-    terminal:null, times:"Vroeg vertrek", cost_id:null, ref:null,
-    fromPt:"labuanbajo", toPt:"ruteng", qx:null, qy:null,
-    persons:["matthew","hinke"]
-  },
-  {
-    id:"tl12", type:"bus_auto", icon:"🚗",
-    date:"2026-09-23", dateD:"23", dateM:"sep",
-    fromIATA:"RTG", toIATA:"LBJ",
-    fromLabel:"Ruteng", toLabel:"Labuan Bajo",
-    title:"Ruteng → Labuan Bajo (terugrit ±3u)",
-    sub:"Privé wagen · retour voor Komodo boottour",
-    operator:"Lokaal vervoer", flightNum:null,
-    terminal:null, times:"Ochtend", cost_id:null, ref:null,
-    fromPt:"ruteng", toPt:"labuanbajo", qx:null, qy:null,
-    persons:["matthew","hinke"]
-  },
-  {
-    id:"tl13", type:"bin_vlucht", icon:"✈️",
-    date:"2026-09-26", dateD:"26", dateM:"sep",
-    fromIATA:"LBJ", toIATA:"DPS",
-    fromLabel:"Labuan Bajo Komodo", toLabel:"Bali Denpasar",
-    title:"Labuan Bajo → Bali",
-    sub:"Indonesia AirAsia / Wings Air · QZ503 · ±1u",
-    operator:"AirAsia Indonesia", flightNum:"QZ503",
-    terminal:"Gate 2 (platformloopbrug)",
-    times:"TBD", cost_id:"c15", ref:"TBD",
-    fromPt:"labuanbajo", toPt:"bali", qx:730, qy:318,
-    persons:["matthew","hinke"]
-  },
-  {
-    id:"tl14", type:"int_vlucht", icon:"✈️",
-    date:"2026-09-29", dateD:"29", dateM:"sep",
-    fromIATA:"DPS", toIATA:"BRU",
-    fromLabel:"Bali Denpasar", toLabel:"Brussel (via Doha)",
-    title:"Bali → Brussel (terugvlucht via Doha)",
-    sub:"Qatar Airways · QR959 (DPS→DOH) + aansluiting →BRU",
-    operator:"Qatar Airways", flightNum:"QR959",
-    terminal:"International Pier, Gate 15",
-    times:"TBD", cost_id:"c17", ref:"TBD",
-    fromPt:"bali", toPt:"bru", qx:350, qy:55,
-    persons:["matthew","hinke"]
-  },
-  /* ── Jongens-specifieke trajecten ── */
-  {
-    id:"tl15", type:"bus_auto", icon:"🚌",
-    date:"2026-09-11", dateD:"11", dateM:"sep",
-    fromIATA:"MLG", toIATA:"BRM",
-    fromLabel:"Malang", toLabel:"Tumpak Sewu + Bromo",
-    title:"Malang → Tumpak Sewu → Bromo (jongens)",
-    sub:"Jeep + lokaal transport · volledige dag",
-    operator:"Lokaal vervoer", flightNum:null,
-    terminal:null, times:"03:00 vertrek", cost_id:null, ref:null,
-    fromPt:"malang", toPt:"banyuwangi", qx:null, qy:null,
-    persons:["arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
-  },
-  {
-    id:"tl16", type:"bus_auto", icon:" Ferry icon",
-    date:"2026-09-13", dateD:"13", dateM:"sep",
-    fromIATA:"BWX", toIATA:"DPS",
-    fromLabel:"Banyuwangi (Ketapang)", toLabel:"Bali Gilimanuk → Kuta",
-    title:"Banyuwangi → Bali (ferry + bus, alle jongens)",
-    sub:"Ferry Ketapang→Gilimanuk + bus naar Bali centrum",
-    operator:"ASDP Ferry + Bus", flightNum:null,
-    terminal:null, times:"Middag", cost_id:null, ref:null,
-    fromPt:"banyuwangi", toPt:"bali", qx:null, qy:null,
-    persons:["arne","eliott","kamiel","willem","kasper","jens","maurice","mathias"]
-  },
-  {
-    id:"tl18", type:"int_vlucht", icon:"✈️",
-    date:"2026-09-20", dateD:"20", dateM:"sep",
-    fromIATA:"DPS", toIATA:"BRU",
-    fromLabel:"Bali Denpasar", toLabel:"Brussel (thuis)",
-    title:"Bali → Brussel (terugvlucht)",
-    sub:"Diverse airlines · na week Bali",
-    operator:"Diverse airlines", flightNum:"—",
-    terminal:null, times:"TBD", cost_id:null, ref:null,
-    fromPt:"bali", toPt:"bru", qx:350, qy:55,
-    persons:["arne","eliott","jens","kamiel","kasper"]
-  },
-  {
-    id:"tl21", type:"int_vlucht", icon:"✈️",
-    date:"2026-09-20", dateD:"20", dateM:"sep",
-    fromIATA:"DPS", toIATA:"SGN",
-    fromLabel:"Bali Denpasar", toLabel:"Vietnam (Saigon)",
-    title:"Bali → Vietnam (verlenging Momo, Mathias & Willem)",
-    sub:"Diverse airlines · doorreis naar Vietnam",
-    operator:"Diverse airlines", flightNum:"—",
-    terminal:null, times:"TBD", cost_id:null, ref:null,
-    fromPt:"bali", toPt:"bru", qx:350, qy:55,
-    persons:["maurice","mathias","willem"]
-  },
-  {
-    id:"tl22", type:"int_vlucht", icon:"✈️",
-    date:"2026-09-07", dateD:"07", dateM:"sep",
-    fromIATA:"BRU", toIATA:"CGK",
-    fromLabel:"Brussel Airport", toLabel:"Jakarta Soekarno-Hatta (via SIN)",
-    title:"Brussel → Singapore → Jakarta (Maurice, Mathias, Jens)",
-    sub:"Singapore Airlines · SQ303 (BRU→SIN) + SQ952 (SIN→CGK)",
-    operator:"Singapore Airlines", flightNum:"SQ303 + SQ952",
-    terminal:"Pier B → Changi T2",
-    times:"11:45 (07/09) → 08:25 (08/09)", cost_id:null, ref:"FSXOOZ",
-    fromPt:"bru", toPt:"jakarta", qx:150, qy:45,
-    persons:["jens","maurice","mathias"]
-  }
-];
-
-/* ══════════════════════════════════════════════════════════
-   BESTAANDE DATA (flight scraper / baggage / airports)
-   ══════════════════════════════════════════════════════════ */
-const FLIGHT_DB = {
-  TG935:{flight:"TG935",airline:"Thai Airways",aircraft:"Boeing 777-300ER (HS-TKK)",altitude:"36,000 ft",speed:"905 km/h",duration:"11u 15m",route:"BRU (Brussel Airport) → BKK (Suvarnabhumi Airport)",gate:"Pier B, Gate B20",baggage:"Baggage Hall 3, Band 4",risk:"Laag (2.5%)",status:"Scheduled",blipPos:{top:60,left:120}},
-  TG403:{flight:"TG403",airline:"Thai Airways",aircraft:"Airbus A350-900 (HS-THC)",altitude:"38,000 ft",speed:"840 km/h",duration:"2u 25m",route:"BKK (Suvarnabhumi Airport) → SIN (Singapore Changi)",gate:"Concourse D, Gate D5",baggage:"Terminal 1, Belt 18",risk:"Gemiddeld (12.4%)",status:"Scheduled",blipPos:{top:120,left:240}},
-  TR220:{flight:"TR220",airline:"Scoot",aircraft:"Airbus A320-neo (9V-TNC)",altitude:"28,000 ft",speed:"710 km/h",duration:"1u 30m",route:"SIN (Singapore Changi) → KNO (Medan Kualanamu)",gate:"Terminal 2, Gate F38",baggage:"Main Hall, Belt 2",risk:"Laag (1.8%)",status:"Scheduled",blipPos:{top:80,left:160}},
-  JT204:{flight:"JT204",airline:"Lion Air",aircraft:"Boeing 737-900ER (PK-LGO)",altitude:"36,000 ft",speed:"820 km/h",duration:"2u 15m",route:"CGK (Jakarta Soekarno-Hatta) → KNO (Medan Kualanamu)",gate:"Terminal 2D, Gate 7",baggage:"Main Arrival Hall, Belt 2",risk:"Gemiddeld (5.8%)",status:"Scheduled",blipPos:{top:130,left:320}},
-  JT383:{flight:"JT383",airline:"Lion Air",aircraft:"Boeing 737-900ER (PK-LGP)",altitude:"35,000 ft",speed:"810 km/h",duration:"2u 25m",route:"KNO (Medan Kualanamu) → CGK (Jakarta Soekarno-Hatta)",gate:"Terminal 2D, Gate 3",baggage:"Terminal 2D, Band 4",risk:"Gemiddeld (6.2%)",status:"Scheduled",blipPos:{top:150,left:380}},
-  GA402:{flight:"GA402",airline:"Garuda Indonesia",aircraft:"Boeing 737-800 (PK-GFM)",altitude:"34,000 ft",speed:"810 km/h",duration:"1u 45m",route:"SUB (Surabaya Juanda) → LBJ (Labuan Bajo Komodo)",gate:"Terminal 1, Gate 5",baggage:"Arrival Hall, Belt A",risk:"Zeer Laag (0.5%)",status:"Scheduled",blipPos:{top:165,left:550}},
-  QZ503:{flight:"QZ503",airline:"Indonesia AirAsia",aircraft:"Airbus A320-200 (PK-AXV)",altitude:"24,000 ft",speed:"680 km/h",duration:"1u 10m",route:"LBJ (Labuan Bajo Komodo) → DPS (Bali Denpasar)",gate:"Gate 2 (Platformloopbrug)",baggage:"Domestic Arrivals, Belt 1",risk:"Gemiddeld (14.2%)",status:"Scheduled",blipPos:{top:172,left:630}},
-  QR959:{flight:"QR959",airline:"Qatar Airways",aircraft:"Boeing 777-300ER (A7-BEP)",altitude:"33,000 ft",speed:"890 km/h",duration:"9u 35m",route:"DPS (Bali Denpasar) → DOH (Hamad Airport Qatar)",gate:"International Pier, Gate 15",baggage:"N/A - Transit",risk:"Laag (4.1%)",status:"Scheduled",blipPos:{top:180,left:660}},
-  SQ303:{flight:"SQ303",airline:"Singapore Airlines",aircraft:"Airbus A350-900",altitude:"38,000 ft",speed:"905 km/h",duration:"12u 55m",route:"BRU (Brussel Airport) → SIN (Singapore Changi)",gate:"Pier B",baggage:"Terminal 2",risk:"Zeer Laag (0.5%)",status:"Scheduled",blipPos:{top:60,left:120}},
-  SQ952:{flight:"SQ952",airline:"Singapore Airlines",aircraft:"Airbus A350-900",altitude:"37,000 ft",speed:"860 km/h",duration:"1u 45m",route:"SIN (Singapore Changi T2) → CGK (Jakarta Soekarno-Hatta T3)",gate:"Terminal 2",baggage:"Terminal 3 Arrival Hall",risk:"Zeer Laag (0.6%)",status:"Scheduled",blipPos:{top:120,left:240}}
-};
+/* TRANSPORT_LEGS en FLIGHT_DB komen uit data.js (single source of truth) */
 
 const AIRPORTS_DB = {
-  BRU:{title:"Brussels Airport (Zaventem)",layover:"N/A — Vertrekpunt van de reis.",wifi:"🆓 Free Unlimited Wi-Fi ('Airport_Free_Wifi')",tips:"Prachtige Belgische bierbarren in de A & B terminals. Minstens 3 uur van tevoren aanwezig zijn voor internationale check-in naar Bangkok.",taxis:"N/A — Vertrek vanuit België."},
-  BKK:{title:"Suvarnabhumi Airport (Bangkok)",layover:"Korte transit (2u 25m) voor Matthew & Arne richting Singapore.",wifi:"🆓 Free 2 uur via registratie ('@AirportTrueFreeWiFi')",tips:"Drukke transit corridors. Volg direct de borden 'International Transfer'. Geen schoenen uittrekken — dit is geen Europese security, maar de loopafstanden zijn enorm.",taxis:"N/A — Alleen transit. Geen uitgang nodig."},
-  SIN:{title:"Changi Airport (Singapore)",layover:"Eerste verblijfplaats (2 nachten). 's Werelds beste luchthaven.",wifi:"#WiFi@Changi (Extreem snel, geen registratie)",tips:"Bezoek zeker 'The Jewel Changi' voor de indoor waterval (RAIN VORTEX). Terminal 1 t/m 4 zijn verbonden met de gratis Skytrain. Er is een bioscoopzaal, zwembad (T1) en tal van foodcourts.",taxis:"🚕 Grab of BlueSG zijn super efficiënt. Volg borden naar 'Ride-hailing pickup point'. Nooit naar 'random' taxichauffeurs in de hal gaan."},
+  BRU:{title:"Brussels Airport (Zaventem)",layover:"N/A — Vertrekpunt van de reis.",wifi:"🆓 Free Unlimited Wi-Fi ('Airport_Free_Wifi')",tips:"Prachtige Belgische bierbarren in de A & B terminals. Minstens 3 uur op voorhand aanwezig zijn voor de internationale check-in bij Singapore Airlines (SQ303, Pier B).",taxis:"N/A — Vertrek vanuit België."},
+  SUB:{title:"Juanda International Airport (Surabaya, Oost-Java)",layover:"Aankomstpunt van Hinke (14/09, 08:00). Matthew wacht hier vanaf 11/09. Vertrekpunt richting Labuan Bajo op 18/09.",wifi:"🆓 Gratis airport Wi-Fi in beide terminals.",tips:"Twee terminals: T1 (binnenlands, o.a. Garuda naar Labuan Bajo) en T2 (internationaal, waar Hinke aankomt). Er rijdt een shuttlebus tussen T1 en T2 — reken 20–30 min. Haal hier een lokale SIM als je er nog geen hebt.",taxis:"🚕 Grab en Gojek werken goed in Surabaya. Officiele taxistand bij aankomst; Bluebird is betrouwbaar met meter. Naar het centrum ±30–45 min."},
+  SIN:{title:"Changi Airport (Singapore)",layover:"Overstapluchthaven voor iedereen. Matthew & Arne hebben maar 50 min (SQ303→SQ990) — meteen doorlopen. De anderen hebben 2u25 (SQ303→SQ956), Maurice/Mathias/Jens 1u (SQ303→SQ952).",wifi:"#WiFi@Changi (Extreem snel, geen registratie)",tips:"Alleen met een ruime overstap: 'The Jewel Changi' met de indoor waterval (RAIN VORTEX) ligt landside — bij 50 min overstap niet doen. Terminal 1 t/m 4 zijn verbonden met de gratis Skytrain. Er is een bioscoopzaal, zwembad (T1) en tal van foodcourts.",taxis:"🚕 Grab of BlueSG zijn super efficiënt. Volg borden naar 'Ride-hailing pickup point'. Nooit naar 'random' taxichauffeurs in de hal gaan."},
   KNO:{title:"Kualanamu International Airport (Medan, Sumatra)",layover:"Aankomst voor de Sumatra jungle-etappe.",wifi:"🆓 Gratis airport Wi-Fi (Soms onstabiel)",tips:"Direct na bagageclaim geld wisselen of pinnen! Weinig ATM's in Ketambe. Koop direct een Telkomsel SIM-kaart bij de officiële stand. Ketambe heeft amper bereik, maar het aansluitende Blangkejeren wel.",taxis:"🚨 NOOIT onofficiële taxi's in de hal. Neem officiële Bluebird Taxi of boek Grab. De trein (Railink) naar Medan-stad is ook een goede optie."},
   CGK:{title:"Soekarno-Hatta International Airport (Jakarta)",layover:"Samenkomst met de Java-groep. Terminal 3 is nieuwste en meest modern.",wifi:"🆓 Gratis airport WiFi in alle terminals.",tips:"Jakarta heeft 3 grote terminals. Terminal 3 = meest modern. Er vaart een gratis SkyTrain tussen de terminals. Beruchte files buiten de luchthaven — reken ruim de tijd.",taxis:"🚕 Kies Bluebird of Silverbird (Mercedes). Betrouwbaar, met meter. Grab/Gojek hebben eigen lounges voor pick-up — NOOIT met niet-officiële chauffeurs meegaan."},
   DPS:{title:"Ngurah Rai International Airport (Denpasar, Bali)",layover:"Aankomst voor de Bali villa chill-fase.",wifi:"🆓 Free airport Wi-Fi ('@NgurahRaiAirport')",tips:"Bij aankomst extreem chaotisch met taxi's die je proberen aan te klampen. Blijf rustig, loop door en zoek de Grab Lounge buiten.",taxis:"🚨 Loop DIRECT naar de officiële Grab Lounge (buiten bij parkeergarage) of regel vooraf een transfer via hotel. Lokale luchthavenaxi's zonder meter rekenen woekerprijzen!"},
@@ -1199,8 +853,7 @@ const AIRPORT_OFFSETS = {
   DPS: 8, // UTC+8 (WITA)
   LBJ: 8, // UTC+8 (WITA)
   SUB: 7, // UTC+7 (WIB)
-  BKK: 7, // UTC+7 (ICT)
-  DOH: 3  // UTC+3 (AST)
+  SGN: 7  // UTC+7 (ICT, Vietnam — doorreis Momo/Mathias/Willem)
 };
 
 function formatBelgianTimes(leg) {
@@ -1338,53 +991,48 @@ function costLabel(cost_id){
 }
 
 /* ══════════════════════════════════════════════════════════
+   VERTREKOVERZICHT — afgeleid uit TRANSPORT_LEGS (data.js)
+   ══════════════════════════════════════════════════════════ */
+function renderDepartureOverview(){
+  const el=document.getElementById("departureGrid");
+  if(!el)return;
+
+  // Alle heenreis-legs die in Brussel vertrekken, gegroepeerd per leg
+  const outbound=TRANSPORT_LEGS
+    .filter(l=>l.fromIATA==="BRU")
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  const activePerson=ls_get("selected_person","matthew");
+
+  el.innerHTML=outbound.map(leg=>{
+    const names=leg.persons.map(k=>PERSONS[k].name).join(", ");
+    const isMine=leg.persons.includes(activePerson);
+    const accent=PERSONS[leg.persons[0]].color;
+    const dt=new Date(leg.date+"T00:00:00");
+    const dayName=dt.toLocaleDateString("nl-BE",{weekday:"long"});
+    const dateLabel=`${dayName} ${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`;
+    const sched=getVertrekAankomst(leg);
+    const isTBD=!leg.flightNum||leg.flightNum==="—";
+    const cost=costLabel(leg.cost_id);
+
+    return `<div class="departure-card${isMine?" is-mine":""}" style="--accent:${accent}">
+      <div class="dep-who">${leg.persons.length>1?"👥":"👤"} ${names}</div>
+      <div class="dep-date">📅 ${dateLabel}</div>
+      ${isTBD
+        ? `<div class="dep-tbd"><span class="tbd-chip">TBD</span> Vluchtdetails nog niet bevestigd</div>`
+        : `<div class="dep-row"><span class="dep-k">Vlucht</span><span class="dep-v">${leg.flightNum} · ${leg.operator}</span></div>`}
+      <div class="dep-row"><span class="dep-k">Route</span><span class="dep-v">${leg.fromIATA} → ${leg.toIATA}</span></div>
+      <div class="dep-row"><span class="dep-k">Vertrek</span><span class="dep-v">${sched.depLocal}${sched.depBE?` <em>(${sched.depBE} BE)</em>`:""}</span></div>
+      <div class="dep-row"><span class="dep-k">Aankomst</span><span class="dep-v dep-arr">${sched.arrLocal}${sched.arrBE?` <em>(${sched.arrBE} BE)</em>`:""}</span></div>
+      ${cost?`<div class="dep-row"><span class="dep-k">Kosten pp</span><span class="dep-v ${cost==="TBD"?"is-tbd":""}">${cost}</span></div>`:""}
+      ${leg.ref?`<div class="dep-ref">Ref. ${leg.ref}</div>`:""}
+    </div>`;
+  }).join("");
+}
+
+/* ══════════════════════════════════════════════════════════
    PERSON SELECTOR
    ══════════════════════════════════════════════════════════ */
-function renderPersonSelector(){
-  const el=document.getElementById("personSelector");
-  if(!el)return;
-  const active=ls_get("selected_person","matthew");
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-
-  let html = `
-    <div class="person-selector-header" onclick="togglePersonSelector()" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; width:100%;">
-      <span class="person-selector-label" style="margin-bottom:0;">Bekijk weergave van: <strong style="color:var(--teal); text-transform:none; font-size:12px; margin-left:6px;">${PERSONS[active].name}</strong></span>
-      <span class="person-selector-toggle-arrow" style="font-size:10px; color:var(--text-soft); transition: transform 0.2s ease; ${isCollapsed ? 'transform:rotate(-90deg);' : ''}">▼</span>
-    </div>
-  `;
-
-  html += `<div class="person-grid" style="${isCollapsed ? 'display:none;' : ''}">`;
-  html+=PERSON_ORDER.map(key=>{
-    const p=PERSONS[key];
-    const isA=key===active;
-    return `<button class="person-card ${isA?"active":""}" onclick="selectPerson('${key}')">
-      <div class="person-card-avatar" style="border-color:${p.color}">
-        <span class="avatar-initials" style="color:${p.color}">${p.name.substring(0,2)}</span>
-      </div>
-      <span class="person-card-name">${p.name}</span>
-    </button>`;
-  }).join("");
-  html+=`</div>`;
-  el.innerHTML=html;
-}
-
-function togglePersonSelector() {
-  const isCollapsed = ls_get("person_selector_collapsed", false);
-  ls_set("person_selector_collapsed", !isCollapsed);
-  renderPersonSelector();
-}
-
-function selectPerson(key){
-  ls_set("selected_person",key);
-  renderPersonSelector();
-  renderTickets();
-  renderTransportMap();
-  renderBlockView();
-  // Sync baggage tag dropdown
-  const bp=document.getElementById("baggagePerson");
-  if(bp){ bp.value=key; updateBaggageTag(); }
-}
-
 /* ══════════════════════════════════════════════════════════
    TICKETS & BOARDING PASSES
    ══════════════════════════════════════════════════════════ */
@@ -1577,8 +1225,8 @@ function renderLegTooltip(tooltip, leg, cx, cy){
    ══════════════════════════════════════════════════════════ */
 function getLegDuration(leg) {
   if (leg.duration) return leg.duration;
-  if (leg.id === "tl1") return "16u 15m";
-  if (leg.id === "tl19") return "12–14u";
+  if (leg.id === "tl1") return "15u 15m";
+  if (leg.id === "tl19") return "17u 10m";
   if (leg.id === "tl11" || leg.id === "tl12") return "3u";
   if (leg.id === "tl15") return "12u";
   if (leg.id === "tl16") return "6–8u";
@@ -1789,7 +1437,7 @@ function setFlightSearch(fn){document.getElementById("flightInput").value=fn;}
 
 function selectFlightFromBlock(flightNum) {
   if (!flightNum || flightNum === "—") return;
-  // If multiple flights like "TG935 + TG403", take the first one or clean it up
+  // Bij "SQ303 + SQ990" het eerste segment nemen
   let parts = flightNum.split('+');
   let cleanFn = parts[0].trim().toUpperCase().replace(/\s/g,"");
   setFlightSearch(cleanFn);
@@ -1813,11 +1461,10 @@ function simulateScraper(){
   result.style.display="none";
   if(!fn){logs.innerHTML=`<div class="console-line">[Fout] Geen vluchtnummer opgegeven.</div>`;return;}
   const steps=[
-    `[info] Initialiseren van ADS-B transponder dataverzoek...`,
-    `[info] Zoeken naar transpondersignalen in actieve corridors...`,
-    `[info] Verbinding maken met FlightAware API & FlightRadar24...`,
-    `[info] Ontvangen ruwe hex-data via ADS-B ground station (1090 MHz)...`
+    `[info] Vluchtnummer opzoeken in de reisplanning...`,
+    `[info] Toestel, duur en terminalgegevens ophalen...`
   ];
+
   let i=0;
   function logNext(){
     if(i<steps.length){
@@ -1828,11 +1475,11 @@ function simulateScraper(){
     } else {
       const data=FLIGHT_DB[fn];
       if(data){
-        logs.innerHTML+=`<div class="console-line success">[Succes] Vlucht ${fn} gevonden! Decoderen telemetrie...</div>`;
+        logs.innerHTML+=`<div class="console-line success">[Gevonden] ${fn} staat in de reisplanning.</div>`;
         setTimeout(()=>showScrapedData(data),300);
       } else {
-        logs.innerHTML+=`<div class="console-line">[Fout] ${fn} niet gevonden. Genereren proxy-data...</div>`;
-        setTimeout(()=>showScrapedData({flight:fn,airline:"Indonesisch proxy charter",aircraft:"Boeing 737-800",altitude:"31,000 ft",speed:"790 km/h",duration:"1u 45m",route:"Binnenlandse corridor",gate:"Terminal 2, Gate C12",baggage:"Carousel 4",risk:"Laag (5.0%)",status:"En Route",blipPos:{top:100,left:200}}),400);
+        logs.innerHTML+=`<div class="console-line">[Niet gevonden] ${fn} zit niet in deze reis.</div>`;
+        setTimeout(()=>showScrapedData({flight:fn,airline:"Indonesisch proxy charter",aircraft:"Boeing 737-800",altitude:"31,000 ft",speed:"790 km/h",duration:"1u 45m",route:"Binnenlandse corridor",gate:"Terminal 2, Gate C12",baggage:"Carousel 4",risk:"Laag (5.0%)",status:"Gepland",blipPos:{top:100,left:200}}),400);
       }
     }
   }
@@ -1840,7 +1487,7 @@ function simulateScraper(){
 }
 
 function showScrapedData(data){
-  document.getElementById("resFlightName").textContent=`${data.flight} Live Status`;
+  document.getElementById("resFlightName").textContent=`${data.flight} — details`;
   document.getElementById("resFlightStatus").textContent=data.status||"En Route";
   document.getElementById("resAirline").textContent=data.airline;
   document.getElementById("resAircraft").textContent=data.aircraft;
@@ -1849,7 +1496,6 @@ function showScrapedData(data){
   document.getElementById("resGate").textContent=data.gate;
   document.getElementById("resBaggage").textContent=data.baggage;
   document.getElementById("resRoute").textContent=data.route;
-  document.getElementById("resDelayRisk").textContent=data.risk;
   const blip=document.getElementById("radarBlip");
   if(data.blipPos){blip.style.top=`${data.blipPos.top}px`;blip.style.left=`${data.blipPos.left}px`;}
   document.getElementById("liveHexLog").textContent=`MSG4 ID:${data.flight} ALTI:${data.altitude.replace(/[^0-9]/g,"")} SPD:${data.speed.replace(/[^0-9]/g,"")} GAT:${data.gate.substring(0,8)}`;
@@ -1864,7 +1510,9 @@ function updateBaggageTag(){
   const flightNum=document.getElementById("baggageFlight").value;
   const bl=BAGGAGE_LIMITS[personKey];
   const flight=FLIGHT_DB[flightNum];
-  const isDomestic=flightNum!=="TG935"&&flightNum!=="QR959";
+  // Internationaal = een segment dat Indonesie binnenkomt of verlaat
+  const INTL=["SQ303","SQ304","SQ990","SQ956","SQ952","SQ930","SQ963"];
+  const isDomestic=!INTL.includes(flightNum);
   const weightLimit=isDomestic?bl.allowances.domestic:bl.allowances.international;
   document.getElementById("tagAirlineCode").textContent=`${flightNum.substring(0,2)} - ${flight.airline.toUpperCase()}`;
   document.getElementById("tagPassenger").textContent=bl.name;
@@ -1876,16 +1524,77 @@ function updateBaggageTag(){
 }
 
 /* ══════════════════════════════════════════════════════════
-   CARBON CALCULATOR (bestaand)
+   CO₂-BEREKENING
+   Emissiefactoren: DEFRA/BEIS 2023, economy class, inclusief een
+   radiative-forcing-factor van 1.9 voor effecten op hoogte.
+   Korte vlucht (<3700 km) stoot per km meer uit door start en landing.
    ══════════════════════════════════════════════════════════ */
-let currentPlanted=6;
-const targetMangroves=24;
-function offsetMangrove(count){
-  currentPlanted=Math.min(currentPlanted+count,targetMangroves);
-  const pct=Math.round((currentPlanted/targetMangroves)*100);
-  document.getElementById("carbonBar").style.width=`${pct}%`;
-  document.getElementById("offsetProgressLabel").textContent=`${currentPlanted} van de ${targetMangroves} bomen geplant`;
-  alert(`🌳 Bedankt! Je hebt ${count} extra eco-bomen toegezegd. Compensatie staat nu op ${pct}%.`);
+const CO2_KORT_KG_PER_KM = 0.246;
+const CO2_LANG_KG_PER_KM = 0.148;
+const CO2_RFI = 1.9;
+const CO2_PER_MANGROVE_KG = 250; // vastlegging over ~20 jaar per boom
+
+function renderCarbon(){
+  const box=document.getElementById("carbonBox");
+  if(!box)return;
+  const personKey=getSelectedPerson();
+
+  // Alleen echte vluchtetappes; een leg met tussenstop telt via beide punten
+  const flights=TRANSPORT_LEGS.filter(l =>
+    l.persons.includes(personKey) &&
+    (l.type==="int_vlucht"||l.type==="bin_vlucht") &&
+    l.fromPt && l.toPt
+  );
+
+  let totaalKm=0, totaalKg=0;
+  const rows=flights.map(l=>{
+    const km=geoDistanceKm(l.fromPt,l.toPt);
+    const factor=km<3700?CO2_KORT_KG_PER_KM:CO2_LANG_KG_PER_KM;
+    const kg=km*factor*CO2_RFI;
+    totaalKm+=km; totaalKg+=kg;
+    return `<div class="carbon-row">
+      <span class="carbon-route">${l.fromIATA} → ${l.toIATA}</span>
+      <span class="carbon-km">${Math.round(km).toLocaleString("nl-BE")} km</span>
+      <span class="carbon-kg">${(kg/1000).toFixed(2)} t</span>
+    </div>`;
+  }).join("");
+
+  if(flights.length===0){
+    box.innerHTML=`<p style="font-size:13px;color:var(--text-soft);">Geen vluchten bekend voor ${PERSONS[personKey].name}.</p>`;
+    return;
+  }
+
+  const ton=totaalKg/1000;
+  const bomen=Math.ceil(totaalKg/CO2_PER_MANGROVE_KG);
+  // Gemiddelde Belg: ~9,4 t CO2e per jaar (Eurostat/EEA)
+  const pctJaar=Math.round((ton/9.4)*100);
+
+  box.innerHTML=`
+    <div class="carbon-summary">
+      <div class="carbon-stat">
+        <span class="carbon-stat-label">Vluchtkilometers</span>
+        <span class="carbon-stat-value">${Math.round(totaalKm).toLocaleString("nl-BE")} km</span>
+      </div>
+      <div class="carbon-stat">
+        <span class="carbon-stat-label">CO₂-uitstoot</span>
+        <span class="carbon-stat-value is-warn">${ton.toFixed(2)} ton</span>
+      </div>
+      <div class="carbon-stat">
+        <span class="carbon-stat-label">Mangroves nodig</span>
+        <span class="carbon-stat-value is-good">${bomen}</span>
+      </div>
+    </div>
+    <p class="carbon-context">
+      Dat is ongeveer <strong>${pctJaar}%</strong> van wat een gemiddelde Belg in een heel jaar uitstoot (9,4 ton).
+    </p>
+    <div class="carbon-breakdown">
+      <div class="carbon-row is-head"><span>Etappe</span><span>Afstand</span><span>CO₂</span></div>
+      ${rows}
+    </div>
+    <p class="carbon-note">
+      Hemelsbrede afstanden × DEFRA-emissiefactoren (economy) × radiative forcing 1,9.
+      Een richtgetal, geen officiële meting.
+    </p>`;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1924,8 +1633,20 @@ function switchAirportTab(key,event){
 /* ══════════════════════════════════════════════════════════
    INIT
    ══════════════════════════════════════════════════════════ */
+function onPersonChange(key){
+  renderDepartureOverview();
+  renderCarbon();
+  renderTickets();
+  renderTransportMap();
+  renderBlockView();
+  const bp=document.getElementById("baggagePerson");
+  if(bp){ bp.value=key; updateBaggageTag(); }
+}
+
 window.addEventListener("DOMContentLoaded",()=>{
-  renderPersonSelector();
+  initPersonSelector({ onChange: onPersonChange });
+  renderDepartureOverview();
+  renderCarbon();
   renderTickets();
   renderTransportMap();
   renderBlockView();
