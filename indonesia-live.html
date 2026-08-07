@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Indonesië — Waar is iedereen?</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tripmap.css">
 <style>
   /* Extra styling for premium Live Tracker upgrades */
   .live-control-panel {
@@ -143,75 +145,10 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
   
-  .mini-map-container {
-    background: rgba(0,0,0,0.3);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.03);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .mini-map-svg {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  
-  .map-grid-line {
-    stroke: rgba(255,255,255,0.02);
-    stroke-width: 1;
-  }
-  
-  .map-island {
-    fill: rgba(255, 255, 255, 0.025);
-    stroke: rgba(255, 255, 255, 0.08);
-    stroke-width: 1.5;
-    transition: all 0.3s;
-  }
-  
-  .map-island.active {
-    fill: rgba(0, 180, 216, 0.04);
-    stroke: rgba(0, 180, 216, 0.2);
-  }
-  
-  .map-node {
-    fill: #1e293b;
-    stroke: rgba(255,255,255,0.2);
-    stroke-width: 1.5;
-    cursor: pointer;
-  }
-  
-  .map-node.visited {
-    fill: var(--teal-soft);
-    stroke: var(--teal);
-    filter: drop-shadow(0 0 4px var(--teal-glow));
-  }
-  
-  .map-node-label {
-    font-size: 9px;
-    fill: var(--text-soft);
-    font-weight: 500;
-    pointer-events: none;
-    paint-order: stroke fill;
-    stroke: #07090e;
-    stroke-width: 3px;
-    stroke-linejoin: round;
-  }
-  
-  .map-node-label.active {
-    fill: #fff;
-    font-weight: 600;
-  }
-  
-  /* Cluster of traveler dots on map node */
-  .cluster-dot {
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-  .cluster-dot:hover {
-    transform: scale(1.2);
-  }
-  
+  /* De kaart is nu het gedeelde component uit tripmap.js */
+  #liveMap { height: 330px; }
+  @media (max-width: 780px) { #liveMap { height: 280px; } }
+
   /* Groups dynamics styling */
   .groups-card {
     background: var(--panel);
@@ -674,37 +611,8 @@
         <h3 style="font-size:14px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft);">🗺️ Actieve Posities</h3>
         <span id="map-region-indicator" style="font-size:12px; color:var(--teal); font-weight:600;">Indonesië</span>
       </div>
-      <div class="mini-map-container">
-        <svg class="mini-map-svg" viewBox="0 0 900 400" xmlns="http://www.w3.org/2000/svg">
-          <!-- Grid Background -->
-          <defs>
-            <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.015)" stroke-width="1"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-          
-          <!-- Stylized Islands Outlines -->
-          <!-- Sumatra -->
-          <path class="map-island" d="M 60 15 L 290 150 L 220 210 L 40 45 Z" />
-          <!-- Java -->
-          <path class="map-island" d="M 360 278 L 640 332 L 640 348 L 360 298 Z" />
-          <!-- Bali -->
-          <path class="map-island" d="M 650 339 L 676 340 L 676 349 L 650 348 Z" />
-          <!-- Flores/Lombok Chain -->
-          <path class="map-island" d="M 682 340 L 855 336 L 855 346 L 682 347 Z" />
-          
-          <!-- Connections routes -->
-          <path d="M 304 112 L 143 61 M 143 61 L 112 58 M 143 61 L 399 285 M 399 285 L 508 321 L 579 325 L 583 309 L 634 331 L 660 341 L 806 337 L 824 340" 
-                fill="none" stroke="rgba(0, 180, 216, 0.15)" stroke-width="1.5" stroke-dasharray="4 4" />
-          
-          <!-- Nodes -->
-          <g id="map-nodes-layer"></g>
-          
-          <!-- Traveler avatars mapped -->
-          <g id="map-avatars-layer"></g>
-        </svg>
-      </div>
+      <!-- Gedeeld kaartcomponent (tripmap.js); volgt de simulatiedatum -->
+      <div id="liveMap"></div>
     </div>
 
     <!-- GROUPS / DYNAMICS -->
@@ -927,14 +835,16 @@
   ]}
 }
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="data.js"></script>
+<script src="tripmap.js"></script>
 <script>
 let DATA = null;
 
 const VIEW_MODES = ["volledig","huidig","verborgen"];
 const VIEW_LABELS = {volledig:"Volledig", huidig:"Alleen locatie", verborgen:"Verborgen"};
 
-/* PTS geladen vanuit data.js */
+/* GEO en de kaartlogica komen uit data.js + tripmap.js */
 
 // Simulation Range Setup
 const T0 = new Date('2026-08-29T00:00:00');
@@ -1303,108 +1213,70 @@ function deleteUpdate(key, idx){
 }
 
 // Map Rendering Logic
-function renderMapNodes() {
-  const layerNodes = document.getElementById("map-nodes-layer");
-  const layerAvatars = document.getElementById("map-avatars-layer");
-  if (!layerNodes || !layerAvatars) return;
-  
-  layerNodes.innerHTML = "";
-  layerAvatars.innerHTML = "";
-  
-  // Determine who is at what node coordinates currently
-  const positions = {};
-  PERSON_ORDER.forEach(key => {
-    const last = getStatusOnSimulatedDate(key);
-    if (last) {
-      // Find matching coordinate node
-      const locName = last.location.toLowerCase();
-      let matchedKey = null;
-      for (const nodeKey in PTS) {
-        if (locName.includes(nodeKey) || (nodeKey === "bali" && locName.includes("denpasar"))) {
-          matchedKey = nodeKey;
-          break;
-        }
-      }
-      
-      if (matchedKey) {
-        if (!positions[matchedKey]) positions[matchedKey] = [];
-        positions[matchedKey].push(key);
-      }
-    }
-  });
+/* ══════════════════════════════════════════════════════════
+   KAART — gedeeld component uit tripmap.js
 
-  // Render Map Nodes
-  let currentActiveRegion = "Thuis / Onbekend";
-  
-  for (const nodeKey in PTS) {
-    const pt = PTS[nodeKey];
-    const hasTravelers = positions[nodeKey] && positions[nodeKey].length > 0;
-    
-    // Check if travelers visited
-    const isVisited = hasTravelers;
-    
-    const nodeCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    nodeCircle.setAttribute("cx", pt.x);
-    nodeCircle.setAttribute("cy", pt.y);
-    nodeCircle.setAttribute("r", 6);
-    nodeCircle.setAttribute("class", `map-node ${isVisited ? 'visited' : ''}`);
-    nodeCircle.setAttribute("title", pt.label);
-    nodeCircle.onclick = () => {
-      // Highlight region in header
-      document.getElementById('map-region-indicator').textContent = pt.label;
-    };
-    layerNodes.appendChild(nodeCircle);
-    
-    const nodeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    nodeText.setAttribute("x", pt.x + (pt.dx !== undefined ? pt.dx : 10));
-    nodeText.setAttribute("y", pt.y + (pt.dy !== undefined ? pt.dy : 4));
-    nodeText.setAttribute("text-anchor", pt.anchor || "start");
-    nodeText.setAttribute("class", `map-node-label ${isVisited ? 'active' : ''}`);
-    nodeText.textContent = pt.label;
-    layerNodes.appendChild(nodeText);
-    
-    // Draw clustered traveler avatar bubbles
-    if (hasTravelers) {
-      currentActiveRegion = pt.label;
-      const travelers = positions[nodeKey];
-      travelers.forEach((pKey, idx) => {
-        const p = DATA[pKey];
-        // Calculate offset if multiple people at same node to create a small row/cluster
-        const offsetMultiplier = 12;
-        const offsetX = (idx % 3) * offsetMultiplier - ((Math.min(travelers.length, 3) - 1) * offsetMultiplier / 2);
-        const offsetY = Math.floor(idx / 3) * offsetMultiplier + 14;
-        
-        const avatarGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        avatarGroup.setAttribute("class", "cluster-dot");
-        avatarGroup.onclick = () => switchTab(pKey);
-        
-        const avHalo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        avHalo.setAttribute("cx", pt.x + offsetX);
-        avHalo.setAttribute("cy", pt.y + offsetY);
-        avHalo.setAttribute("r", 7.5);
-        avHalo.setAttribute("fill", p.color);
-        avHalo.setAttribute("stroke", "#07090e");
-        avHalo.setAttribute("stroke-width", "1");
-        avatarGroup.appendChild(avHalo);
-        
-        const avText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        avText.setAttribute("x", pt.x + offsetX);
-        avText.setAttribute("y", pt.y + offsetY + 2.5);
-        avText.setAttribute("font-size", "7px");
-        avText.setAttribute("fill", "#fff");
-        avText.setAttribute("font-weight", "bold");
-        avText.setAttribute("text-anchor", "middle");
-        avText.textContent = p.name.substring(0,2).toUpperCase();
-        avatarGroup.appendChild(avText);
-        
-        layerAvatars.appendChild(avatarGroup);
-      });
-    }
+   De posities komen normaal uit het reisschema in data.js, maar zodra iemand
+   in de log een locatie meldt die we op de kaart terugvinden, wint die melding.
+   Zo blijft de kaart kloppen als de groep onderweg afwijkt van het plan.
+   ══════════════════════════════════════════════════════════ */
+let liveKaart = null;
+
+/* Vrije tekst uit een log-melding koppelen aan een GEO-punt. */
+const GEO_ALIASSEN = {
+  denpasar: "bali", kuta: "bali", seminyak: "bali", sanur: "bali",
+  changi: "singapore", kualanamu: "medan", soekarno: "jakarta", cgk: "jakarta",
+  jogja: "yogya", yogyakarta: "yogya", brussel: "brussel", zaventem: "brussel",
+  ijen: "ijen", bromo: "bromo", komodo: "komodo", ruteng: "ruteng",
+};
+
+function geoKeyVoorTekst(tekst) {
+  if (!tekst) return null;
+  const t = tekst.toLowerCase();
+  for (const alias in GEO_ALIASSEN) {
+    if (t.includes(alias)) return GEO_ALIASSEN[alias];
   }
-  
-  document.getElementById('map-region-indicator').textContent = currentActiveRegion;
+  for (const key in GEO) {
+    if (t.includes(key)) return key;
+    const naam = GEO[key].name.replace(/[^a-zA-Z ]/g, "").trim().toLowerCase();
+    if (naam && t.includes(naam)) return key;
+  }
+  return null;
 }
 
+function gemeldePositie(personKey) {
+  const laatste = getStatusOnSimulatedDate(personKey);
+  return laatste ? geoKeyVoorTekst(laatste.location) : null;
+}
+
+function renderMapNodes() {
+  const el = document.getElementById("liveMap");
+  if (!el) return;
+  if (!liveKaart) {
+    liveKaart = TripMap.create({
+      el: "#liveMap",
+      mode: "mini",
+      person: PERSON_ORDER[0],
+      people: PERSON_ORDER.slice(),
+      day: simulatedDayIndex,
+      positionResolver: (pk) => gemeldePositie(pk),
+      onTripSelect(id) { location.href = "indonesia-timeline.html#" + id; },
+    });
+  } else {
+    liveKaart.setDay(simulatedDayIndex, true);
+  }
+
+  /* Regio-aanduiding rechtsboven de kaart bijwerken. */
+  const indicator = document.getElementById("map-region-indicator");
+  if (indicator) {
+    const hier = PERSON_ORDER.map(k => gemeldePositie(k) || TripMap.positionOf(k, simulatedDayIndex).positie)
+      .filter(k => k && k !== "brussel");
+    const telling = {};
+    hier.forEach(k => { telling[k] = (telling[k] || 0) + 1; });
+    const top = Object.keys(telling).sort((a, b) => telling[b] - telling[a])[0];
+    indicator.textContent = top ? GEO[top].name : "Nog thuis";
+  }
+}
 // Group composition builder
 function renderGroupComposition() {
   const container = document.getElementById("groups-container");
@@ -1465,6 +1337,10 @@ function downloadUpdatedSite(){
   const clone = document.documentElement.cloneNode(true);
   const seed = clone.querySelector("#seed-data");
   seed.textContent = JSON.stringify(DATA, null, 2);
+  /* De kaart bouwt zichzelf opnieuw op bij het laden; de door Leaflet
+     gegenereerde tegels en markers horen niet in het gedownloade bestand. */
+  const kaartEl = clone.querySelector("#liveMap");
+  if (kaartEl) { kaartEl.innerHTML = ""; kaartEl.className = ""; kaartEl.removeAttribute("style"); }
   const html = "<!DOCTYPE html>\n" + clone.outerHTML;
   const blob = new Blob([html], {type:"text/html"});
   const a = document.createElement("a");
@@ -1476,16 +1352,14 @@ function downloadUpdatedSite(){
   a.remove();
 }
 
-// Start timers and load data
+/* Data alvast laden; de eerste render gebeurt onderaan het script, ná de
+   FLIGHTS-declaratie. renderAll() roept renderTickets() aan, en dat leest
+   FLIGHTS — hier zou die const nog in zijn temporal dead zone zitten. */
 DATA = loadData();
-renderAll();
 
 // Start timezone clocks updater
 if (clockTimer) clearInterval(clockTimer);
 clockTimer = setInterval(updateLiveClocks, 1000);
-
-// Initialize slider position
-onSliderChange(0);
 
 /* ================================================================
    TICKETS & BOARDING PASSES
@@ -1612,8 +1486,9 @@ function closeTicketsGallery() {
   modal.classList.remove("open");
 }
 
-// Initial render
-renderTickets();
+/* Eerste render: alles staat nu gedeclareerd, inclusief FLIGHTS.
+   onSliderChange() zet de simulatiedatum en roept renderAll() aan. */
+onSliderChange(0);
 </script>
 </body>
 </html>

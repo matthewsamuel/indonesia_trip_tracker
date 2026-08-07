@@ -1,0 +1,756 @@
+/* ================================================================
+   tripmap.css — styling voor het gedeelde kaartcomponent (tripmap.js)
+
+   Werkt zowel binnen de donkere UI van de reispagina's als op de lichte
+   straatkaart-tegels (.tm-light-tiles). Drie varianten:
+     .tm-full   volledig scherm met zijbalk en tijdlijn
+     .tm-panel  ingebed in een paneel, met tijdlijn eronder
+     .tm-mini   compacte kaart zonder besturing
+   ================================================================ */
+
+.tm-root {
+  --tm-teal: #00b4d8;
+  --tm-panel: rgba(13, 17, 28, 0.86);
+  --tm-border: rgba(255, 255, 255, 0.1);
+  --tm-text: #f1f5f9;
+  --tm-soft: #94a3b8;
+  --tm-radius: 14px;
+  position: relative;
+  font-family: 'Outfit', system-ui, sans-serif;
+  color: var(--tm-text);
+  isolation: isolate;
+}
+
+.tm-map {
+  position: absolute;
+  inset: 0;
+  background: #07090e;
+  z-index: 0;
+}
+
+/* ── varianten ── */
+.tm-panel { height: 460px; border-radius: var(--tm-radius); overflow: hidden; border: 1px solid var(--tm-border); }
+.tm-mini  { height: 300px; border-radius: var(--tm-radius); overflow: hidden; border: 1px solid var(--tm-border); }
+.tm-full  { position: fixed; inset: 0; height: 100%; }
+.tm-panel .tm-map, .tm-mini .tm-map { border-radius: var(--tm-radius); }
+
+/* De tijdlijn hoort binnen het paneel, dus de kaart krijgt onderaan ruimte. */
+.tm-panel .tm-map { bottom: 56px; }
+.tm-panel .tm-legend { position: static; }
+
+/* ================================================================
+   BOVENBALK — tegelkiezer & reizigerskeuze
+   ================================================================ */
+.tm-topbar {
+  position: absolute;
+  z-index: 620;
+  top: 12px; left: 12px; right: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+.tm-topbar > * { pointer-events: auto; }
+.tm-full .tm-topbar { top: 96px; }
+
+.tm-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--tm-panel);
+  border: 1px solid var(--tm-border);
+  border-radius: 10px;
+  padding: 5px 10px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.tm-select label { font-size: 11px; color: var(--tm-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+.tm-select select {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.tm-select select option { background: #0d111c; color: #fff; }
+
+.tm-btn {
+  background: var(--tm-panel);
+  border: 1px solid var(--tm-border);
+  border-radius: 10px;
+  color: var(--tm-soft);
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 7px 12px;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.tm-btn:hover { color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+.tm-btn[aria-pressed="true"] { color: #fff; background: rgba(0, 180, 216, 0.22); border-color: rgba(0, 180, 216, 0.4); }
+
+.tm-tiles {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+  background: var(--tm-panel);
+  border: 1px solid var(--tm-border);
+  border-radius: 10px;
+  padding: 3px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.tm-tile-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--tm-soft);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tm-tile-btn:hover { color: #fff; }
+.tm-tile-btn.active { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+/* ================================================================
+   ZIJBALK (alleen .tm-full)
+   ================================================================ */
+.tm-side {
+  position: absolute;
+  z-index: 610;
+  top: 150px; right: 12px; bottom: 108px;
+  width: 288px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--tm-panel);
+  border: 1px solid var(--tm-border);
+  border-radius: var(--tm-radius);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.tm-side::-webkit-scrollbar { width: 4px; }
+.tm-side::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 2px; }
+
+.tm-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 16px 11px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--tm-border);
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: default;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--tm-panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.tm-side-head b { display: block; font-size: 17px; color: #fff; text-transform: capitalize; }
+.tm-side-head i { display: block; font-style: normal; font-size: 11.5px; color: var(--tm-soft); }
+/* De inklap-knop heeft alleen zin op smalle schermen. */
+.tm-side-toggle { display: none; font-style: normal; color: var(--tm-soft); transition: transform 0.2s ease; }
+
+.tm-side-today { padding: 12px 16px; border-bottom: 1px solid var(--tm-border); border-left: 3px solid var(--fc); }
+.tm-side-today p { font-size: 12.5px; color: var(--tm-soft); margin: 0; }
+
+.tm-side-route { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-bottom: 10px; }
+.tm-side-route span { font-size: 12px; font-weight: 600; color: #fff; }
+.tm-side-route i { font-style: normal; font-size: 11px; color: var(--fc); }
+
+.tm-side-trip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--tm-border);
+  border-radius: 9px;
+  padding: 8px 10px;
+  margin-top: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.tm-side-trip:hover { background: rgba(255, 255, 255, 0.07); }
+.tm-side-trip b { display: block; font-size: 12.5px; color: #fff; font-weight: 600; line-height: 1.35; }
+.tm-side-trip p { margin: 4px 0 0; font-size: 11px; color: var(--tm-soft); line-height: 1.45; }
+
+.tm-side-people { padding: 10px 0 12px; }
+.tm-side-people h5 {
+  margin: 0 16px 6px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--tm-soft);
+  font-weight: 600;
+}
+.tm-prow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 16px;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.tm-prow:hover { background: rgba(255, 255, 255, 0.05); }
+.tm-prow.actief { background: rgba(0, 180, 216, 0.1); border-left-color: var(--tm-teal); }
+.tm-prow-info { display: flex; flex-direction: column; min-width: 0; }
+.tm-prow-info b { font-size: 12.5px; color: #fff; font-weight: 600; }
+.tm-prow-info i {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--tm-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+}
+.tm-prow-info i.tm-dim { opacity: 0.5; }
+.tm-prow-info i.tm-move { color: var(--tm-teal); }
+
+/* Gedeelde avatar (zijbalk + popups) */
+.tm-av {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--pc);
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+}
+.tm-av img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ================================================================
+   TIJDLIJN
+   ================================================================ */
+.tm-timeline {
+  position: absolute;
+  z-index: 620;
+  left: 12px; right: 12px; bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  background: var(--tm-panel);
+  border: 1px solid var(--tm-border);
+  border-radius: 12px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+.tm-panel .tm-timeline { left: 0; right: 0; bottom: 0; border-radius: 0; border-width: 1px 0 0; box-shadow: none; }
+
+.tm-play {
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 180, 216, 0.35);
+  background: rgba(0, 180, 216, 0.16);
+  color: var(--tm-teal);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.tm-play:hover { background: rgba(0, 180, 216, 0.3); }
+
+.tm-scrub-wrap { position: relative; flex: 1; min-width: 90px; padding-bottom: 7px; }
+
+.tm-scrub {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.13);
+  outline: none;
+  cursor: pointer;
+}
+.tm-scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--tm-teal);
+  border: 2px solid #0d111c;
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.25);
+  cursor: grab;
+}
+.tm-scrub::-moz-range-thumb {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--tm-teal);
+  border: 2px solid #0d111c;
+  cursor: grab;
+}
+
+/* Faseblokjes: kleurenbalk die de reisfases onder de slider toont. */
+.tm-scrub-ticks {
+  display: flex;
+  gap: 1px;
+  height: 4px;
+  margin-top: 3px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.tm-scrub-ticks i {
+  flex: 1;
+  opacity: 0.4;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.tm-scrub-ticks i.nu { opacity: 1; transform: scaleY(2.2); }
+
+.tm-daylabel { flex-shrink: 0; min-width: 104px; line-height: 1.2; }
+.tm-daylabel b { display: block; font-size: 13px; color: #fff; text-transform: capitalize; }
+.tm-daylabel span { font-size: 10.5px; color: var(--tm-soft); }
+
+.tm-speeds { display: flex; gap: 2px; flex-shrink: 0; }
+.tm-speed {
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--tm-soft);
+  border-radius: 7px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.tm-speed.active { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+.tm-today {
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 77, 77, 0.35);
+  background: rgba(255, 77, 77, 0.14);
+  color: #ff8080;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ================================================================
+   LEGENDE
+   ================================================================ */
+.tm-legend {
+  position: absolute;
+  z-index: 605;
+  left: 12px; bottom: 66px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: min(520px, calc(100% - 24px));
+  pointer-events: none;
+}
+.tm-panel .tm-legend {
+  position: absolute;
+  bottom: 62px;
+}
+.tm-legend-row { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.tm-lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--tm-soft);
+  background: rgba(7, 9, 14, 0.72);
+  border-radius: 6px;
+  padding: 2px 7px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.tm-lg i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.tm-lg b { font-size: 11px; }
+
+.tm-status { position: absolute; z-index: 604; left: 14px; top: 14px; font-size: 11px; color: var(--tm-soft); }
+
+/* ================================================================
+   PLAATS-MARKERS
+   ================================================================ */
+.tm-place-wrap { background: none !important; border: none !important; }
+
+.tm-place {
+  position: relative;
+  display: block;
+  width: 14px; height: 14px;
+}
+.tm-place-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--fc);
+  border: 2px solid rgba(7, 9, 14, 0.85);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--fc) 60%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease, height 0.3s ease, inset 0.3s ease, opacity 0.3s ease;
+}
+.tm-place-dot i { font-style: normal; font-size: 0; transition: font-size 0.25s ease; }
+
+.tm-place-ring {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 2px solid var(--fc);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.tm-place-label {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.9);
+  transition: opacity 0.25s ease, color 0.25s ease;
+  pointer-events: none;
+}
+/* Uitwijken naar links wanneer rechts van het bolletje geen plaats is. */
+.tm-place-label.tm-label-left { left: auto; right: 18px; text-align: right; }
+
+/* Status ten opzichte van de gekozen dag */
+.tm-place-actief .tm-place-dot { inset: -4px; }
+.tm-place-actief .tm-place-dot i { font-size: 11px; }
+.tm-place-actief .tm-place-ring { opacity: 0.75; inset: -11px; }
+.tm-place-actief .tm-place-label { color: #fff; font-weight: 700; }
+
+.tm-place-verleden .tm-place-dot { opacity: 0.55; }
+.tm-place-verleden .tm-place-label { opacity: 0.65; font-weight: 500; }
+
+.tm-place-toekomst .tm-place-dot { background: transparent; border-color: var(--fc); box-shadow: none; opacity: 0.75; }
+.tm-place-toekomst .tm-place-label { opacity: 0.4; font-weight: 500; }
+
+.tm-place-dof .tm-place-dot { opacity: 0.12; }
+.tm-place-dof .tm-place-label { opacity: 0; }
+
+/* Wegvallen bij overlap moet zwaarder wegen dan de statuskleuren hierboven,
+   vandaar de extra specificiteit. Hoveren haalt de naam altijd terug. */
+.tm-place .tm-place-label.tm-label-hidden { opacity: 0; }
+.tm-place-wrap:hover .tm-place-label,
+.tm-place-wrap:hover .tm-place-label.tm-label-hidden { opacity: 1; color: #fff; }
+
+/* ================================================================
+   REIZIGER-MARKERS
+   ================================================================ */
+.tm-person-wrap { background: none !important; border: none !important; }
+
+.tm-person { position: relative; display: block; width: 34px; height: 34px; }
+.tm-person-av {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--pc);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.tm-person-av img { width: 100%; height: 100%; object-fit: cover; }
+
+.tm-person-pulse {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid var(--pc);
+  opacity: 0;
+}
+.tm-person-focus .tm-person-pulse { opacity: 1; animation: tm-pulse 2s ease-out infinite; }
+@keyframes tm-pulse {
+  0%   { transform: scale(0.85); opacity: 0.85; }
+  70%  { transform: scale(1.5);  opacity: 0; }
+  100% { transform: scale(1.5);  opacity: 0; }
+}
+
+.tm-person-focus .tm-person-av { border-color: #fff; }
+.tm-person-thuis .tm-person-av { opacity: 0.4; filter: grayscale(0.6); transform: scale(0.82); }
+.tm-person-onderweg .tm-person-av { border-style: dashed; border-color: rgba(255, 255, 255, 0.95); }
+
+/* ================================================================
+   ROUTES
+   ================================================================ */
+@keyframes tm-flow { to { stroke-dashoffset: -32; } }
+.tm-seg { transition: stroke-width 0.3s ease, stroke-opacity 0.3s ease; }
+.tm-seg-actief { animation: tm-flow 1.4s linear infinite; }
+
+.tm-seg-icon-wrap { background: none !important; border: none !important; transition: opacity 0.3s ease; }
+.tm-seg-icon {
+  display: block;
+  font-size: 13px;
+  line-height: 22px;
+  text-align: center;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.9));
+}
+.tm-seg-icon-wrap.tm-seg-actief { opacity: 1; }
+.tm-seg-icon-wrap.tm-seg-verleden { opacity: 0.3; }
+/* Nog niet gereisde trajecten tonen geen icoon: anders hangt de kaart vol
+   losse vliegtuigjes boven zee. */
+.tm-seg-icon-wrap.tm-seg-toekomst,
+.tm-seg-icon-wrap.tm-seg-dof { opacity: 0; }
+
+/* ================================================================
+   TOOLTIPS & POPUPS
+   ================================================================ */
+.leaflet-tooltip.tm-tooltip {
+  background: rgba(7, 9, 14, 0.94);
+  border: 1px solid var(--tm-border, rgba(255, 255, 255, 0.1));
+  border-radius: 9px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+  color: #f1f5f9;
+  font-family: 'Outfit', system-ui, sans-serif;
+  padding: 8px 11px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.leaflet-tooltip.tm-tooltip::before { display: none; }
+.tm-tt { display: flex; flex-direction: column; gap: 2px; max-width: 250px; }
+.tm-tt b { font-size: 12.5px; color: #fff; font-weight: 600; }
+.tm-tt-meta { font-size: 11px; color: #94a3b8; }
+.tm-tt-date { font-size: 10.5px; color: #64748b; margin-top: 2px; }
+.tm-tt-fase {
+  font-size: 10px;
+  color: var(--fc);
+  border: 1px solid var(--fc);
+  border-radius: 5px;
+  padding: 1px 5px;
+  align-self: flex-start;
+  margin-top: 3px;
+  opacity: 0.85;
+}
+
+.tm-popup .leaflet-popup-content-wrapper {
+  background: rgba(10, 14, 24, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #f1f5f9;
+}
+.tm-popup .leaflet-popup-content { margin: 0; padding: 0; font-family: 'Outfit', system-ui, sans-serif; }
+.tm-popup .leaflet-popup-tip { background: rgba(10, 14, 24, 0.96); border: 1px solid rgba(255, 255, 255, 0.12); }
+.tm-popup .leaflet-popup-close-button { color: #94a3b8 !important; font-size: 20px !important; padding: 8px 10px 0 0 !important; }
+.tm-popup .leaflet-popup-close-button:hover { color: #fff !important; }
+
+.tm-pop { padding: 14px 15px 13px; max-height: 62vh; overflow-y: auto; }
+.tm-pop::-webkit-scrollbar { width: 4px; }
+.tm-pop::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 2px; }
+
+.tm-pop-head { display: flex; align-items: center; gap: 11px; }
+.tm-pop-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--fc) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fc) 45%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.tm-pop-head h4 { margin: 0; font-size: 14.5px; color: #fff; font-weight: 700; line-height: 1.25; }
+.tm-pop-head span { font-size: 11px; color: #94a3b8; }
+
+.tm-pop-fase {
+  margin-top: 9px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fc);
+  font-weight: 600;
+}
+
+.tm-pop-trip {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.tm-pop-trip-h { font-size: 12.5px; font-weight: 600; color: #fff; line-height: 1.35; }
+.tm-pop-trip-d { font-size: 10.5px; color: #64748b; margin-top: 2px; }
+.tm-pop-det { margin: 7px 0 0; padding-left: 15px; }
+.tm-pop-det li { font-size: 11.5px; color: #94a3b8; line-height: 1.5; margin-bottom: 3px; }
+.tm-pop-cost { list-style: none; margin: 8px 0 0; padding: 0; }
+.tm-pop-cost li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: #94a3b8;
+  padding: 3px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+.tm-pop-cost b { color: #f1f5f9; white-space: nowrap; }
+.tm-pop-cost b.tm-tbd { color: #f77f00; }
+.tm-booked {
+  margin-left: 6px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4ad66d;
+  border: 1px solid rgba(74, 214, 109, 0.35);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.tm-pop-link {
+  margin-top: 9px;
+  background: rgba(0, 180, 216, 0.14);
+  border: 1px solid rgba(0, 180, 216, 0.28);
+  color: var(--tm-teal, #00b4d8);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.tm-pop-link:hover { background: rgba(0, 180, 216, 0.26); }
+
+.tm-pop-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 11px;
+  padding: 8px;
+  border-radius: 9px;
+  background: rgba(0, 180, 216, 0.1);
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  color: var(--tm-teal, #00b4d8);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.tm-pop-photo:hover { background: rgba(0, 180, 216, 0.2); }
+
+.tm-pop-photos { display: flex; gap: 5px; margin-top: 11px; }
+.tm-pop-photos img {
+  width: 33.33%;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── lichte tegels: labels krijgen een lichte achtergrond i.p.v. schaduw ── */
+.tm-light-tiles .tm-place-label {
+  color: #0f172a;
+  text-shadow: none;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+.tm-light-tiles .tm-place-actief .tm-place-label { color: #000; }
+
+/* ── Leaflet-basis binnen het component ── */
+.tm-root .leaflet-container { background: #07090e; font-family: inherit; }
+.tm-root .leaflet-control-attribution {
+  background: rgba(7, 9, 14, 0.7);
+  color: #64748b;
+  font-size: 9.5px;
+}
+.tm-root .leaflet-control-attribution a { color: #94a3b8; }
+.tm-root .leaflet-bar a {
+  background: rgba(13, 17, 28, 0.9);
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.tm-root .leaflet-bar a:hover { background: rgba(30, 41, 59, 0.95); }
+.tm-full .leaflet-bottom.leaflet-right { bottom: 66px; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 1024px) {
+  .tm-side { width: 244px; top: 140px; }
+  .tm-panel { height: 420px; }
+}
+
+@media (max-width: 780px) {
+  /* Zijbalk wordt een inklapbaar blad dat net boven de tijdlijn eindigt. */
+  .tm-side {
+    top: auto;
+    left: 8px; right: 8px;
+    bottom: calc(var(--tm-tl-h, 96px) + 20px);
+    width: auto;
+    max-height: 40vh;
+  }
+  .tm-side-head { cursor: pointer; }
+  .tm-side-toggle { display: block; }
+  .tm-side-dicht { max-height: none; overflow: hidden; }
+  .tm-side-dicht > :not(.tm-side-head) { display: none; }
+  .tm-side-dicht .tm-side-head { border-bottom: none; }
+  .tm-side-dicht .tm-side-toggle { transform: rotate(180deg); }
+
+  /* Bovenbalk blijft één rij die horizontaal scrolt i.p.v. af te breken. */
+  .tm-topbar {
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tm-topbar::-webkit-scrollbar { display: none; }
+  .tm-topbar > * { flex-shrink: 0; }
+  .tm-select label { display: none; }
+  .tm-select { padding: 4px 9px; }
+  .tm-tiles { margin-left: 0; }
+  .tm-tile-btn { padding: 5px 8px; font-size: 11px; }
+
+  .tm-timeline { flex-wrap: wrap; gap: 8px 10px; padding: 9px 12px; }
+  .tm-scrub-wrap { order: 3; flex-basis: 100%; }
+  .tm-daylabel { order: 2; flex: 1; min-width: 0; }
+  .tm-speeds { order: 4; }
+  .tm-today { order: 5; }
+
+  .tm-legend { display: none; }
+  .tm-panel { height: 400px; }
+  .tm-panel .tm-map { bottom: 84px; }
+  .tm-prow-info i { max-width: 60vw; }
+}
+
+@media (max-width: 430px) {
+  .tm-side { max-height: 34vh; }
+  .tm-place-label { font-size: 10.5px; }
+  .tm-daylabel b { font-size: 12px; }
+  .tm-panel { height: 360px; }
+  .tm-mini { height: 260px; }
+  .tm-pop { max-height: 54vh; }
+  .tm-pop-photos img { height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-seg-actief, .tm-person-focus .tm-person-pulse { animation: none; }
+  .tm-place-dot, .tm-place-ring, .tm-person-av, .tm-place-label { transition: none; }
+}

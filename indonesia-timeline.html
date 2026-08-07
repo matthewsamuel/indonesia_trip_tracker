@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Indonesië — Reisschema</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tripmap.css">
+<style>
+  /* Kaartpaneel dat meebeweegt met het reisschema */
+  #timelineMap { height: 400px; }
+  @media (max-width: 900px) { #timelineMap { height: 320px; } }
+  .timeline-item.tm-gekozen .item-card {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 1px var(--teal-glow);
+  }
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -57,6 +68,16 @@
     <span class="tl-search-count" id="tlSearchCount"></span>
   </div>
 
+  <!-- KAART BIJ HET SCHEMA -->
+  <section class="panel">
+    <h2>🗺️ Route bij dit schema</h2>
+    <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px;">
+      Klik een etappe hieronder om hem op de kaart te zien, of sleep de tijdlijn
+      om per dag te volgen waar de reis dan is.
+    </p>
+    <div id="timelineMap"></div>
+  </section>
+
   <!-- TIMELINE CONTAINER -->
   <section class="panel">
     <h2>📅 Chronologisch Reisschema</h2>
@@ -71,7 +92,9 @@
   <img id="lightboxImg" src="" alt="">
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="data.js"></script>
+<script src="tripmap.js"></script>
 <script>
 /* ================================================================
    TIMELINE LOGIC
@@ -99,73 +122,96 @@ function getTripDayRange(startStr, endStr, personKey) {
   return startDay === endDay ? `Dag ${startDay}` : `Dag ${startDay} – ${endDay}`;
 }
 
+/* Bepaalt de categorie van één detail-regel. Losstaande functie zodat
+   parseDetails zowel de platte lijsten (voor badges/iconen) als de
+   volgorde-behoudende segmenten (voor de kaartweergave) op dezelfde
+   classificatie kan baseren. */
+function classifyDetailLine(d) {
+  const lower = d.toLowerCase();
+
+  if (lower.startsWith("tip:") || lower.startsWith("let op:")) return "tip";
+
+  // Transport & Flights
+  if (
+    lower.includes("vlucht") ||
+    lower.includes("vliegen") ||
+    lower.includes("overstap") ||
+    lower.includes("layover") ||
+    lower.includes("reistijd") ||
+    lower.includes("trein") ||
+    lower.includes("nachttrein") ||
+    lower.includes("taxi") ||
+    lower.includes("minibus") ||
+    lower.includes("transfer") ||
+    lower.includes("ferry") ||
+    lower.includes("doorrijden") ||
+    lower.includes("rit van") ||
+    lower.includes("mrt") ||
+    lower.includes("ov-kaart") ||
+    lower.includes("tg935") ||
+    lower.includes("tg403") ||
+    lower.includes("lion air") ||
+    lower.includes("denpasar") ||
+    lower.includes("soekarno") ||
+    lower.includes("airbus") ||
+    lower.includes("boeing") ||
+    lower.includes("landt") ||
+    /(^|\W)(sq|tg|ga|jt|qz)\s?\d{3,4}\b/.test(lower)
+  ) {
+    return "transport";
+  }
+
+  // Stay & Accommodations
+  if (
+    lower.includes("hotel") ||
+    lower.includes("guesthouse") ||
+    lower.includes("villa") ||
+    lower.includes("overnachting") ||
+    lower.includes("inchecken") ||
+    lower.includes("check-in") ||
+    lower.includes("verblijf") ||
+    lower.includes("stay") ||
+    lower.includes("confirmation code")
+  ) {
+    return "stay";
+  }
+
+  // Activities / Program
+  return "activity";
+}
+
+/* Naast de platte lijsten (transport/stay/activities/tips, voor badges en
+   iconen) bouwt dit ook `segments` op: opeenvolgende regels van dezelfde
+   categorie, in de volgorde waarin ze in data.js staan. Zo bepaalt de
+   volgorde van de brontekst de volgorde op het scherm — een dag die met
+   een activiteit begint en pas daarna vervoert, toont dat ook zo — in
+   plaats van altijd vast Vervoer → Verblijf → Activiteiten te tonen. */
 function parseDetails(detailsArray) {
   const transport = [];
   const stay = [];
   const tips = [];
   const activities = [];
+  const segments = [];
 
   detailsArray.forEach(d => {
-    const lower = d.toLowerCase();
-    
-    // Tips
-    if (lower.startsWith("tip:") || lower.startsWith("let op:")) {
+    const cat = classifyDetailLine(d);
+
+    if (cat === "tip") {
       tips.push(d.replace(/^(tip:|let op:)\s*/i, ""));
       return;
     }
-    
-    // Transport & Flights
-    if (
-      lower.includes("vlucht") ||
-      lower.includes("vliegen") ||
-      lower.includes("overstap") ||
-      lower.includes("layover") ||
-      lower.includes("reistijd") ||
-      lower.includes("trein") ||
-      lower.includes("nachttrein") ||
-      lower.includes("taxi") ||
-      lower.includes("minibus") ||
-      lower.includes("transfer") ||
-      lower.includes("ferry") ||
-      lower.includes("doorrijden") ||
-      lower.includes("rit van") ||
-      lower.includes("mrt") ||
-      lower.includes("ov-kaart") ||
-      lower.includes("tg935") ||
-      lower.includes("tg403") ||
-      lower.includes("lion air") ||
-      lower.includes("denpasar") ||
-      lower.includes("soekarno") ||
-      lower.includes("airbus") ||
-      lower.includes("boeing") ||
-      lower.includes("landt") ||
-      /(^|\W)(sq|tg|ga|jt|qz)\s?\d{3,4}\b/.test(lower)
-    ) {
-      transport.push(d);
-      return;
+
+    (cat === "transport" ? transport : cat === "stay" ? stay : activities).push(d);
+
+    const last = segments[segments.length - 1];
+    if (last && last.cat === cat) {
+      last.lines.push(d);
+    } else {
+      segments.push({ cat, lines: [d] });
     }
-    
-    // Stay & Accommodations
-    if (
-      lower.includes("hotel") || 
-      lower.includes("guesthouse") || 
-      lower.includes("villa") || 
-      lower.includes("overnachting") || 
-      lower.includes("inchecken") || 
-      lower.includes("check-in") || 
-      lower.includes("verblijf") ||
-      lower.includes("stay") ||
-      lower.includes("confirmation code")
-    ) {
-      stay.push(d);
-      return;
-    }
-    
-    // Activities / Program
-    activities.push(d);
   });
 
-  return { transport, stay, tips, activities };
+  return { transport, stay, tips, activities, segments };
 }
 
 const TRIP_AIRBNB_LINKS = {
@@ -247,6 +293,107 @@ function isFlight(item) {
   if (item.costs.some(cid => COSTS[cid] && COSTS[cid].cat === 'vlucht')) return true;
   if (item.details.some(d => d.toLowerCase().includes('vlucht') || d.toLowerCase().includes('vliegen') || d.toLowerCase().includes('vliegtuig'))) return true;
   return false;
+}
+
+/* Haalt vertrek-/aankomsttijd + plaatsnaam op voor een vlucht-etappe, door de
+   kosten-ID te koppelen aan TRANSPORT_LEGS (die exacte tijden bijhoudt) en de
+   plaatsen te ontlenen aan item.map + GEO (de bron van waarheid voor de route). */
+function getFlightLegTimes(item) {
+  if (!isFlight(item) || !item.map || item.map.length < 2) return null;
+  const leg = TRANSPORT_LEGS.find(l =>
+    (l.type === "int_vlucht" || l.type === "bin_vlucht") &&
+    l.cost_id && item.costs.includes(l.cost_id) && l.times
+  );
+  if (!leg) return null;
+
+  const m = leg.times.match(/^(\d{1,2}:\d{2})(?:\s*\([^)]*\))?\s*→\s*(\d{1,2}:\d{2})(\+\d)?/);
+  if (!m) return null;
+
+  const placeName = key => {
+    const g = GEO[key];
+    return g ? g.name.replace(/^\S+\s*/, "") : key;
+  };
+
+  return {
+    depPlace: placeName(item.map[0]),
+    depTime: m[1],
+    arrPlace: placeName(item.map[item.map.length - 1]),
+    arrTime: m[2],
+    nextDay: !!m[3]
+  };
+}
+
+function flightTimesHtml(item) {
+  const ft = getFlightLegTimes(item);
+  if (!ft) return "";
+  return `
+  <div class="flight-times" title="${ft.depPlace} ${ft.depTime} → ${ft.arrPlace} ${ft.arrTime}${ft.nextDay ? ' (+1 dag)' : ''} — lokale tijd op elke luchthaven">
+    <div class="ft-leg ft-dep">
+      <span class="ft-place">${ft.depPlace}</span>
+      <span class="ft-time">${ft.depTime}</span>
+    </div>
+    <span class="ft-sep"></span>
+    <div class="ft-leg ft-arr">
+      <span class="ft-place">${ft.arrPlace}</span>
+      <span class="ft-time">${ft.arrTime}${ft.nextDay ? '<sup class="ft-nextday">+1</sup>' : ''}</span>
+    </div>
+  </div>`;
+}
+
+/* Voor momenten die de vlucht van EEN ANDERE subgroep beschrijven (bv. Matthew
+   die in Medan wacht tot de jongens uit Jakarta landen): item.otherFlight wijst
+   naar de kosten-ID van die vlucht. Alleen tonen aan wie er zelf niet op zit —
+   voor de reizigers zelf staat die vlucht al via flightTimesHtml() op hun eigen
+   etappe, dus dan zou dit blokje dubbelop zijn. */
+function getOtherFlightInfo(item, personKey) {
+  if (!item.otherFlight) return null;
+  const leg = TRANSPORT_LEGS.find(l =>
+    (l.type === "int_vlucht" || l.type === "bin_vlucht") && l.cost_id === item.otherFlight && l.times
+  );
+  if (!leg || !leg.persons || leg.persons.includes(personKey)) return null;
+
+  const m = leg.times.match(/^(\d{1,2}:\d{2})(?:\s*\([^)]*\))?\s*→\s*(\d{1,2}:\d{2})(\+\d)?/);
+  if (!m) return null;
+
+  const placeName = key => {
+    const g = GEO[key];
+    return g ? g.name.replace(/^\S+\s*/, "") : key;
+  };
+
+  return {
+    depPlace: placeName(leg.fromPt),
+    depTime: m[1],
+    arrPlace: placeName(leg.toPt),
+    arrTime: m[2],
+    nextDay: !!m[3],
+    persons: leg.persons
+  };
+}
+
+function otherFlightHtml(item, personKey) {
+  const ft = getOtherFlightInfo(item, personKey);
+  if (!ft) return "";
+
+  const names = ft.persons.map(p => (PERSONS[p] ? PERSONS[p].name : p));
+  const avatarsHtml = ft.persons.map(p => {
+    const meta = PERSONS[p];
+    if (!meta) return "";
+    return `<span class="ft-avatar" style="background:${meta.color}">${meta.initials}</span>`;
+  }).join("");
+
+  return `
+  <div class="flight-times flight-times-other" title="Vlucht van ${names.join(', ')}: ${ft.depPlace} ${ft.depTime} → ${ft.arrPlace} ${ft.arrTime}${ft.nextDay ? ' (+1 dag)' : ''} — lokale tijd op elke luchthaven">
+    <div class="ft-avatars">${avatarsHtml}</div>
+    <div class="ft-leg ft-dep">
+      <span class="ft-place">${ft.depPlace}</span>
+      <span class="ft-time">${ft.depTime}</span>
+    </div>
+    <span class="ft-sep"></span>
+    <div class="ft-leg ft-arr">
+      <span class="ft-place">${ft.arrPlace}</span>
+      <span class="ft-time">${ft.arrTime}${ft.nextDay ? '<sup class="ft-nextday">+1</sup>' : ''}</span>
+    </div>
+  </div>`;
 }
 
 /* ---------------- TRANSPORT ICON ---------------- */
@@ -455,37 +602,50 @@ function renderTimeline(){
     let detailsHtml = "";
     if (item.details.length) {
       const stayUrl = getAccommodationUrl(item);
-      
-      let transportHtml = parsed.transport.length ? `
-        <div class="card-section transport-section">
-          <div class="section-title">${transportIcon(item, parsed)} Vervoer &amp; Reisdetails</div>
-          <ul class="transport-list">
-            ${parsed.transport.map(t => `<li>${t}</li>`).join("")}
-          </ul>
-        </div>
-      ` : "";
 
-      let stayHtml = (parsed.stay.length || stayUrl) ? `
-        <div class="card-section stay-section">
-          <div class="section-title">
-            🏨 Verblijf &amp; Accommodatie
-            ${stayUrl ? `<a href="${stayUrl}" target="_blank" rel="noopener" class="airbnb-btn-link">🏠 Bekijk Airbnb →</a>` : ""}
-          </div>
-          ${parsed.stay.length ? `
-          <ul class="stay-list">
-            ${parsed.stay.map(s => `<li>${s}</li>`).join("")}
-          </ul>` : ""}
-        </div>
-      ` : "";
+      // Segmenten in brontekst-volgorde; als er geen verblijf-regel is maar
+      // wel een Airbnb-link (bv. aankomstdag zonder expliciete "overnachting"
+      // in de tekst), voegen we alsnog een lege verblijf-sectie toe zodat de
+      // link zichtbaar blijft.
+      const segs = parsed.segments.slice();
+      if (!segs.some(s => s.cat === "stay") && stayUrl) {
+        segs.push({ cat: "stay", lines: [] });
+      }
+      let lastStayIdx = -1;
+      segs.forEach((s, i) => { if (s.cat === "stay") lastStayIdx = i; });
 
-      let activitiesHtml = parsed.activities.length ? `
-        <div class="card-section program-section">
-          <div class="section-title">🥾 Activiteiten &amp; Programma</div>
-          <ul class="program-list">
-            ${parsed.activities.map(a => `<li>${a}</li>`).join("")}
-          </ul>
-        </div>
-      ` : "";
+      const sectionsHtml = segs.map((seg, i) => {
+        if (seg.cat === "transport") {
+          return `
+          <div class="card-section transport-section">
+            <div class="section-title">${transportIcon(item, parsed)} Vervoer &amp; Reisdetails</div>
+            <ul class="transport-list">
+              ${seg.lines.map(t => `<li>${t}</li>`).join("")}
+            </ul>
+          </div>`;
+        }
+        if (seg.cat === "stay") {
+          const showBtn = stayUrl && i === lastStayIdx;
+          return `
+          <div class="card-section stay-section">
+            <div class="section-title">
+              🏨 Verblijf &amp; Accommodatie
+              ${showBtn ? `<a href="${stayUrl}" target="_blank" rel="noopener" class="airbnb-btn-link">🏠 Bekijk Airbnb →</a>` : ""}
+            </div>
+            ${seg.lines.length ? `
+            <ul class="stay-list">
+              ${seg.lines.map(s => `<li>${s}</li>`).join("")}
+            </ul>` : ""}
+          </div>`;
+        }
+        return `
+          <div class="card-section program-section">
+            <div class="section-title">🥾 Activiteiten &amp; Programma</div>
+            <ul class="program-list">
+              ${seg.lines.map(a => `<li>${a}</li>`).join("")}
+            </ul>
+          </div>`;
+      }).join("");
 
       let tipsHtml = parsed.tips.length ? `
         <div class="tips-box">
@@ -498,9 +658,7 @@ function renderTimeline(){
 
       detailsHtml = `
       <div class="details-content">
-        ${transportHtml}
-        ${stayHtml}
-        ${activitiesHtml}
+        ${sectionsHtml}
         ${tipsHtml}
       </div>
       `;
@@ -522,6 +680,7 @@ function renderTimeline(){
             <h3>${item.title}</h3>
             ${compactBadgesHtml}
           </div>
+          ${flightTimesHtml(item) || otherFlightHtml(item, personKey)}
         </div>
         ${detailsHtml}
         ${photoStripHtml(item)}
@@ -660,16 +819,67 @@ function toggleAllDetails(open) {
 }
 
 /* ---------------- INIT ---------------- */
+/* ---------------- KAART BIJ HET SCHEMA (tripmap.js) ---------------- */
+let schemaKaart = null;
+
+function renderSchemaKaart() {
+  const personKey = getSelectedPerson();
+  if (!schemaKaart) {
+    schemaKaart = TripMap.create({
+      el: "#timelineMap",
+      mode: "panel",
+      person: personKey,
+      day: "today",
+      /* Klik je in de kaart door naar een etappe, dan scrollen we naar het
+         bijbehorende blok in plaats van naar een andere pagina te springen. */
+      onTripSelect(id) { toonEtappe(id, true); },
+      onDayChange() { markeerEtappe(null); },
+    });
+  } else {
+    schemaKaart.setPerson(personKey);
+  }
+}
+
+/* Etappe uitlichten: kaart inzoomen en het schemablok markeren. */
+function toonEtappe(tripId, scrollNaarBlok) {
+  if (!schemaKaart) return;
+  schemaKaart.highlightTrips([tripId]);
+  markeerEtappe(tripId);
+  const blok = document.getElementById(tripId);
+  if (blok && scrollNaarBlok) blok.scrollIntoView({ behavior: "smooth", block: "center" });
+  else document.getElementById("timelineMap").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function markeerEtappe(tripId) {
+  document.querySelectorAll(".timeline-item.tm-gekozen").forEach(el => el.classList.remove("tm-gekozen"));
+  if (tripId) {
+    const el = document.getElementById(tripId);
+    if (el) el.classList.add("tm-gekozen");
+  }
+}
+
 function init() {
-  initPersonSelector({ onChange: () => { renderPhaseNav(); renderTimeline(); } });
+  initPersonSelector({ onChange: () => { renderPhaseNav(); renderTimeline(); renderSchemaKaart(); } });
   renderPhaseNav();
   renderTimeline();
+  renderSchemaKaart();
   updateViewModeUI();
-  
+
+  /* Klik op een etappe in het schema → die etappe op de kaart. */
+  document.getElementById("timeline").addEventListener("click", e => {
+    if (e.target.closest("a, button, input, textarea, summary, .cost-line")) return;
+    const item = e.target.closest(".timeline-item");
+    if (item && item.id) toonEtappe(item.id, false);
+  });
+
   if (window.location.hash) {
     setTimeout(() => {
-      const el = document.querySelector(window.location.hash);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const id = window.location.hash.slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (TRIP.some(t => t.id === id)) { schemaKaart.highlightTrips([id]); markeerEtappe(id); }
+      }
     }, 150);
   }
 }

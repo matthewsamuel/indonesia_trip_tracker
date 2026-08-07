@@ -1,0 +1,6 @@
+# Ruwe bronbestanden (chatexports, docx, pdf) — repo is publiek, dus deze blijven lokaal
+_chat.txt
+*.docx
+*.pdf
+
+.DS_Store

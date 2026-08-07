@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Indonesië — Gezondheid &amp; SOS</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tripmap.css">
+<style>
+  #healthMap { height: 420px; }
+  @media (max-width: 900px) { #healthMap { height: 340px; } }
+</style>
 <style>
   /* Extra page-specific styling for the health dashboard */
   .health-dashboard-grid {
@@ -551,6 +557,17 @@
       </div>
     </section>
 
+    <!-- FULL ROW: RISICOKAART -->
+    <section class="panel col-12">
+      <h2>🦟 Risicokaart — route gekleurd naar malariarisico</h2>
+      <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 16px;">
+        Dezelfde route als op de reiskaart, maar elke plaats is gekleurd naar het
+        malariarisico van die regio. Sleep de tijdlijn om te zien wanneer de reis
+        door welk risicogebied gaat.
+      </p>
+      <div id="healthMap"></div>
+    </section>
+
     <!-- FULL ROW: RECOMMENDED HOSPITALS ON YOUR ROUTE -->
     <section class="panel col-12">
       <h2>🏥 Medische Voorzieningen &amp; Ziekenhuizen op de Route</h2>
@@ -639,7 +656,9 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="data.js"></script>
+<script src="tripmap.js"></script>
 <script>
 /* ================================================================
    DATA & SCHEDULING (SHARED LOGIC)
@@ -1044,7 +1063,51 @@ function onPersonChange(key) {
   renderMalariaRisks();
   renderPharmacy();
   renderHospitals();
+  renderRisicoKaart();
   loadSosData();
+}
+
+/* ══════════════════════════════════════════════════════════
+   RISICOKAART — gedeeld component uit tripmap.js
+
+   MALARIA_REGIONS koppelt een risiconiveau aan reisfases; de kaart weet van
+   elke plaats in welke fase die valt. Die twee samenvoegen levert een route
+   die per plaats gekleurd is naar risico, zonder nieuwe data te verzinnen.
+   ══════════════════════════════════════════════════════════ */
+const RISICO_KLEUR = {
+  geen:      { color: "#4ad66d", label: "Geen malariarisico", icon: "✅" },
+  laag:      { color: "#ffb703", label: "Laag risico",        icon: "🦟" },
+  onbekend:  { color: "#64748b", label: "Niet beoordeeld",    icon: "❔" },
+};
+
+function risicoVoorFase(faseKey) {
+  const regio = MALARIA_REGIONS.find(r => r.phases.includes(faseKey));
+  if (!regio) return { niveau: "onbekend", regio: null };
+  return { niveau: RISICO_KLEUR[regio.risk] ? regio.risk : "onbekend", regio };
+}
+
+let risicoKaart = null;
+
+function renderRisicoKaart() {
+  if (!document.getElementById("healthMap")) return;
+  if (!risicoKaart) {
+    risicoKaart = TripMap.create({
+      el: "#healthMap",
+      mode: "panel",
+      person: selectedPerson,
+      day: "today",
+      placeStyle(place) {
+        const { niveau, regio } = risicoVoorFase(place.fase);
+        const stijl = RISICO_KLEUR[niveau];
+        return { color: stijl.color, icon: stijl.icon, note: regio ? regio.desc : null };
+      },
+      legendItems: Object.keys(RISICO_KLEUR)
+        .filter(k => k !== "onbekend")
+        .map(k => ({ color: RISICO_KLEUR[k].color, label: RISICO_KLEUR[k].label })),
+    });
+  } else {
+    risicoKaart.setPerson(selectedPerson);
+  }
 }
 
 function toggleAccordion(btn) {
@@ -1103,6 +1166,7 @@ function init() {
   renderMalariaRisks();
   renderPharmacy();
   renderHospitals();
+  renderRisicoKaart();
   loadSosData();
   switchHealthTab(activeHealthTab);
 }

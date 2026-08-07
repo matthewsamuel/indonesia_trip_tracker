@@ -6,61 +6,12 @@
 <title>Indonesië — Dashboard</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="tripmap.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
-/* Custom Leaflet Map styling for Home Page */
-#routemap {
-  width: 100%;
-  height: 380px;
-  border-radius: 12px;
-  z-index: 10;
-  background-color: #07090e;
-  border: 1px solid var(--border);
-}
-.map-city-container {
-  pointer-events: none !important;
-}
-.map-city-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  pointer-events: auto;
-  cursor: pointer;
-}
-.map-city-dot {
-  width: 6px;
-  height: 6px;
-  background-color: var(--phase-color, var(--teal));
-  border-radius: 50%;
-  box-shadow: 0 0 6px var(--phase-color, var(--teal));
-  flex-shrink: 0;
-  transition: background-color 0.25s ease, box-shadow 0.25s ease;
-}
-.map-city-text {
-  font-family: 'Outfit', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-  white-space: nowrap;
-  transition: font-weight 0.25s ease, color 0.25s ease;
-}
-.is-active .map-city-text {
-  font-weight: 700;
-  color: #fff;
-}
-.is-context .map-city-text {
-  color: #77839a;
-}
-@keyframes routeFlow {
-  to {
-    stroke-dashoffset: -20;
-  }
-}
-.active-route-flow {
-  stroke-dasharray: 8 6;
-  animation: routeFlow 1.2s linear infinite;
-}
+/* De kaart naast de stepper: paneelvariant van tripmap.js */
+#routemap { height: 420px; }
+@media (max-width: 900px) { #routemap { height: 340px; } }
 </style>
 </head>
 <body>
@@ -119,10 +70,7 @@
         <div class="route-stepper" id="routeStepper"></div>
       </div>
       <div class="route-right">
-        <div class="map-wrap" style="padding: 0; overflow: hidden; border: none; background: transparent;">
-          <div id="routemap"></div>
-        </div>
-        <div class="map-legend" id="mapLegend"></div>
+        <div id="routemap"></div>
         <div id="lockedPhotosPanel" class="locked-photos-panel" style="display:none"></div>
       </div>
     </div>
@@ -143,6 +91,7 @@
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="data.js"></script>
+<script src="tripmap.js"></script>
 <script>
 
 
@@ -366,290 +315,30 @@ function renderTodoPanel() {
     <ul class="todo-list">${rows}</ul>`;
 }
 
-/* ---------------- GEOGRAPHIC LOCATIONS (LAT/LNG) ---------------- */
-/* Coordinaten komen uit GEO in data.js (single source of truth) */
-const LOCS = GEO;
+/* ---------------- RENDER: kaart (tripmap.js) ----------------
+   De kaart is het gedeelde TripMap-component. De stepper hiernaast stuurt
+   hem aan via highlightTrips(); zonder selectie toont hij de dag van vandaag. */
+let tripKaart = null;
+let kaartVoorPersoon = null;
 
-/* Perpendicular Bezier curvature helper for overlapping round-trip lines */
-function getCurvePoints(from, to, factor = 0.12) {
-  const p0 = [from.lat, from.lng];
-  const p2 = [to.lat, to.lng];
-  const dist = Math.hypot(p2[0] - p0[0], p2[1] - p0[1]);
-  if (dist < 0.05 || factor === 0) {
-    return [p0, p2];
-  }
-  const mid = [(p0[0] + p2[0]) / 2, (p0[1] + p2[1]) / 2];
-  const dx = p2[0] - p0[0];
-  const dy = p2[1] - p0[1];
-  
-  // Perpendicular offset (bends line to the right of direction vector)
-  const offsetLat = -dy * factor;
-  const offsetLng = dx * factor;
-  
-  const p1 = [mid[0] + offsetLat, mid[1] + offsetLng];
-  
-  const points = [];
-  const steps = 30;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const mt = 1 - t;
-    const lat = mt * mt * p0[0] + 2 * mt * t * p1[0] + t * t * p2[0];
-    const lng = mt * mt * p0[1] + 2 * mt * t * p1[1] + t * t * p2[1];
-    points.push([lat, lng]);
-  }
-  return points;
-}
-
-/* ---------------- RENDER: map & Leaflet ---------------- */
-let map;
-let cityLabelsGroup;
-let routesGroup;
-let activeTileLayer;
-let mapBuiltFor = null;
-
-const MAP = {
-  route: [],
-  personTrips: [],
-  markers: {},
-  polylines: [],
-  defaultBounds: null
-};
-
-function initLeafletMap() {
-  map = L.map('routemap', {
-    center: [-2.5, 115],
-    zoom: 5,
-    zoomControl: false,
-    attributionControl: true
+function initTripKaart(personKey) {
+  tripKaart = TripMap.create({
+    el: "#routemap",
+    mode: "panel",
+    person: personKey,
+    day: "today",
+    onTripSelect(id) { location.href = "indonesia-timeline.html#" + id; },
   });
-  
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
-  
-  // Minimalist Donker kaartlaag
-  activeTileLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-    { attribution: '© OpenStreetMap contributors, © CARTO', maxZoom: 19 }
-  ).addTo(map);
-  
-  cityLabelsGroup = L.layerGroup().addTo(map);
-  routesGroup = L.layerGroup().addTo(map);
-}
-
-function buildMap(personKey) {
-  if (!map) initLeafletMap();
-  
-  // Maak bestaande lagen leeg
-  cityLabelsGroup.clearLayers();
-  routesGroup.clearLayers();
-  MAP.markers = {};
-  MAP.polylines = [];
-  
-  const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = tripIds.map(id => TRIP.find(t => t.id === id)).filter(Boolean);
-  MAP.personTrips = personTrips;
-
-  // Route bepalen: opeenvolgende unieke locaties
-  const route = [];
-  for (const item of personTrips) {
-    for (const k of item.map) {
-      if (!LOCS[k]) continue;
-      const last = route[route.length - 1];
-      if (last && last.k === k) {
-        last.fases.add(item.fase);
-        continue;
-      }
-      route.push({ k, fases: new Set([item.fase]) });
-    }
-  }
-  MAP.route = route;
-
-  // Eerste fase per locatie (bepaalt de dot kleur van de stad)
-  const firstFase = {};
-  for (const item of personTrips) {
-    for (const k of item.map) {
-      if (LOCS[k] && !(k in firstFase)) {
-        firstFase[k] = item.fase;
-      }
-    }
-  }
-
-  // Lijnen tussen locaties tekenen
-  for (let i = 0; i < route.length - 1; i++) {
-    const k1 = route[i].k, k2 = route[i+1].k;
-    const p1 = LOCS[k1], p2 = LOCS[k2];
-    const phases = new Set([...route[i].fases, ...route[i+1].fases]);
-
-    // Genereer gebogen lijn-coördinaten
-    const curvePoints = getCurvePoints(p1, p2, 0.12);
-
-    const poly = L.polyline(curvePoints, {
-      color: 'rgba(0, 180, 216, 0.4)',
-      weight: 2,
-      dashArray: '5 4'
-    }).addTo(routesGroup);
-
-    MAP.polylines.push({ poly, from: k1, to: k2, fases: phases });
-  }
-
-  // Custom stad markers tekenen
-  Object.keys(firstFase).forEach(k => {
-    const loc = LOCS[k];
-    const phaseColor = FASES[firstFase[k]].color;
-
-    const marker = L.marker([loc.lat, loc.lng], {
-      icon: L.divIcon({
-        html: `
-          <div class="map-city-label" style="--phase-color: ${phaseColor}">
-            <div class="map-city-dot"></div>
-            <span class="map-city-text">${loc.name}</span>
-          </div>
-        `,
-        className: 'map-city-container',
-        iconSize: [120, 20],
-        iconAnchor: [5, 10]
-      }),
-      interactive: true
-    }).addTo(cityLabelsGroup);
-
-    marker.on('click', () => {
-      const trip = personTrips.find(t => t.map.includes(k));
-      if (trip) {
-        window.location.href = `indonesia-timeline.html#${trip.id}`;
-      }
-    });
-
-    MAP.markers[k] = marker;
-  });
-
-  // Bereken bounds (Brussel weglaten uit Indonesië-weergave)
-  const boundsPts = [];
-  Object.keys(firstFase).forEach(k => {
-    if (k !== 'brussel') {
-      boundsPts.push([LOCS[k].lat, LOCS[k].lng]);
-    }
-  });
-  if (boundsPts.length > 0) {
-    MAP.defaultBounds = L.latLngBounds(boundsPts);
-    map.fitBounds(MAP.defaultBounds, { padding: [30, 30] });
-  } else {
-    MAP.defaultBounds = L.latLngBounds([[-10, 95], [10, 140]]);
-    map.fitBounds(MAP.defaultBounds);
-  }
-
-  // Legenda: alleen fases die deze persoon echt heeft
-  const phaseOrder = [];
-  const seenF = new Set();
-  for (const t of personTrips) {
-    if (!seenF.has(t.fase)) { seenF.add(t.fase); phaseOrder.push(t.fase); }
-  }
-  document.getElementById("mapLegend").innerHTML = phaseOrder.map(fk =>
-    `<span><i style="background:${FASES[fk].color}"></i>${FASES[fk].label}</span>`
-  ).join("") + `<span><i style="background:#ff4d4d"></i>vandaag</span>`;
-}
-
-function updateMapHighlight(highlightTripIds) {
-  if (!map) return;
-  const route = MAP.route;
-  let phase = null;
-  const activeKeys = new Set();
-
-  if (highlightTripIds && highlightTripIds.length > 0) {
-    const firstTrip = MAP.personTrips.find(i => highlightTripIds.includes(i.id));
-    if (firstTrip) phase = firstTrip.fase;
-
-    for (const tid of highlightTripIds) {
-      const item = TRIP.find(t => t.id === tid);
-      if (item) {
-        for (const mk of item.map) {
-          if (LOCS[mk]) activeKeys.add(mk);
-        }
-      }
-    }
-  }
-
-  const phaseColor = phase ? FASES[phase].color : null;
-
-  // Steden updaten
-  Object.entries(MAP.markers).forEach(([k, marker]) => {
-    const el = marker.getElement();
-    if (!el) return;
-
-    el.classList.remove('is-active');
-
-    if (!phase) {
-      marker.setOpacity(k === 'brussel' ? 0 : 1);
-      el.style.opacity = k === 'brussel' ? '0' : '1';
-      const dotEl = el.querySelector('.map-city-dot');
-      if (dotEl) dotEl.style.backgroundColor = '';
-    } else if (activeKeys.has(k)) {
-      el.classList.add('is-active');
-      marker.setOpacity(1);
-      el.style.opacity = '1';
-      const dotEl = el.querySelector('.map-city-dot');
-      if (dotEl) dotEl.style.backgroundColor = phaseColor;
-    } else {
-      marker.setOpacity(0.06);
-      el.style.opacity = '0.06';
-    }
-  });
-
-  // Lijnen updaten
-  MAP.polylines.forEach(item => {
-    const touchesBrussel = item.from === 'brussel' || item.to === 'brussel';
-    const path = item.poly.getElement();
-    if (!phase) {
-      item.poly.setStyle({
-        color: 'rgba(0, 180, 216, 0.4)',
-        weight: 2,
-        dashArray: '5 4',
-        opacity: touchesBrussel ? 0 : 0.8
-      });
-      if (path) path.setAttribute('class', 'leaflet-interactive');
-    } else if (activeKeys.has(item.from) && activeKeys.has(item.to) && item.fases.has(phase)) {
-      item.poly.setStyle({
-        color: phaseColor,
-        weight: 3.5,
-        dashArray: '8 6',
-        opacity: 0.95
-      });
-      if (path) path.setAttribute('class', 'leaflet-interactive active-route-flow');
-    } else if (activeKeys.has(item.from) || activeKeys.has(item.to)) {
-      item.poly.setStyle({
-        color: 'rgba(148, 163, 184, 0.25)',
-        weight: 2,
-        dashArray: '5 4',
-        opacity: 0.5
-      });
-      if (path) path.setAttribute('class', 'leaflet-interactive');
-    } else {
-      item.poly.setStyle({
-        opacity: 0.04
-      });
-      if (path) path.setAttribute('class', 'leaflet-interactive');
-    }
-  });
-
-  // Fit bounds op actieve regio
-  if (phase) {
-    const boundsPts = [];
-    activeKeys.forEach(k => {
-      boundsPts.push([LOCS[k].lat, LOCS[k].lng]);
-    });
-    if (boundsPts.length > 0) {
-      map.fitBounds(L.latLngBounds(boundsPts), { padding: [40, 40], animate: true });
-    }
-  } else {
-    if (MAP.defaultBounds) {
-      map.fitBounds(MAP.defaultBounds, { padding: [30, 30], animate: true });
-    }
-  }
 }
 
 function renderMap(highlightTripIds = null) {
   const personKey = ls_get("selected_person", "matthew");
-  if (mapBuiltFor !== personKey) {
-    buildMap(personKey);
-    mapBuiltFor = personKey;
+  if (!tripKaart) {
+    initTripKaart(personKey);
+    kaartVoorPersoon = personKey;
+  } else if (kaartVoorPersoon !== personKey) {
+    tripKaart.setPerson(personKey);
+    kaartVoorPersoon = personKey;
     if (lockedTripIds !== null) {
       lockedTripIds = null;
       lockedFaseKey = null;
@@ -657,7 +346,7 @@ function renderMap(highlightTripIds = null) {
       updateLockedPhotos(null, null);
     }
   }
-  updateMapHighlight(highlightTripIds);
+  tripKaart.highlightTrips(highlightTripIds);
 }
 
 /* ---------------- STEPPER HOVER & LOCK ---------------- */

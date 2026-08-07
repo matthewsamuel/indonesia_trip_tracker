@@ -1762,11 +1762,25 @@ ul.history .hdel:hover {
   .timeline-item .when .yr { display: inline; opacity: 0.5; }
   .timeline-item .when .dur { margin-top: 0; margin-left: auto; }
   .timeline-item .timeline-node { grid-area: node; padding-top: 4px; }
-  .timeline-item .item-card { grid-area: card; }
+  .timeline-item .item-card { grid-area: card; min-width: 0; }
   .timeline-container::before { left: 10px; }
 
   .item-card { padding: 15px; }
   .item-head h3 { font-size: 15px; }
+
+  /* Vlucht-tijden op smalle schermen altijd op een eigen volle regel, anders
+     loopt het blokje naast een lange titel het kaartje uit. Zonder min-width:0
+     weigert de grid-cel te krimpen (CSS Grid/flex "blowout") en schuift alles
+     buiten beeld i.p.v. netjes te wrappen. */
+  .item-head,
+  .item-title-wrapper {
+    min-width: 0;
+  }
+  .flight-times {
+    flex-basis: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
 
   /* Kostenregels wrappen i.p.v. overlopen */
   .cost-line { flex-wrap: wrap; row-gap: 6px; }
@@ -2043,6 +2057,86 @@ ul.history .hdel:hover {
   font-weight: 600;
   color: #fff;
   line-height: 1.35;
+}
+
+/* Vertrek-/aankomsttijden van een vlucht: altijd rechts uitgelijnd, op
+   dezelfde hoogte als de titel, zodat vertrek- en aankomstuur meteen
+   opvallen zonder de kostenregel te hoeven openklappen. */
+.flight-times {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.flight-times .ft-leg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  line-height: 1.25;
+}
+.flight-times .ft-place {
+  font-size: 10px;
+  color: var(--text-soft);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.flight-times .ft-time {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.flight-times .ft-nextday {
+  font-size: 9px;
+  color: var(--teal);
+  margin-left: 1px;
+}
+.flight-times .ft-sep {
+  width: 1px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+/* Vlucht van iemand anders (niet de bekeken persoon zelf): kleine gestapelde
+   avatars vóór de tijden, en een iets ingetogener kleur zodat meteen duidelijk
+   is dat dit niet de eigen etappe is. */
+.flight-times-other .ft-time {
+  color: var(--text-soft);
+}
+.flight-times .ft-avatars {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+}
+.flight-times .ft-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #fff;
+  border: 1.5px solid #0d1424;
+  margin-left: -7px;
+  flex-shrink: 0;
+}
+.flight-times .ft-avatar:first-child {
+  margin-left: 0;
+}
+@media (max-width: 600px) {
+  .flight-times { gap: 7px; }
+  .flight-times .ft-time { font-size: 13.5px; }
+  .flight-times .ft-place { font-size: 9px; }
+  .flight-times .ft-sep { height: 20px; }
+  .flight-times .ft-avatar { width: 17px; height: 17px; font-size: 7.5px; }
 }
 
 /* Details content container style (always open) */
