@@ -507,68 +507,6 @@ body {
   text-decoration: underline;
 }
 
-/* ── SVG MAP CARD ── */
-.map-wrap {
-  background: rgba(0,0,0,0.2);
-  border-radius: 16px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  overflow-x: auto;
-}
-svg#routemap {
-  width: 100%;
-  min-width: 720px;
-  height: auto;
-  display: block;
-}
-.map-pt {
-  cursor: pointer;
-  transition: opacity 0.3s ease;
-}
-.map-pt circle.halo {
-  opacity: 0;
-  transition: opacity 0.25s ease, fill 0.3s ease;
-}
-.map-pt:hover circle.halo {
-  opacity: 0.25;
-}
-.map-pt.is-active circle.halo {
-  opacity: 0.2;
-}
-.map-pt circle.dot {
-  transition: fill 0.3s ease;
-}
-.map-pt text {
-  font-size: 10px;
-  font-weight: 500;
-  fill: var(--text);
-  pointer-events: none;
-  paint-order: stroke fill;
-  stroke: #07090e;
-  stroke-width: 3px;
-  stroke-linejoin: round;
-  transition: fill 0.3s ease;
-}
-.map-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 14px;
-  font-size: 12px;
-  color: var(--text-soft);
-}
-.map-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.map-legend i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
 /* ── TIMELINE PAGE SPECIFICS ── */
 .fase-nav-container {
   display: flex;
@@ -1472,18 +1410,6 @@ ul.history .hdel:hover {
   z-index: 5;
 }
 
-/* Glowing route line animation */
-.glowing-route {
-  stroke-dasharray: 8 6;
-  animation: routeDash 1.2s linear infinite;
-}
-
-@keyframes routeDash {
-  to {
-    stroke-dashoffset: -28;
-  }
-}
-
 .simple-step-desc {
   font-size: 11.5px;
   color: var(--text-soft);
@@ -1738,9 +1664,6 @@ ul.history .hdel:hover {
   .person-card-name { font-size: 12px; }
 
   .chart-container { height: 200px; }
-
-  /* Route & kaart: kaart blijft breed en scrollt horizontaal, dat is prima op mobiel */
-  .map-wrap { padding: 8px; }
 
   /* Reisschema (indonesia-timeline.html): datumkolom boven de kaart in plaats van ernaast */
   .timeline-item {

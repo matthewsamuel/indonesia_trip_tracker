@@ -21,7 +21,7 @@
   <header class="app-header">
     <div class="app-brand">
       <h1>🧭 Reis naar Indonesië</h1>
-      <div class="sub">29 aug – 29 sep 2026</div>
+      <div class="sub">29 aug – 30 sep 2026</div>
     </div>
     <nav class="app-nav">
       <a class="app-nav-link active" href="indonesia-tracker.html">🏠 Home</a>
@@ -227,8 +227,8 @@ function recalcAll(){
       <div class="value">${doneDays} <small>/ ${totalDays}</small></div>
     </div>
     <div class="stat-card">
-      <div class="label">💶 Totaal Overzicht</div>
-      <div class="value">€${total.toFixed(0)} <small>per persoon</small></div>
+      <div class="label">💶 Al geboekt</div>
+      <div class="value">€${confirmed.toFixed(0)} <small>van €${total.toFixed(0)} pp</small></div>
     </div>
   `;
 }
@@ -503,7 +503,10 @@ function renderRouteStepper() {
   });
 
   if (countBadge) {
-    countBadge.textContent = `${phases.length} regio's`;
+    /* Geen "regio's": Java valt voor Matthew in twee blokken uiteen (met de
+       groep tot Ijen, en na de ophaalvlucht samen met Hinke), met de
+       Bali-tussenstop in Canggu ertussen. */
+    countBadge.textContent = `${phases.length} ${phases.length === 1 ? "blok" : "blokken"}`;
   }
 
   let html = `<div class="simple-timeline">`;
@@ -523,8 +526,9 @@ function renderRouteStepper() {
             <div class="simple-step-companions-row">
               ${chunk.map(ckey => {
                 const pers = PERSONS[ckey];
-                const init = pers.name.substring(0, 2);
-                return `<span class="simple-companion-dot" style="background:${pers.color}" title="${pers.name}">${init}</span>`;
+                // PERSONS.initials houdt Kamiel/Kasper en Matthew/Mathias/Maurice
+                // uit elkaar; de eerste twee letters van de naam doen dat niet.
+                return `<span class="simple-companion-dot" style="background:${pers.color}" title="${pers.name}">${pers.initials}</span>`;
               }).join("")}
             </div>
           `).join("")}

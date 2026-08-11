@@ -51,6 +51,50 @@ Belangrijke afleidingsregels:
 - Wegroutes worden bij OSRM opgehaald (`router.project-osrm.org`) en in `localStorage`
   gecached onder `osrm2_<van>_<naar>`. Zonder netwerk blijft de rechte lijn staan.
 - Vluchten zijn grootcirkelbogen; korte hops krijgen extra welving zodat ze leesbaar blijven.
+- Een etappe die verplaatst hoort `map: ["van","naar"]` te hebben en een verblijf één
+  enkele key. Geeft een verblijf-etappe tóch twee keys terwijl een andere etappe
+  diezelfde verplaatsing al beschrijft, dan wordt de rit dubbel afgelegd en pendelt
+  het icoontje heen en weer (zo ging het ooit mis bij Medan ⇄ Ketambe).
+
+### Afspelen
+
+De afspeelknop draait op een animatieframe-klok (`tick`), niet op een timer die één dag
+per tik verzet. Per reiziger wordt eerst het **dagpad** afgeleid — de volledige route van
+die dag, aan elkaar geplakt uit de deeltraject-geometrie — en het icoontje loopt dat pad
+af op *afstandsfractie*, zodat het overal even snel gaat.
+
+- `st.frac` (0–1) zegt waar we binnen de huidige dag zitten. `idleFrac(rij)` is de
+  rustpositie (halverwege het pad) waar een dag op blijft staan zonder afspelen.
+- **`dayProfile(rij)`** verdeelt een dag in fasen: aanloop → deeltraject → halte →
+  deeltraject → … Op elke tussenstop staat de reiziger even stil en licht die plek op
+  (`tm-place-hier`). Zonder die haltes raasde het icoontje in één beweging langs Tumpak
+  Sewu én Bromo én Banyuwangi en zag je niet dat daar drie dingen gebeuren.
+- De duur van haltes en van een rustdag schaalt met **`dayBusy(dag)`** = aantal lopende
+  etappes + aantal kostenposten met `cat: "activiteit"`. Een drukke dag krijgt dus meer
+  tijd dan een dag luieren in Canggu. `dayDuration()` is gewoon de som van het profiel.
+  Ter oriëntatie: een rustdag ±750 ms, een enkele hop ±1,2 s, Bromo-dag met drie haltes
+  ±5,7 s, de Komodo-boottocht met vijf haltes ±8,4 s.
+- De aanloopfase is voor de camera: `planCamera()` kadert de hele etappe in vóór het
+  lopen begint, maar alleen als die niet al goed in beeld staat.
+- Terwijl de kaart zelf beweegt staat de klok stil (`camBezig`). Een marker verplaatsen
+  tijdens een zoomanimatie rekent met het oude zoomniveau en laat hem wegglijden.
+- Per frame gebeurt alleen wat goedkoop is (`renderFrame`): markers verplaatsen en het
+  spoor bijwerken. Popups, avatars en lijnstijlen verversen enkel bij een dagwissel.
+
+### Kaartweergave en drukte op de kaart
+
+- **Satelliet is de standaardtegel** (`DEFAULTS.tile`) op alle pagina's. Luchtbeelden zijn
+  druk, dus `.tm-sat-tiles` legt een donkere sluier over *alleen de tegellaag* en geeft
+  plaatsnamen een zwaardere schaduw; lijnen en markers blijven onaangetast.
+- Een traject toont zijn vervoersemoji **alleen op de dag dat het gereisd wordt**. Hielden
+  afgelegde trajecten hun emoji, dan stonden er tegen het eind van de reis dertig busjes
+  en bootjes over de kaart — de meeste midden op zee, want daar valt het midden van een
+  vlucht- of bootlijn, en bij Bali zeven bovenop elkaar. `layoutLabels()` doet daarna nog
+  een ontwar-pas: een emoji die op een plaatsnaam of bolletje valt, verdwijnt.
+- **Nooit `setAttribute("class", …)` op een element dat Leaflet beheert.** Dat veegt ook
+  `leaflet-marker-icon` en `leaflet-zoom-animated` weg, waardoor het element bij een
+  zoomanimatie niet meer meeschaalt en verschoven achterblijft. Gebruik `classList`
+  (zie `zetStatusKlasse`), en zet basisklassen via de `className`-optie van Leaflet.
 
 ## Code-architectuur
 
@@ -58,7 +102,7 @@ Belangrijke afleidingsregels:
 
 Alle data zit in het `<script>`-blok bovenaan, vóór de render-functies:
 
-**`PHASES`** — object dat fase-IDs mapt naar `{label, color, soft}`. Fase-IDs: `heen`, `sg`, `sumatra`, `jakarta`, `java`, `flores`, `komodo`, `bali`, `terug`.
+**`FASES`** — object dat fase-IDs mapt naar `{label, color, soft, uitleg, desc}`. Fase-IDs: `heen`, `sumatra`, `jakarta`, `java`, `flores`, `komodo`, `bali`, `terug`. De volgorde van de sleutels is betekenisvol: `compareTrips()` gebruikt hem als tiebreak bij gelijke startdatum.
 
 **`COSTS`** — object: `id → {label, cat, amount, ...}`. `amount: null` = TBD. `cat` is één van: `"vlucht"`, `"transport"`, `"accommodatie"`, `"activiteit"`. Elke kostenpost heeft een unieke string-ID (bijv. `"c1"`, `"c7b"`).
 
@@ -76,7 +120,7 @@ Zoek hem op via `routeMode(van, naar)`, dat ook de omgekeerde richting probeert.
 ```js
 {
   id: "t1",            // unieke string
-  fase: "heen",        // verwijst naar PHASES
+  fase: "heen",        // verwijst naar FASES
   start: "2026-08-28", // ISO-datum
   end:   "2026-08-29",
   title: "...",
@@ -95,7 +139,8 @@ Een etappe die verplaatst hoort dus `map: ["van", "naar"]` te hebben, een verbli
 **`localStorage`-keys in tracker:**
 - `"booked_<id>"` → boolean (is kostenpost geboekt?)
 - `"cost_<id>"` → number (gebruiker-overschreven bedrag)
-- `"notes_<id>"` → string (vrije notitie per trip-item)
+- `"collapsed_fase_<fase>"` / `"collapsed_stepper_<groupKey>"` → boolean (in-/uitgeklapt)
+- `"timeline_view_mode"` → `"expanded"` | `"compact"`
 - `"selected_person"` → string (gedeeld door alle pagina's)
 - `"mapphoto_<persoon>"` → data-URL (avatarfoto, gedeeld met de personenkiezer)
 - `"osrm2_<van>_<naar>"` → gecachte wegroute
@@ -128,17 +173,17 @@ kloppen als de groep onderweg van het plan afwijkt.
 
 ## Reisstructuur (stand van zaken 2026-07-01)
 
-**Route:** Brussel → Bangkok → Singapore (28-29/08) → Medan → Ketambe/Sumatra jungle trek (31/08-07/09) → Jakarta (07-08/09) → Yogyakarta → Malang (09-10/09) → **splitsingspunt** → Surabaya (14/09) → Banyuwangi/Bromo/Ijen (16-17/09) → Labuan Bajo/Flores (18-20/09) → Ruteng (21-22/09) → Labuan Bajo/Komodo (23-25/09) → Bali (26-28/09) → thuis (29/09).
+**Route:** Brussel → Bangkok → Singapore (28-29/08) → Medan → Ketambe/Sumatra jungle trek (31/08-07/09) → Jakarta (07-08/09) → Yogyakarta → Malang (09-10/09) → Tumpak Sewu/Bromo/Ijen met de jongens (11-13/09) → ferry naar Bali, Canggu (13-15/09) → **vlucht DPS→SUB 15/09 16:40 (IU 703); Hinke landt 18:15** → Banyuwangi/Bromo/Ijen opnieuw met Hinke (16-17/09) → Labuan Bajo/Flores (18-20/09) → Ruteng (21-22/09) → Labuan Bajo/Komodo (23-25/09) → Bali (26-28/09) → terugvlucht Bali → Bangkok → Brussel (29-30/09, TG440 + TG934).
 
 **Reisgezelschap:**
 - Matthew + **Arne**: samen BRU→Singapore→Medan (28-31/08).
 - In Medan sluiten de overige jongens aan: **6 man totaal** trekken de jungle in (Matthew, Arne, Willem, Kasper, Eliott, Kamiel).
 - In Jakarta (08/09) sluiten **Maurice (Momo)**, **Mathias** en **Jens** aan → **9 man** voor Java.
 - Volledige naamlijst reisgenoten (naast Matthew): **Hinke** (vriendin), **Arne, Eliott, Jens, Kamiel, Maurice, Mathias, Willem, Kasper**.
-- **Splitsingspunt:** na nachttrein naar Malang (10/09) gaan de jongens door naar Tumpak Sewu (11/09) en Bromo (12/09). Matthew doet dit NIET mee — hij wil dat met Hinke doen. Hij wacht in Surabaya.
-- **Hinke** landt 14/09 om 8:00 in Surabaya; vanaf dan reizen zij samen (Bromo/Ijen op 16-17/09, dan Flores/Komodo/Bali).
+- **Splitsingspunt:** na de nachttrein naar Malang (10/09) doet Matthew het volledige jongensprogramma mee — Tumpak Sewu (11/09), Bromo (12/09) en Ijen (13/09) — en deelt hij dus gewoon `t10b`, `t30` en `t30b` met hen; er is géén aparte Matthew-etappe meer voor die dagen. Hij steekt op 13/09 met de ferry mee over naar Bali en blijft tot 15/09 in Canggu (`t11`, verblijf nog te regelen: de villa `t30c` is voor 8 personen geboekt). Op 15/09 vliegt hij om 16:40 met Super Air Jet IU 703 van Denpasar naar Surabaya (`t11a`, €36, aankomst 16:40 lokale tijd) om Hinke op te halen. Bromo/Tumpak Sewu en Ijen doet hij op 16-17/09 een tweede keer, dan met Hinke — vandaar aparte kostenposten per ronde (`c37`/`c38` met de jongens, `c21`/`c22` met Hinke); de kostenset per persoon is een `Set`, dus hergebruikte id's zouden maar één keer meetellen.
+- **Hinke** vliegt 14/09 met Cathay Pacific (CX294 + CX629) via Hongkong en landt 15/09 om 18:15 in Surabaya; vanaf dan reizen zij samen (Bromo/Ijen op 16-17/09, dan Flores/Komodo/Bali).
 
-**Kosten:** `amount: null` in COSTS = TBD. Openstaande TBDs: vlucht Medan→Jakarta, Java→Denpasar→Labuan Bajo, Ruteng overnachting, Labuan Bajo overnachting (tweede keer), vlucht Labuan Bajo→Bali, terugvlucht Bali→huis.
+**Kosten:** `amount: null` in COSTS = TBD. Openstaande TBDs voor Matthew: heenvlucht BRU→Medan (c1), guesthouse Ketambe (c4b), verblijf Canggu 13-15/09 (c36), Java→Denpasar→Labuan Bajo (c11), Ruteng overnachting (c13), Labuan Bajo overnachting tweede keer (c14), vlucht Labuan Bajo→Bali (c15), terugvlucht TG440+TG934 (c17 — vlucht staat vast, prijs niet).
 
 ## Bewerkingsregel
 

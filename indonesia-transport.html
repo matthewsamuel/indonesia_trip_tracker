@@ -512,7 +512,7 @@
   <header class="app-header">
     <div class="app-brand">
       <h1>🧭 Reis naar Indonesië</h1>
-      <div class="sub">29 aug – 29 sep 2026</div>
+      <div class="sub">29 aug – 30 sep 2026</div>
     </div>
     <nav class="app-nav">
       <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
@@ -664,10 +664,13 @@
             <option value="SQ952">SQ952 (SIN→CGK)</option>
             <option value="JT204">JT204 (CGK→KNO)</option>
             <option value="JT383">JT383 (KNO→CGK)</option>
+            <option value="CX294">CX294 (BRU→HKG)</option>
+            <option value="CX629">CX629 (HKG→SUB)</option>
             <option value="GA402">GA402 (SUB→LBJ)</option>
             <option value="QZ503">QZ503 (LBJ→DPS)</option>
-            <option value="SQ963">SQ963 (DPS→SIN)</option>
-            <option value="SQ304">SQ304 (SIN→BRU)</option>
+            <option value="TG440">TG440 (DPS→BKK)</option>
+            <option value="TG432">TG432 (DPS→BKK)</option>
+            <option value="TG934">TG934 (BKK→BRU)</option>
           </select>
         </div>
       </div>
@@ -713,6 +716,8 @@
         <button class="airport-tab-btn active" onclick="switchAirportTab('BRU',event)">BRU (Brussel)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('SUB',event)">SUB (Surabaya)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('SIN',event)">SIN (Singapore)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('HKG',event)">HKG (Hongkong)</button>
+        <button class="airport-tab-btn" onclick="switchAirportTab('BKK',event)">BKK (Bangkok)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('KNO',event)">KNO (Medan)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('CGK',event)">CGK (Jakarta)</button>
         <button class="airport-tab-btn" onclick="switchAirportTab('DPS',event)">DPS (Bali)</button>
@@ -736,8 +741,10 @@
 
 const AIRPORTS_DB = {
   BRU:{title:"Brussels Airport (Zaventem)",layover:"N/A — Vertrekpunt van de reis.",wifi:"🆓 Free Unlimited Wi-Fi ('Airport_Free_Wifi')",tips:"Prachtige Belgische bierbarren in de A & B terminals. Minstens 3 uur op voorhand aanwezig zijn voor de internationale check-in bij Singapore Airlines (SQ303, Pier B).",taxis:"N/A — Vertrek vanuit België."},
-  SUB:{title:"Juanda International Airport (Surabaya, Oost-Java)",layover:"Aankomstpunt van Hinke (14/09, 08:00). Matthew wacht hier vanaf 11/09. Vertrekpunt richting Labuan Bajo op 18/09.",wifi:"🆓 Gratis airport Wi-Fi in beide terminals.",tips:"Twee terminals: T1 (binnenlands, o.a. Garuda naar Labuan Bajo) en T2 (internationaal, waar Hinke aankomt). Er rijdt een shuttlebus tussen T1 en T2 — reken 20–30 min. Haal hier een lokale SIM als je er nog geen hebt.",taxis:"🚕 Grab en Gojek werken goed in Surabaya. Officiele taxistand bij aankomst; Bluebird is betrouwbaar met meter. Naar het centrum ±30–45 min."},
-  SIN:{title:"Changi Airport (Singapore)",layover:"Overstapluchthaven voor iedereen. Matthew & Arne hebben maar 50 min (SQ303→SQ990) — meteen doorlopen. De anderen hebben 2u25 (SQ303→SQ956), Maurice/Mathias/Jens 1u (SQ303→SQ952).",wifi:"#WiFi@Changi (Extreem snel, geen registratie)",tips:"Alleen met een ruime overstap: 'The Jewel Changi' met de indoor waterval (RAIN VORTEX) ligt landside — bij 50 min overstap niet doen. Terminal 1 t/m 4 zijn verbonden met de gratis Skytrain. Er is een bioscoopzaal, zwembad (T1) en tal van foodcourts.",taxis:"🚕 Grab of BlueSG zijn super efficiënt. Volg borden naar 'Ride-hailing pickup point'. Nooit naar 'random' taxichauffeurs in de hal gaan."},
+  SUB:{title:"Juanda International Airport (Surabaya, Oost-Java)",layover:"Aankomstpunt van Hinke (15/09, 18:15 met CX629). Matthew vliegt diezelfde namiddag vanuit Denpasar hierheen (IU 703, 16:40 → 16:40 lokaal) om haar op te halen. Vertrekpunt richting Labuan Bajo op 18/09.",wifi:"🆓 Gratis airport Wi-Fi in beide terminals.",tips:"Twee terminals: T1 (binnenlands, o.a. Garuda naar Labuan Bajo) en T2 (internationaal, waar Hinke aankomt). Er rijdt een shuttlebus tussen T1 en T2 — reken 20–30 min. Haal hier een lokale SIM als je er nog geen hebt.",taxis:"🚕 Grab en Gojek werken goed in Surabaya. Officiele taxistand bij aankomst; Bluebird is betrouwbaar met meter. Naar het centrum ±30–45 min."},
+  HKG:{title:"Chek Lap Kok International Airport (Hongkong)",layover:"Overstapluchthaven van Hinke op de heenreis: aankomst 15/09 om 06:35 met CX294, door om 14:30 met CX629 — bijna 8 uur wachttijd.",wifi:"🆓 Gratis onbeperkte Wi-Fi ('#HKAirportFreeWiFi'), geen registratie nodig.",tips:"Met acht uur overstap loont het om airside te blijven: er zijn rustzones met ligstoelen in Terminal 1 (bij gate 60 en de Sky Bridge) en betaalbare loungetoegang (Plaza Premium). Verlaat het transitgebied niet zonder je Indonesische aansluiting te checken.",taxis:"N/A — puur transit, je verlaat de luchthaven niet."},
+  BKK:{title:"Suvarnabhumi Airport (Bangkok)",layover:"Overstapluchthaven op de terugreis: Arne, Kasper & Jens (25/09, 4u) en Matthew & Hinke (29/09, 1u 55m) stappen hier over op TG934 naar Brussel.",wifi:"🆓 Gratis Wi-Fi (2 uur gratis via 'AOT Free WiFi', daarna betalend).",tips:"Bij 1u55 overstap: meteen doorlopen naar de transferbalie, de gates liggen ver uit elkaar (concourse D t/m G). Voor wie 4 uur heeft: massagestoelen en foodcourts in concourse D, en de Miracle Lounge is ook zonder businessticket toegankelijk.",taxis:"N/A — transit, je verlaat de luchthaven niet."},
+  SIN:{title:"Changi Airport (Singapore)",layover:"Overstapluchthaven op de heenreis van de jongens. Matthew & Arne hebben maar 50 min (SQ303→SQ990) — meteen doorlopen. De anderen hebben 2u25 (SQ303→SQ956), Maurice/Mathias/Jens 1u (SQ303→SQ952).",wifi:"#WiFi@Changi (Extreem snel, geen registratie)",tips:"Alleen met een ruime overstap: 'The Jewel Changi' met de indoor waterval (RAIN VORTEX) ligt landside — bij 50 min overstap niet doen. Terminal 1 t/m 4 zijn verbonden met de gratis Skytrain. Er is een bioscoopzaal, zwembad (T1) en tal van foodcourts.",taxis:"🚕 Grab of BlueSG zijn super efficiënt. Volg borden naar 'Ride-hailing pickup point'. Nooit naar 'random' taxichauffeurs in de hal gaan."},
   KNO:{title:"Kualanamu International Airport (Medan, Sumatra)",layover:"Aankomst voor de Sumatra jungle-etappe.",wifi:"🆓 Gratis airport Wi-Fi (Soms onstabiel)",tips:"Direct na bagageclaim geld wisselen of pinnen! Weinig ATM's in Ketambe. Koop direct een Telkomsel SIM-kaart bij de officiële stand. Ketambe heeft amper bereik, maar het aansluitende Blangkejeren wel.",taxis:"🚨 NOOIT onofficiële taxi's in de hal. Neem officiële Bluebird Taxi of boek Grab. De trein (Railink) naar Medan-stad is ook een goede optie."},
   CGK:{title:"Soekarno-Hatta International Airport (Jakarta)",layover:"Samenkomst met de Java-groep. Terminal 3 is nieuwste en meest modern.",wifi:"🆓 Gratis airport WiFi in alle terminals.",tips:"Jakarta heeft 3 grote terminals. Terminal 3 = meest modern. Er vaart een gratis SkyTrain tussen de terminals. Beruchte files buiten de luchthaven — reken ruim de tijd.",taxis:"🚕 Kies Bluebird of Silverbird (Mercedes). Betrouwbaar, met meter. Grab/Gojek hebben eigen lounges voor pick-up — NOOIT met niet-officiële chauffeurs meegaan."},
   DPS:{title:"Ngurah Rai International Airport (Denpasar, Bali)",layover:"Aankomst voor de Bali villa chill-fase.",wifi:"🆓 Free airport Wi-Fi ('@NgurahRaiAirport')",tips:"Bij aankomst extreem chaotisch met taxi's die je proberen aan te klampen. Blijf rustig, loop door en zoek de Grab Lounge buiten.",taxis:"🚨 Loop DIRECT naar de officiële Grab Lounge (buiten bij parkeergarage) of regel vooraf een transfer via hotel. Lokale luchthavenaxi's zonder meter rekenen woekerprijzen!"},
@@ -894,12 +901,14 @@ function fakeRef(seed){
   return seed;
 }
 
+/* costValue() en niet c.amount: dan telt een bedrag dat in het reisschema
+   is ingevuld ook hier mee, in plaats van hardnekkig "TBD" te blijven tonen. */
 function costLabel(cost_id){
   if(!cost_id) return null;
-  const c=COSTS[cost_id];
-  if(!c) return null;
-  if(c.amount===null) return "TBD";
-  return `€ ${c.amount.toFixed(0)}`;
+  if(!COSTS[cost_id]) return null;
+  const v=costValue(cost_id);
+  if(v===null) return "TBD";
+  return `€ ${v.toFixed(0)}`;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1067,14 +1076,26 @@ function toonLegOpKaart(legId){
 /* ══════════════════════════════════════════════════════════
    HELPERS VOOR VERTREK, DUUR, AANKOMST & SHARING
    ══════════════════════════════════════════════════════════ */
+/* Reisduur incl. overstap en tijdzonesprong; niet af te leiden uit leg.times,
+   want vertrek en aankomst staan in verschillende tijdzones. Alleen voor legs
+   waar dat echt zo is — de rest komt uit sub/FLIGHT_DB, zodat een gecorrigeerd
+   vluchtnummer hier niet stilletjes overschreven wordt. */
+const LEG_DUUR = {
+  tl1:  "15u 15m",   // BRU → SIN → KNO, met 50 min overstap
+  tl19: "17u 10m",   // BRU → SIN → CGK, met 2u25 overstap
+  tl22: "15u 40m",   // BRU → SIN → CGK, met 1u overstap
+  tl10: "29u 10m",   // BRU → HKG → SUB (Hinke), met lange overstap in Hongkong
+  tl12: "4u 30m",    // SUB → DPS → LBJ, met overstap in Denpasar
+  tl16: "18u 15m",   // DPS → BKK → BRU, met 1u55 overstap in Bangkok
+  tl18: "20u 20m",   // DPS → BKK → BRU, met 4u overstap in Bangkok
+  tl11: "volledige dag", // jeep-tour Malang → Bromo & Tumpak Sewu → Banyuwangi
+  tl17: "~3-4u",     // ferry Ketapang → Gilimanuk + rit naar Canggu (zie t30b)
+};
+
 function getLegDuration(leg) {
   if (leg.duration) return leg.duration;
-  if (leg.id === "tl1") return "15u 15m";
-  if (leg.id === "tl19") return "17u 10m";
-  if (leg.id === "tl11" || leg.id === "tl12") return "3u";
-  if (leg.id === "tl15") return "12u";
-  if (leg.id === "tl16") return "6–8u";
-  
+  if (LEG_DUUR[leg.id]) return LEG_DUUR[leg.id];
+
   const sub = leg.sub || "";
   const match = sub.match(/±\s*(\d+(?:[–-]\d+)?\s*(?:u|uur|h)\s*(?:\d+\s*m)?)/);
   if (match) return match[1];
@@ -1222,7 +1243,7 @@ function renderBlockView(){
               const photo = localStorage.getItem(`mapphoto_${k}`);
               const avatarInner = photo 
                 ? `<img src="${photo}" alt="${p.name}" title="${p.name}">` 
-                : `<span style="color:#fff;">${p.name.substring(0, 2).toUpperCase()}</span>`;
+                : `<span style="color:#fff;">${p.initials.toUpperCase()}</span>`;
               return `
                 <div class="tbi-sharing-avatar" style="background: ${p.color};" title="${p.name}" onclick="event.stopPropagation(); selectPerson('${k}')">
                   ${avatarInner}
@@ -1357,7 +1378,7 @@ function updateBaggageTag(){
   const bl=BAGGAGE_LIMITS[personKey];
   const flight=FLIGHT_DB[flightNum];
   // Internationaal = een segment dat Indonesie binnenkomt of verlaat
-  const INTL=["SQ303","SQ304","SQ990","SQ956","SQ952","SQ930","SQ963"];
+  const INTL=["SQ303","SQ990","SQ956","SQ952","CX294","CX629","TG440","TG432","TG934"];
   const isDomestic=!INTL.includes(flightNum);
   const weightLimit=isDomestic?bl.allowances.domestic:bl.allowances.international;
   document.getElementById("tagAirlineCode").textContent=`${flightNum.substring(0,2)} - ${flight.airline.toUpperCase()}`;

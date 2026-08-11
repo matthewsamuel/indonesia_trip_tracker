@@ -24,7 +24,7 @@
   <header class="app-header">
     <div class="app-brand">
       <h1>🧭 Reis naar Indonesië</h1>
-      <div class="sub">29 aug – 29 sep 2026</div>
+      <div class="sub">29 aug – 30 sep 2026</div>
     </div>
     <nav class="app-nav">
       <a class="app-nav-link" href="indonesia-tracker.html">🏠 Home</a>
@@ -84,7 +84,7 @@
     <div class="timeline-container" id="timeline"></div>
   </section>
 
-  <footer class="note">Wijzigingen in kosten of notities worden automatisch opgeslagen en gesynchroniseerd met het dashboard.</footer>
+  <footer class="note">Bedragen en geboekt-vinkjes worden lokaal opgeslagen en gesynchroniseerd met het dashboard.</footer>
 </div>
 
 <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox()">
@@ -148,9 +148,8 @@ function classifyDetailLine(d) {
     lower.includes("rit van") ||
     lower.includes("mrt") ||
     lower.includes("ov-kaart") ||
-    lower.includes("tg935") ||
-    lower.includes("tg403") ||
     lower.includes("lion air") ||
+    lower.includes("thai airways") ||
     lower.includes("denpasar") ||
     lower.includes("soekarno") ||
     lower.includes("airbus") ||
@@ -214,14 +213,14 @@ function parseDetails(detailsArray) {
   return { transport, stay, tips, activities, segments };
 }
 
+/* Alleen etappes zonder eigen accommodatiekost, waar wél in hetzelfde
+   verblijf geslapen wordt (bv. de chill- en boottochtdagen in Labuan Bajo).
+   Etappes die de kost zelf dragen — t12, t15, t17, t18 — halen hun link via
+   getAccommodationUrl() uit COSTS, en horen hier dus niet nog eens te staan. */
 const TRIP_AIRBNB_LINKS = {
-  t12: "https://www.airbnb.com/rooms/1420571119911855020", // Banyuwangi (Bromo/Ijen)
   t13: "https://www.airbnb.com/rooms/1420571119911855020", // Banyuwangi (Bromo/Ijen)
   t14: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
-  t15: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
   t16: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
-  t17: "https://www.airbnb.com/rooms/50427330",             // Ruteng
-  t18: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
   t19: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
   t20: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
 };
@@ -245,18 +244,22 @@ function getPhaseStats(faseKey, tripIds, personKey) {
 
   let minDate = phaseItems[0].start;
   let maxDate = phaseItems[0].end;
-  let totalCost = 0;
+
+  /* Eén kostenpost kan aan meerdere etappes van dezelfde fase hangen — c4b
+     (guesthouse Ketambe, vóór én na de trek) hangt aan t4 én t6. Zonder deze
+     Set telt het fasetotaal die post dubbel zodra er een bedrag ingevuld is. */
+  const costIds = new Set();
 
   phaseItems.forEach(item => {
     if (item.start < minDate) minDate = item.start;
     if (item.end > maxDate) maxDate = item.end;
+    item.costs.forEach(cid => costIds.add(cid));
+  });
 
-    item.costs.forEach(cid => {
-      const v = costValue(cid);
-      if (v !== null) {
-        totalCost += v;
-      }
-    });
+  let totalCost = 0;
+  costIds.forEach(cid => {
+    const v = costValue(cid);
+    if (v !== null) totalCost += v;
   });
 
   const tripStart = new Date(minDate + "T00:00:00");
@@ -298,6 +301,25 @@ function isFlight(item) {
 /* Haalt vertrek-/aankomsttijd + plaatsnaam op voor een vlucht-etappe, door de
    kosten-ID te koppelen aan TRANSPORT_LEGS (die exacte tijden bijhoudt) en de
    plaatsen te ontlenen aan item.map + GEO (de bron van waarheid voor de route). */
+/* leg.times kent twee schrijfwijzen voor een aankomst de dag erna:
+   "21:30 → 04:30+1" en "11:45 (29/08) → 08:00 (30/08)". Beide moeten het
+   +1-teken opleveren, anders lijkt de heenvlucht dezelfde ochtend te landen. */
+function parseLegTimes(times) {
+  const m = String(times || "").match(
+    /^(\d{1,2}:\d{2})(?:\s*\((\d{1,2})\/(\d{1,2})\))?\s*→\s*(\d{1,2}:\d{2})(?:(\+\d)|\s*\((\d{1,2})\/(\d{1,2})\))?/
+  );
+  if (!m) return null;
+  const dagVerschil = m[5] ? 1
+    : (m[2] && m[6] && (m[2] !== m[6] || m[3] !== m[7])) ? 1
+    : 0;
+  return { depTime: m[1], arrTime: m[4], nextDay: dagVerschil > 0 };
+}
+
+function placeNameOf(key) {
+  const g = GEO[key];
+  return g ? g.name.replace(/^\S+\s*/, "") : key;
+}
+
 function getFlightLegTimes(item) {
   if (!isFlight(item) || !item.map || item.map.length < 2) return null;
   const leg = TRANSPORT_LEGS.find(l =>
@@ -306,20 +328,15 @@ function getFlightLegTimes(item) {
   );
   if (!leg) return null;
 
-  const m = leg.times.match(/^(\d{1,2}:\d{2})(?:\s*\([^)]*\))?\s*→\s*(\d{1,2}:\d{2})(\+\d)?/);
-  if (!m) return null;
-
-  const placeName = key => {
-    const g = GEO[key];
-    return g ? g.name.replace(/^\S+\s*/, "") : key;
-  };
+  const t = parseLegTimes(leg.times);
+  if (!t) return null;
 
   return {
-    depPlace: placeName(item.map[0]),
-    depTime: m[1],
-    arrPlace: placeName(item.map[item.map.length - 1]),
-    arrTime: m[2],
-    nextDay: !!m[3]
+    depPlace: placeNameOf(item.map[0]),
+    depTime: t.depTime,
+    arrPlace: placeNameOf(item.map[item.map.length - 1]),
+    arrTime: t.arrTime,
+    nextDay: t.nextDay
   };
 }
 
@@ -352,20 +369,15 @@ function getOtherFlightInfo(item, personKey) {
   );
   if (!leg || !leg.persons || leg.persons.includes(personKey)) return null;
 
-  const m = leg.times.match(/^(\d{1,2}:\d{2})(?:\s*\([^)]*\))?\s*→\s*(\d{1,2}:\d{2})(\+\d)?/);
-  if (!m) return null;
-
-  const placeName = key => {
-    const g = GEO[key];
-    return g ? g.name.replace(/^\S+\s*/, "") : key;
-  };
+  const t = parseLegTimes(leg.times);
+  if (!t) return null;
 
   return {
-    depPlace: placeName(leg.fromPt),
-    depTime: m[1],
-    arrPlace: placeName(leg.toPt),
-    arrTime: m[2],
-    nextDay: !!m[3],
+    depPlace: placeNameOf(leg.fromPt),
+    depTime: t.depTime,
+    arrPlace: placeNameOf(leg.toPt),
+    arrTime: t.arrTime,
+    nextDay: t.nextDay,
     persons: leg.persons
   };
 }
@@ -449,10 +461,6 @@ function getCompactBadgesHtml(item, parsed) {
   }
   if (item.costs.length > 0) {
     html += `<span class="c-badge cost" title="Kosten gekoppeld">💰</span>`;
-  }
-  const note = ls_get("note_"+item.id, "");
-  if (note && note.trim().length > 0) {
-    html += `<span class="c-badge note-icon" title="Notitie aanwezig">📝</span>`;
   }
   const photos = getPhotos(item.id);
   if (photos.length > 0) {
@@ -584,8 +592,6 @@ function renderTimeline(){
       `;
       lastFase = item.fase;
     }
-    const st = statusOf(item);
-    const note = ls_get("note_"+item.id, "");
     let durStr = "";
     if (item.duration) {
       durStr = `<span class="dur">⏱️ ${item.duration}</span>`;
@@ -710,15 +716,18 @@ function renderTimeline(){
 /* ---------------- PHOTOS ---------------- */
 const TRIP_DEFAULT_PHOTOS = {
   t1:  ["images/singapore_famoushotel.webp", null, null],
-  t2:  ["images/singapore_famoushotel.webp", "images/singapore_bigtree.webp", "images/singapore_airport_waterval.jpg"],
-  t3:  ["images/singapore_bigtree.webp", "images/sumatra_oerangoetang.jpg", null],
+  /* Geen Singapore-foto: t3 speelt zich volledig in Medan/Sumatra af. */
+  t3:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
   t4:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
   t5:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", "images/sumatra_Waterval.jpg"],
-  t6:  ["images/sumatra_Waterval.jpg", "images/jakartanightskyline.jpg", null],
+  t6:  ["images/sumatra_Waterval.jpg", "images/ketambe_jungle.jpg", null],
   t7:  ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
   t8:  ["images/Yogyakartatempel.jpg", "images/Yogyakartamonument.jpeg", "images/Yogyakartahandmonument.jpg"],
-  t9:  ["images/Yogyakartahandmonument.jpg", "images/mountbromo.webp", null],
+  t9:  ["images/Yogyakartahandmonument.jpg", "images/Yogyakartamonument.jpeg", null],
   t10: ["images/Javaeiland.jpg", "images/tumpak-sewu-waterfalls.jpg", null],
+  /* Dezelfde etappes als t12/t13, maar dan de versie van de jongens — die
+     stonden zonder foto's terwijl Matthews variant er wél had. */
+  t10b: ["images/tumpaksewuwaterval.webp", "images/mountbromo.webp", "images/bromo.jpg"],
   t11: ["images/airbnbM&H/15-16.avif", "images/airbnbM&H/15-16a.avif", "images/airbnbM&H/15-16b.avif"],
   t11b: ["images/airbnbM&H/15-16.avif", "images/airbnbM&H/15-16c.avif", "images/airbnbM&H/15-16d.avif"],
   t12: ["images/tumpaksewuwaterval.webp", "images/mountbromo.webp", "images/bromo.jpg"],
@@ -733,12 +742,13 @@ const TRIP_DEFAULT_PHOTOS = {
   t21: ["images/bali.jpg", "images/balivilla.jpg", null],
   t22: ["images/balivilla.jpg", "images/bali.jpg", "images/bali2.jpg"],
   t23: ["images/bali4.jpg", null, null],
-  t24: [null, null, null],
-  t25: ["images/bali.jpg", "images/bali2.jpg", "images/bali4.jpg"],
-  t26: ["images/bali4.jpg", null, null],
   t27: ["images/singapore_famoushotel.webp", "images/jakarta.jpg", null],
   t28: ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
   t29: ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
+  t30: ["images/Ijen.jpeg", "images/bromoblauwvuur.jpeg", null],
+  t30c: ["images/balivilla.jpg", "images/bali2.jpg", null],
+  t39: ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
+  t41: ["images/singapore_famoushotel.webp", null, null],
 };
 
 function getPhotos(id){
@@ -805,8 +815,6 @@ function updateViewModeUI() {
 }
 
 function toggleAllDetails(open) {
-  ls_set("details_expanded_default", open);
-  
   const personKey = ls_get("selected_person", "matthew");
   const tripIds = PERSON_TRIPS[personKey] || [];
   const activeFases = new Set(TRIP.filter(i => tripIds.includes(i.id)).map(i => i.fase));

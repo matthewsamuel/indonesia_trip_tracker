@@ -278,6 +278,12 @@
   transition: background 0.15s ease;
 }
 .tm-play:hover { background: rgba(0, 180, 216, 0.3); }
+.tm-playing .tm-play {
+  background: rgba(0, 180, 216, 0.34);
+  border-color: rgba(0, 180, 216, 0.7);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.12);
+}
 
 .tm-scrub-wrap { position: relative; flex: 1; min-width: 90px; padding-bottom: 7px; }
 
@@ -324,9 +330,21 @@
 }
 .tm-scrub-ticks i.nu { opacity: 1; transform: scaleY(2.2); }
 
-.tm-daylabel { flex-shrink: 0; min-width: 104px; line-height: 1.2; }
+.tm-daylabel { flex-shrink: 0; min-width: 116px; max-width: 210px; line-height: 1.2; }
 .tm-daylabel b { display: block; font-size: 13px; color: #fff; text-transform: capitalize; }
-.tm-daylabel span { font-size: 10.5px; color: var(--tm-soft); }
+.tm-daylabel span { display: block; font-size: 10.5px; color: var(--tm-soft); }
+/* Waar het die dag naartoe gaat. Altijd aanwezig (ook leeg) zodat de balk niet
+   op en neer springt zodra een reisdag begint. */
+.tm-daylabel i {
+  display: block;
+  min-height: 13px;
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--tm-teal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .tm-speeds { display: flex; gap: 2px; flex-shrink: 0; }
 .tm-speed {
@@ -443,6 +461,29 @@
 .tm-place-actief .tm-place-ring { opacity: 0.75; inset: -11px; }
 .tm-place-actief .tm-place-label { color: #fff; font-weight: 700; }
 
+/* Hier staat de reiziger nu even stil: de plek waar op dit moment iets gebeurt.
+   Krachtiger dan "actief", want op één dag kunnen meerdere plaatsen actief zijn
+   en er is er maar één waar hij op dít moment is. */
+.tm-place-hier .tm-place-dot { inset: -6px; }
+.tm-place-hier .tm-place-dot i { font-size: 13px; }
+.tm-place-hier .tm-place-ring {
+  opacity: 1;
+  inset: -14px;
+  border-width: 2.5px;
+  animation: tm-halte 1.1s ease-out infinite;
+}
+.tm-place-hier .tm-place-label {
+  color: #fff;
+  font-weight: 700;
+  font-size: 12.5px;
+  opacity: 1 !important;
+}
+@keyframes tm-halte {
+  0%   { transform: scale(0.82); opacity: 0.95; }
+  70%  { transform: scale(1.18); opacity: 0.15; }
+  100% { transform: scale(1.18); opacity: 0; }
+}
+
 .tm-place-verleden .tm-place-dot { opacity: 0.55; }
 .tm-place-verleden .tm-place-label { opacity: 0.65; font-weight: 500; }
 
@@ -515,12 +556,27 @@
   text-align: center;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.9));
 }
+/* Alleen de trajecten van vandaag tonen hun vervoersicoon. Bleven ook de
+   afgelegde trajecten hun emoji houden, dan staan er tegen het einde van de
+   reis dertig busjes, bootjes en vliegtuigjes over de kaart verspreid — de
+   meeste midden op zee, waar het midden van een boot- of vluchtlijn nu eenmaal
+   valt, en bij Bali zeven bovenop elkaar. */
 .tm-seg-icon-wrap.tm-seg-actief { opacity: 1; }
-.tm-seg-icon-wrap.tm-seg-verleden { opacity: 0.3; }
-/* Nog niet gereisde trajecten tonen geen icoon: anders hangt de kaart vol
-   losse vliegtuigjes boven zee. */
+.tm-seg-icon-wrap.tm-seg-verleden,
 .tm-seg-icon-wrap.tm-seg-toekomst,
 .tm-seg-icon-wrap.tm-seg-dof { opacity: 0; }
+/* Tijdens het afspelen loopt de avatar dwars door het traject-icoontje heen;
+   dan mag dat wat naar achteren treden. */
+.tm-playing .tm-seg-icon-wrap.tm-seg-actief { opacity: 0.4; }
+/* Weggevallen in de ontwar-pas omdat het bovenop een naam of bolletje viel.
+   Staat als laatste en met !important, zodat ook de afspeelregel hierboven
+   het icoon niet alsnog terugbrengt. */
+.tm-seg-icon-wrap.tm-seg-icon-weg { opacity: 0 !important; }
+
+/* Het spoor dat de reiziger tijdens het aflopen achterlaat: een brede zachte
+   gloed met een scherpe lijn erop. Geen CSS-filters — deze twee paden worden
+   elk frame opnieuw getekend en moeten goedkoop blijven. */
+.tm-trail-glow, .tm-trail-line { pointer-events: none; }
 
 /* ================================================================
    TOOLTIPS & POPUPS
@@ -673,6 +729,18 @@
 }
 .tm-light-tiles .tm-place-actief .tm-place-label { color: #000; }
 
+/* ── Satelliet- en terreintegels ──
+   Luchtbeelden zijn druk en plaatselijk fel; routelijnen en namen verdrinken
+   erin. Een donkere sluier over de tegellaag (alleen de tegels, niet de
+   markers of lijnen erboven) houdt alles leesbaar zonder de foto onbruikbaar
+   te maken. */
+.tm-sat-tiles .leaflet-tile-pane {
+  filter: brightness(0.74) saturate(0.85) contrast(1.05);
+}
+.tm-sat-tiles .tm-place-label {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 1), 0 0 3px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.8);
+}
+
 /* ── Leaflet-basis binnen het component ── */
 .tm-root .leaflet-container { background: #07090e; font-family: inherit; }
 .tm-root .leaflet-control-attribution {
@@ -751,6 +819,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tm-seg-actief, .tm-person-focus .tm-person-pulse { animation: none; }
+  .tm-seg-actief, .tm-person-focus .tm-person-pulse,
+  .tm-place-hier .tm-place-ring { animation: none; }
   .tm-place-dot, .tm-place-ring, .tm-person-av, .tm-place-label { transition: none; }
 }

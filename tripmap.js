@@ -78,8 +78,8 @@ function fmtDayLabel(ds) {
    t1 (29–30 aug, brussel→singapore→medan):
        29 aug: brussel → singapore
        30 aug: singapore → medan
-   en t10 (11–13 sep, malang→surabaya):
-       11 sep: malang → surabaya, 12 + 13 sep: surabaya
+   en t17 (21–22 sep, labuanbajo→ruteng):
+       21 sep: labuanbajo → ruteng, 22 sep: ruteng
    ================================================================ */
 function tripKeysOnDay(trip, ds) {
   if (ds < trip.start || ds > trip.end) return null;
@@ -203,7 +203,19 @@ function buildItinerary(personKey) {
     p.trips = [...p.trips];
     p.eersteDag = p.dagen[0];
     p.laatsteDag = p.dagen[p.dagen.length - 1];
-    p.icoon = p.doorreis ? "✈️" : plaatsIcoon(p, personTrips);
+    if (p.doorreis) {
+      // Voor doorreis: bepaal icoon op basis van het inkomend vervoermiddel
+      let icoon = "✈️";
+      for (const seg of Object.values(segments)) {
+        if (seg.to === p.key) {
+          icoon = ROUTE_MODE_STYLE[seg.mode]?.icon || "✈️";
+          break;
+        }
+      }
+      p.icoon = icoon;
+    } else {
+      p.icoon = plaatsIcoon(p, personTrips);
+    }
     return p;
   });
 
@@ -355,22 +367,41 @@ function fmtKm(km) {
 }
 
 /* Geometrie wordt één keer per traject berekend en hergebruikt door elke
-   kaartinstantie op de pagina. */
+   kaartinstantie op de pagina. GEOM staat onder een gesorteerde sleutel, dus
+   we onthouden apart welke kant vooraan ligt: wie hetzelfde traject omgekeerd
+   aflegt (Labuan Bajo → Ruteng én terug) krijgt de punten gespiegeld. */
 const GEOM = {};
+const GEOM_DIR = {};
 const OSRM_DONE = {};
 const OSRM_DUR = {};
+/* Loopt op zodra OSRM een echte weg binnenbrengt; afgeleide paden weten dan
+   dat ze opnieuw opgebouwd moeten worden. */
+let GEOM_VERSION = 0;
 
-function segmentGeometry(seg) {
-  if (GEOM[seg.id]) return GEOM[seg.id];
-  const style = ROUTE_MODE_STYLE[seg.mode] || ROUTE_MODE_STYLE.weg;
-  let pts;
-  if (style.arc) pts = flightPoints(seg.from, seg.to, seg.via);
-  else if (seg.mode === "boot" || seg.mode === "ferry") pts = seaPoints(seg.from, seg.to);
-  else pts = straightPoints(seg.from, seg.to);
-  return (GEOM[seg.id] = pts);
+function legId(van, naar) { return [van, naar].slice().sort().join("|"); }
+
+/* Punten van één deeltraject, altijd in de gevraagde richting. */
+function legGeometry(van, naar) {
+  const id = legId(van, naar);
+  if (!GEOM[id]) {
+    const info = routeMode(van, naar);
+    const style = ROUTE_MODE_STYLE[info.mode] || ROUTE_MODE_STYLE.weg;
+    let pts;
+    if (style.arc) pts = flightPoints(van, naar, info.via);
+    else if (info.mode === "boot" || info.mode === "ferry") pts = seaPoints(van, naar);
+    else pts = straightPoints(van, naar);
+    GEOM[id] = pts;
+    GEOM_DIR[id] = van;
+  }
+  const pts = GEOM[id];
+  return GEOM_DIR[id] === van ? pts : pts.slice().reverse();
 }
 
-/* Punt op een pad bij fractie 0–1. */
+function segmentGeometry(seg) {
+  return legGeometry(seg.from, seg.to);
+}
+
+/* Punt op een pad bij fractie 0–1 van het aantal punten. */
 function pointAt(pts, f) {
   if (!pts || !pts.length) return null;
   if (pts.length === 1) return pts[0];
@@ -378,6 +409,56 @@ function pointAt(pts, f) {
   const i = Math.floor(idx), j = Math.min(i + 1, pts.length - 1), t = idx - i;
   return [pts[i][0] + (pts[j][0] - pts[i][0]) * t, pts[i][1] + (pts[j][1] - pts[i][1]) * t];
 }
+
+/* ---------------- doorlopend pad over meerdere deeltrajecten ----------------
+   Voor het afspelen is een reeks punten niet genoeg: het icoontje moet met een
+   gelijkmatige snelheid lopen. Daarom houden we per pad de cumulatieve lengte
+   bij en interpoleren we op afstand, niet op puntindex. Anders zou een korte
+   taxirit met 400 OSRM-punten even lang duren als een vlucht van 11.000 km. */
+function stepKm(a, b) {
+  const dLat = b[0] - a[0];
+  const dLng = (b[1] - a[1]) * Math.cos(((a[0] + b[0]) * Math.PI) / 360);
+  return Math.hypot(dLat, dLng) * 111.32;
+}
+
+function buildPath(keys) {
+  const schoon = (keys || []).filter(k => GEO[k]);
+  if (!schoon.length) return null;
+  const pts = [[GEO[schoon[0]].lat, GEO[schoon[0]].lng]];
+  const stops = [0];          // index in pts waar elke tussenstop ligt
+  const stopKeys = [schoon[0]];
+  for (let i = 0; i < schoon.length - 1; i++) {
+    if (schoon[i] === schoon[i + 1]) continue;
+    const deel = legGeometry(schoon[i], schoon[i + 1]);
+    for (let n = 1; n < deel.length; n++) pts.push(deel[n]);
+    stops.push(pts.length - 1);
+    stopKeys.push(schoon[i + 1]);
+  }
+  const cum = [0];
+  for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + stepKm(pts[i - 1], pts[i]));
+  return { pts, cum, stops, stopKeys, len: cum[cum.length - 1] };
+}
+
+/* Positie op afstandsfractie 0–1, plus de puntindex zodat het spoor kan
+   meegroeien en we weten op welk deeltraject we zitten. */
+function pointOnPath(path, f) {
+  if (!path || !path.pts.length) return null;
+  if (path.pts.length === 1 || path.len <= 0) return { ll: path.pts[0], idx: 0 };
+  const doel = Math.max(0, Math.min(1, f)) * path.len;
+  const cum = path.cum;
+  let lo = 0, hi = cum.length - 1;
+  while (lo < hi - 1) {
+    const mid = (lo + hi) >> 1;
+    if (cum[mid] <= doel) lo = mid; else hi = mid;
+  }
+  const spanne = cum[hi] - cum[lo];
+  const t = spanne > 0 ? (doel - cum[lo]) / spanne : 0;
+  const a = path.pts[lo], b = path.pts[hi];
+  return { ll: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], idx: lo };
+}
+
+/* Zachte start en landing — een lineaire loop oogt mechanisch. */
+function easeInOutSine(t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
 
 /* ================================================================
    4. TEGELLAGEN
@@ -431,7 +512,7 @@ const DEFAULTS = {
   person: "auto",         // persoonssleutel of "auto" (volgt de personenkiezer)
   people: null,           // wie krijgt een avatar; standaard alleen de focuspersoon
   day: "today",           // startdag: index of "today"
-  tile: "donker",
+  tile: "satelliet",     // standaard op elke pagina; via de knoppenbalk om te zetten
   height: null,
   controls: null,         // overschrijft de standaard per modus
   onDayChange: null,
@@ -459,7 +540,10 @@ function create(options) {
       : opt.person,
     people: opt.people ? opt.people.slice() : null,
     tile: opt.tile,
-    playing: false, speed: 1, timer: null,
+    /* frac = waar we binnen de huidige dag staan (0–1). Het afspelen laat die
+       doorlopend groeien in plaats van per dag te verspringen. */
+    playing: false, speed: 1, frac: 1, raf: null, lastTs: 0,
+    scrubTs: 0, stilCamera: false,
     highlight: null,
     fitted: false,
     /* Op een telefoon start de zijbalk ingeklapt, zodat de kaart het scherm krijgt. */
@@ -496,17 +580,32 @@ function create(options) {
 
   const tiles = makeTiles();
   tiles[st.tile].addTo(map);
+  root.classList.toggle("tm-light-tiles", st.tile === "straat");
+  root.classList.toggle("tm-sat-tiles", st.tile === "satelliet" || st.tile === "terrein");
 
   const layerRoutes = L.layerGroup().addTo(map);
+  const layerTrail = L.layerGroup().addTo(map);
   const layerPlaces = L.layerGroup().addTo(map);
   const layerPeople = L.layerGroup().addTo(map);
+
+  /* Het spoor dat het icoontje achter zich laat: een brede zachte gloed met
+     een scherpe lijn erop, zodat je in één oogopslag ziet hoe ver de dag al
+     gevorderd is en welke kant het uit gaat. */
+  const trailGlow = L.polyline([], {
+    color: "#00b4d8", weight: 11, opacity: 0.2, lineCap: "round", lineJoin: "round",
+    interactive: false, className: "tm-trail-glow",
+  }).addTo(layerTrail);
+  const trailLine = L.polyline([], {
+    color: "#ffffff", weight: 3, opacity: 0.92, lineCap: "round", lineJoin: "round",
+    interactive: false, className: "tm-trail-line",
+  }).addTo(layerTrail);
 
   /* ---------- interne registers ---------- */
   let itin = null;
   const segViews = {};    // segment-id → {poly, halo, iconMarker, seg}
   const placeViews = {};  // geo-key → {marker, place}
   const peopleViews = {}; // persoon → marker
-  const animRefs = {};
+  const personState = {}; // persoon → was hij onderweg bij het vorige frame?
 
   /* ================= tekenen ================= */
 
@@ -587,6 +686,7 @@ function create(options) {
       const halo = L.polyline(pts, { color: "#000", opacity: 0, weight: 16 }).addTo(layerRoutes);
       const poly = L.polyline(pts, {
         color: style.color, weight: 2.5, opacity: 0.5, lineCap: "round", lineJoin: "round",
+        className: "tm-seg",
       }).addTo(layerRoutes);
 
       const mid = pointAt(pts, 0.5);
@@ -611,6 +711,8 @@ function create(options) {
         fetchRoad(seg.from, seg.to).then(res => {
           if (!res || !res.coords || !res.coords.length) return;
           GEOM[seg.id] = res.coords;
+          GEOM_DIR[seg.id] = seg.from;
+          GEOM_VERSION++;
           OSRM_DUR[seg.id] = res.dur;
           seg.osrmDur = res.dur;
           const view = segViews[seg.id];
@@ -712,34 +814,151 @@ function create(options) {
     });
   }
 
-  /* ---------- positie van een reiziger op een dag ---------- */
-  function personPosition(pk, dayIdx) {
-    const it = itinerary(pk);
-    const dag = it.days[dayIdx];
-    if (!dag) return null;
+  /* ---------- dagpaden per reiziger ----------
+     Per dag het volledige pad dat die reiziger aflegt, opgebouwd uit de echte
+     deeltraject-geometrie (OSRM-wegen, vluchtbogen, zeeroutes). Dát is wat het
+     icoontje afloopt tijdens het afspelen — niet een sprong van punt naar punt.
+     De cache vervalt zodra OSRM een echte weg heeft binnengebracht. */
+  const dayCache = {};
+  let dayCacheStempel = -1;
 
-    /* De live tracker kan een handmatig gemelde locatie doorgeven; die wint
-       van het geplande schema. Geeft de resolver niets terug, dan volgt de
-       marker gewoon het itinerarium. */
-    if (opt.positionResolver) {
-      const gemeld = opt.positionResolver(pk, dayIdx, dag);
-      if (gemeld && GEO[gemeld]) {
-        return { ll: [GEO[gemeld].lat, GEO[gemeld].lng], dag, onderweg: false, gemeld };
+  function buildPersonDays(pk) {
+    const it = itinerary(pk);
+    const uit = [];
+    let vorige = null;
+    it.days.forEach((dag, i) => {
+      let keys = dag.keys.length ? dag.keys.slice() : (dag.positie ? [dag.positie] : []);
+
+      /* De live tracker kan een handmatig gemelde locatie doorgeven; die wint
+         van het geplande schema. De reiziger loopt dan van waar hij gisteren
+         eindigde naar de gemelde plek. */
+      if (opt.positionResolver) {
+        const gemeld = opt.positionResolver(pk, i, dag);
+        if (gemeld && GEO[gemeld]) keys = [gemeld];
+      }
+
+      keys = keys.filter(k => GEO[k]);
+      if (!keys.length) keys = vorige ? [vorige] : [];
+      if (vorige && keys.length && keys[0] !== vorige) keys.unshift(vorige);
+
+      const path = buildPath(keys);
+      if (keys.length) vorige = keys[keys.length - 1];
+      uit.push({ dag, keys, path, reist: !!path && path.len > 0.5 });
+    });
+    return uit;
+  }
+
+  function personDays(pk) {
+    if (dayCacheStempel !== GEOM_VERSION) {
+      Object.keys(dayCache).forEach(k => delete dayCache[k]);
+      dayCacheStempel = GEOM_VERSION;
+    }
+    return dayCache[pk] || (dayCache[pk] = buildPersonDays(pk));
+  }
+
+  /* ---------- tijdsprofiel van één dag ----------
+     Een dag is niet één gelijkmatige beweging. Hij bestaat uit fasen: een korte
+     aanloop waarin de camera de etappe inkadert, dan per deeltraject een loop,
+     met tussen twee deeltrajecten een halte. Zonder die haltes raasde het
+     icoontje in één beweging langs Tumpak Sewu én Bromo én Banyuwangi, en zag
+     je niet dat daar drie dingen gebeuren.
+
+     De duur van de haltes en van een rustdag hangt af van hoeveel er die dag
+     te doen is: het aantal etappes dat loopt plus het aantal geboekte
+     activiteiten. Een dag met drie dingen krijgt dus meer tijd dan een dag
+     luieren in Canggu. */
+  function dayBusy(dag) {
+    let n = (dag.trips || []).length;
+    (dag.trips || []).forEach(t => {
+      (t.costs || []).forEach(cid => { if (COSTS[cid] && COSTS[cid].cat === "activiteit") n++; });
+    });
+    return n;
+  }
+
+  function dayProfile(rij) {
+    if (rij.profile) return rij.profile;
+    const fasen = [];
+    const soort = rij.dag.soort;
+    const drukte = dayBusy(rij.dag);
+
+    if (soort === "voor" || soort === "na") {
+      /* De zestien dagen dat Hinke nog thuis zit hoeven niet uitgespeeld. */
+      fasen.push({ ms: 260, s0: 1, s1: 1 });
+    } else if (!rij.reist) {
+      fasen.push({ ms: 520 + 240 * Math.min(4, drukte), s0: 1, s1: 1, halte: rij.keys[rij.keys.length - 1] });
+    } else {
+      const { cum, stops, stopKeys, len } = rij.path;
+      fasen.push({ ms: 240, s0: 0, s1: 0 });
+      for (let i = 0; i < stops.length - 1; i++) {
+        const van = cum[stops[i]] / len, tot = cum[stops[i + 1]] / len;
+        const km = cum[stops[i + 1]] - cum[stops[i]];
+        fasen.push({ ms: Math.max(650, Math.min(2600, 520 + km * 0.8)), s0: van, s1: tot });
+        const laatste = i === stops.length - 2;
+        fasen.push({
+          ms: laatste ? 320 : 480 + 240 * Math.min(3, drukte),
+          s0: tot, s1: tot, halte: stopKeys[i + 1],
+        });
       }
     }
+    return (rij.profile = { fasen, totaal: fasen.reduce((s, f) => s + f.ms, 0) });
+  }
 
-    if (dag.soort === "reis" && dag.keys.length > 1) {
-      /* Halverwege het traject van vandaag: het middelste deelstuk. */
-      const midIdx = Math.floor((dag.keys.length - 1) / 2);
-      const van = dag.keys[midIdx], naar = dag.keys[midIdx + 1] || dag.keys[midIdx];
-      const segId = [van, naar].slice().sort().join("|");
-      const seg = it.segments.find(s => s.id === segId);
-      const pts = seg ? segGeometry(seg) : straightPoints(van, naar);
-      const punt = pointAt(pts, 0.5) || [GEO[van].lat, GEO[van].lng];
-      return { ll: punt, dag, onderweg: true, van, naar };
+  /* Waar staat de reiziger op fractie frac van zijn dag? Geeft de
+     afstandsfractie langs het dagpad terug, plus de halte waar hij op dat
+     moment stilstaat. */
+  function walkAt(rij, frac) {
+    const prof = dayProfile(rij);
+    let t = Math.max(0, Math.min(1, frac)) * prof.totaal;
+    for (let i = 0; i < prof.fasen.length; i++) {
+      const f = prof.fasen[i];
+      if (t > f.ms && i < prof.fasen.length - 1) { t -= f.ms; continue; }
+      const u = f.ms > 0 ? Math.min(t / f.ms, 1) : 1;
+      return { s: f.s0 + (f.s1 - f.s0) * easeInOutSine(u), halte: f.halte || null };
     }
-    const g = GEO[dag.positie] || GEO.brussel;
-    return { ll: [g.lat, g.lng], dag, onderweg: false };
+    return { s: 1, halte: null };
+  }
+
+  /* Omgekeerde weg: bij welke dagfractie sta je op afstandsfractie s? Nodig om
+     een dag in rust halverwege zijn route te kunnen tonen. */
+  function fracForS(rij, doelS) {
+    const prof = dayProfile(rij);
+    let verstreken = 0;
+    for (const f of prof.fasen) {
+      if (f.s1 >= doelS - 1e-9 && f.s1 > f.s0) {
+        const u = Math.max(0, Math.min(1, (doelS - f.s0) / (f.s1 - f.s0)));
+        return (verstreken + f.ms * (Math.acos(1 - 2 * u) / Math.PI)) / prof.totaal;
+      }
+      verstreken += f.ms;
+    }
+    return 1;
+  }
+
+  function idleFrac(rij) { return rij && rij.reist ? fracForS(rij, 0.5) : 1; }
+
+  /* ---------- positie van een reiziger op een dag ----------
+     frac = waar binnen de dag (0–1). Zonder frac krijg je de rustpositie. */
+  function personPosition(pk, dayIdx, frac) {
+    const rij = personDays(pk)[clampDay(dayIdx)];
+    if (!rij) return null;
+    const w = walkAt(rij, frac == null ? idleFrac(rij) : frac);
+    const p = rij.path ? pointOnPath(rij.path, w.s) : null;
+    if (!p) {
+      const g = GEO[rij.dag.positie] || GEO.brussel;
+      return { ll: [g.lat, g.lng], dag: rij.dag, rij, onderweg: false, f: 1, idx: 0, halte: null };
+    }
+
+    let van = null, naar = null;
+    if (rij.reist) {
+      const stops = rij.path.stops;
+      let j = 0;
+      while (j < stops.length - 2 && p.idx >= stops[j + 1]) j++;
+      van = rij.path.stopKeys[j];
+      naar = rij.path.stopKeys[j + 1] || van;
+    }
+    return {
+      ll: p.ll, idx: p.idx, dag: rij.dag, rij, van, naar, f: w.s, halte: w.halte,
+      onderweg: rij.reist && !w.halte && w.s > 0.015 && w.s < 0.985,
+    };
   }
 
   /* Kleine vaste spreiding zodat overlappende avatars leesbaar blijven. */
@@ -789,9 +1008,6 @@ function create(options) {
       }
       html += '<button type="button" class="tm-pop-link" data-trip="' + esc(trip.id) + '">Bekijk in reisschema →</button></div>';
     });
-    if (opt.allowPhoto !== false) {
-      html += '<label class="tm-pop-photo"><input type="file" accept="image/*" hidden>📷 Foto instellen</label>';
-    }
     return html + "</div>";
   }
 
@@ -821,9 +1037,11 @@ function create(options) {
   function drawPeople() {
     layerPeople.clearLayers();
     Object.keys(peopleViews).forEach(k => delete peopleViews[k]);
+    Object.keys(personState).forEach(k => delete personState[k]);
     activePeople().forEach(pk => {
-      const pos = personPosition(pk, st.day);
+      const pos = personPosition(pk, st.day, st.frac);
       if (!pos) return;
+      personState[pk] = pos.onderweg;
       const off = activePeople().length > 1 ? jitter(pk) : [0, 0];
       const m = L.marker([pos.ll[0] + off[0], pos.ll[1] + off[1]], {
         icon: personIcon(pk, pos),
@@ -844,26 +1062,73 @@ function create(options) {
     });
   }
 
-  function movePeople(animate) {
+  /* ---------- één animatieframe ----------
+     Hier gebeurt alleen wat goedkoop is: markers verplaatsen en het spoor
+     bijwerken. Een icoon opnieuw opbouwen (setIcon) vervangt DOM en is te duur
+     voor 60 fps — dat gebeurt enkel als iemand van stilstand naar onderweg
+     schakelt of omgekeerd. */
+  function renderFrame() {
+    const meerdere = activePeople().length > 1;
     activePeople().forEach(pk => {
       const m = peopleViews[pk];
-      const pos = personPosition(pk, st.day);
-      if (!m || !pos) return;
-      const off = activePeople().length > 1 ? jitter(pk) : [0, 0];
-      const doel = [pos.ll[0] + off[0], pos.ll[1] + off[1]];
-      m.setIcon(personIcon(pk, pos));
-      m.setPopupContent(personPopup(pk));
-      if (animRefs[pk]) cancelAnimationFrame(animRefs[pk]);
-      if (!animate) { m.setLatLng(doel); return; }
-      const start = m.getLatLng();
-      const duur = 300 / st.speed;
-      const t0 = performance.now();
-      (function tick(now) {
-        const t = Math.min((now - t0) / duur, 1);
-        const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-        m.setLatLng([start.lat + (doel[0] - start.lat) * e, start.lng + (doel[1] - start.lng) * e]);
-        if (t < 1) animRefs[pk] = requestAnimationFrame(tick); else delete animRefs[pk];
-      })(t0);
+      if (!m) return;
+      const pos = personPosition(pk, st.day, st.frac);
+      if (!pos) return;
+      const off = meerdere ? jitter(pk) : [0, 0];
+      m.setLatLng([pos.ll[0] + off[0], pos.ll[1] + off[1]]);
+      if (personState[pk] !== pos.onderweg) {
+        personState[pk] = pos.onderweg;
+        m.setIcon(personIcon(pk, pos));
+      }
+      if (pk === st.person) markeerHalte(pos.halte);
+    });
+    updateTrail();
+    updateScrub();
+  }
+
+  /* Staat de focuspersoon even stil bij een tussenstop, dan licht die plek op.
+     Anders zie je wel dat het icoontje wacht, maar niet waarvoor. */
+  let huidigeHalte = null;
+  function markeerHalte(key) {
+    if (key === huidigeHalte) return;
+    [huidigeHalte, key].forEach(k => {
+      const v = k && placeViews[k];
+      const el = v && v.marker.getElement();
+      const span = el && el.querySelector(".tm-place");
+      if (span) span.classList.toggle("tm-place-hier", k === key && k !== null);
+    });
+    huidigeHalte = key;
+  }
+
+  /* Het spoor van de focuspersoon: het stuk van de dagroute dat al afgelegd
+     is. Zo zie je niet alleen wáár iemand staat, maar ook hoe hij daar kwam en
+     hoeveel er nog komt. */
+  function updateTrail() {
+    const pos = personPosition(st.person, st.day, st.frac);
+    if (!pos || !pos.rij.reist || st.highlight) {
+      if (trailLine.getLatLngs().length) { trailGlow.setLatLngs([]); trailLine.setLatLngs([]); }
+      return;
+    }
+    /* Een OSRM-weg telt duizenden punten; die elk frame allemaal herprojecteren
+       maakt het spoor duurder dan de rest van de kaart samen. Uitdunnen scheelt
+       op kaartschaal niets zichtbaars. */
+    const alle = pos.rij.path.pts;
+    const stap = Math.max(1, Math.ceil((pos.idx + 1) / 220));
+    const pts = [];
+    for (let i = 0; i <= pos.idx; i += stap) pts.push(alle[i]);
+    pts.push(pos.ll);
+    const fase = pos.dag.fase ? FASES[pos.dag.fase] : null;
+    trailGlow.setStyle({ color: fase ? fase.color : "#00b4d8" });
+    trailGlow.setLatLngs(pts);
+    trailLine.setLatLngs(pts);
+  }
+
+  /* Popups en avatars vertellen iets over de dág, niet over het frame — die
+     verversen we alleen bij een dagwissel. */
+  function refreshPersonMeta() {
+    activePeople().forEach(pk => {
+      const m = peopleViews[pk];
+      if (m) m.setPopupContent(personPopup(pk));
     });
   }
 
@@ -887,9 +1152,20 @@ function create(options) {
     else if (status === "dof") o = { color: "#94a3b8", weight: 1.4, opacity: 0.1, dashArray: "3 7" };
     else o = { color: style.color, weight: 1.6, opacity: 0.16, dashArray: "3 7" };
     view.poly.setStyle(o);
-    if (el) el.setAttribute("class", "leaflet-interactive tm-seg tm-seg-" + status);
-    const ic = view.iconMarker.getElement();
-    if (ic) ic.setAttribute("class", "tm-seg-icon-wrap tm-seg-" + status);
+    /* classList in plaats van setAttribute("class", …): dat laatste veegt ook
+       de klassen weg die Leaflet zelf op het element zet (leaflet-marker-icon,
+       leaflet-zoom-animated), waardoor het icoontje bij een zoomanimatie niet
+       meer meeschaalt en verschoven achterblijft. */
+    zetStatusKlasse(el, status);
+    zetStatusKlasse(view.iconMarker.getElement(), status);
+  }
+
+  /* De basisklassen (tm-seg / tm-seg-icon-wrap) staan al op het element via de
+     className-optie bij het aanmaken; hier wisselen we alleen de status. */
+  const SEG_STATUSSEN = ["actief", "verleden", "toekomst", "dof"];
+  function zetStatusKlasse(el, status) {
+    if (!el) return;
+    SEG_STATUSSEN.forEach(s => el.classList.toggle("tm-seg-" + s, s === status));
   }
 
   function placeStatus(place) {
@@ -902,12 +1178,17 @@ function create(options) {
 
   function styleAll() {
     Object.values(segViews).forEach(styleSegment);
+    /* De klasse van .tm-place wordt hieronder integraal herschreven, dus de
+       halte-markering vervalt en wordt door het eerstvolgende frame opnieuw
+       gezet. */
+    huidigeHalte = null;
     Object.values(placeViews).forEach(v => {
       const el = v.marker.getElement();
       if (!el) return;
       const span = el.querySelector(".tm-place");
       if (span) span.setAttribute("class", "tm-place tm-place-" + placeStatus(v.place));
     });
+    updateTrail();
     layoutLabels();
   }
 
@@ -979,6 +1260,26 @@ function create(options) {
           label.classList.add("tm-label-hidden");
         }
       });
+
+      /* Traject-emoji's krijgen dezelfde behandeling. Op de Komodo-dagtocht
+         liggen vijf boottochtjes vlak naast elkaar; zonder deze pas eindigen
+         vijf ⛵'s bovenop elkaar in dezelfde baai. Wie het niet redt, valt weg —
+         de lijn eronder vertelt het verhaal ook. */
+      Object.values(segViews).forEach(view => {
+        const ic = view.iconMarker.getElement();
+        if (!ic) return;
+        ic.classList.remove("tm-seg-icon-weg");
+        if (!ic.classList.contains("tm-seg-actief")) return;
+        const r = ic.getBoundingClientRect();
+        if (!r.width) return;
+        const box = { l: r.left - 2, t: r.top - 2, r: r.right + 2, b: r.bottom + 2 };
+        if (box.r < grens.left || box.l > grens.right || box.b < grens.top || box.t > grens.bottom) return;
+        if (bezet.some(o => raakt(box, o)) || dots.some(o => raakt(box, o))) {
+          ic.classList.add("tm-seg-icon-weg");
+          return;
+        }
+        bezet.push(box);
+      });
     });
   }
   map.on("zoomend moveend", layoutLabels);
@@ -1020,10 +1321,12 @@ function create(options) {
     elTime.innerHTML =
       '<button type="button" class="tm-play" aria-label="Reis afspelen">▶</button>' +
       '<div class="tm-scrub-wrap">' +
-        '<input type="range" class="tm-scrub" min="0" max="' + (NDAYS - 1) + '" step="1" value="' + st.day + '" aria-label="Dag kiezen">' +
+        /* Fijne stap zodat de knop tijdens het afspelen meeglijdt in plaats van
+           per dag te verspringen; clampDay kapt hem toch af op een heel dagnr. */
+        '<input type="range" class="tm-scrub" min="0" max="' + (NDAYS - 1) + '" step="0.01" value="' + st.day + '" aria-label="Dag kiezen">' +
         '<div class="tm-scrub-ticks"></div>' +
       "</div>" +
-      '<div class="tm-daylabel"><b></b><span></span></div>' +
+      '<div class="tm-daylabel"><b></b><span></span><i></i></div>' +
       '<div class="tm-speeds">' + [1, 2, 4].map(s =>
         '<button type="button" class="tm-speed' + (s === st.speed ? " active" : "") + '" data-speed="' + s + '">' + s + "×</button>").join("") +
       "</div>" +
@@ -1037,34 +1340,69 @@ function create(options) {
     }).join("");
     elTime.querySelector(".tm-scrub-ticks").innerHTML = ticks;
 
+    /* Slepen levert door de fijne stap tientallen events per seconde op; alleen
+       een échte dagwissel mag de kaart opnieuw laten tekenen. De camera blijft
+       tijdens het slepen stil en kadert pas bij het loslaten. */
     const scrub = elTime.querySelector(".tm-scrub");
-    scrub.addEventListener("input", () => { pause(); api.setDay(+scrub.value, false); });
+    scrub.addEventListener("input", () => {
+      pause();
+      st.scrubTs = performance.now();
+      const dag = clampDay(+scrub.value);
+      if (dag === st.day) return;
+      st.stilCamera = true;
+      api.setDay(dag, false);
+      st.stilCamera = false;
+    });
+    scrub.addEventListener("change", () => { st.scrubTs = 0; planCamera(); });
     elTime.querySelector(".tm-play").addEventListener("click", () => (st.playing ? pause() : play()));
+    /* De snelheid wordt elk frame opnieuw uitgelezen, dus tijdens het afspelen
+       schakelen kan gewoon door — geen herstart van de dag. */
     elTime.querySelectorAll("[data-speed]").forEach(b => b.addEventListener("click", () => {
       st.speed = +b.getAttribute("data-speed");
       elTime.querySelectorAll("[data-speed]").forEach(o => o.classList.toggle("active", o === b));
-      if (st.playing) { pause(); play(); }
     }));
     const vandaag = elTime.querySelector(".tm-today");
     if (vandaag) vandaag.addEventListener("click", () => { pause(); api.setDay(todayIndex(), true); });
     updateTimeline();
   }
 
-  function updateTimeline() {
+  /* Alleen de schuifknop bijwerken — dit draait elk frame. */
+  function updateScrub() {
     if (!elTime) return;
     const scrub = elTime.querySelector(".tm-scrub");
-    if (scrub) scrub.value = st.day;
+    if (scrub && document.activeElement !== scrub && performance.now() - st.scrubTs > 400) {
+      scrub.value = st.day + Math.min(Math.max(st.frac, 0), 0.999);
+    }
+  }
+
+  function updateTimeline() {
+    if (!elTime) return;
+    updateScrub();
     const lbl = elTime.querySelector(".tm-daylabel");
     if (lbl) {
-      const dag = itinerary(st.person).days[st.day];
+      const rij = personDays(st.person)[st.day];
+      const dag = rij ? rij.dag : null;
       lbl.querySelector("b").textContent = fmtDayLabel(dateOfDay(st.day));
       lbl.querySelector("span").textContent = "dag " + (st.day + 1) + "/" + NDAYS +
         (dag && dag.fase ? " · " + FASES[dag.fase].label : "");
+      /* Op een reisdag erbij zetten wáár het naartoe gaat — dat was op de kaart
+         alleen zichtbaar door de route zelf te volgen. */
+      const leg = lbl.querySelector("i");
+      if (leg) {
+        const route = rij && rij.reist
+          ? rij.path.stopKeys.map(k => GEO[k].name.replace(/^[^\w\d(]+\s*/, "")).join(" → ")
+          : "";
+        leg.textContent = route;
+        leg.classList.toggle("tm-leg-aan", !!route);
+      }
     }
     const ticks = elTime.querySelector(".tm-scrub-ticks");
     if (ticks) ticks.querySelectorAll("i").forEach((el, i) => el.classList.toggle("nu", i === st.day));
     const play = elTime.querySelector(".tm-play");
-    if (play) play.textContent = st.playing ? "⏸" : "▶";
+    if (play) {
+      play.textContent = st.playing ? "⏸" : "▶";
+      play.setAttribute("aria-label", st.playing ? "Pauzeren" : "Reis afspelen");
+    }
   }
 
   function renderSidebar() {
@@ -1143,23 +1481,150 @@ function create(options) {
       }).join("") + "</div>";
   }
 
-  /* ================= afspelen ================= */
+  /* ================= afspelen =================
+     Het afspelen loopt op een animatieframe-klok in plaats van een timer die
+     één dag per tik verzet. Daardoor verspringt het icoontje niet van punt naar
+     punt met stilte ertussen, maar loopt het de route van die dag echt af.
+     De duur van een dag komt uit zijn tijdsprofiel (zie dayProfile): afstand,
+     aantal haltes en hoeveel er die dag te doen is bepalen samen hoe lang hij
+     in beeld blijft. */
+  function dayDuration(i) {
+    const rij = personDays(st.person)[clampDay(i)];
+    return rij ? dayProfile(rij).totaal : 600;
+  }
+
+  /* Terwijl de kaart zelf beweegt staat de klok stil. Een marker verplaatsen
+     tijdens een zoomanimatie rekent met het oude zoomniveau en laat het
+     icoontje over het scherm schuiven; bovendien leest de pauze als "kijk,
+     dáár gaat hij naartoe" in plaats van als haperen. */
+  let camBezig = false, camTimer = null;
+  function houdCamera(aan) {
+    camBezig = aan;
+    clearTimeout(camTimer);
+    st.lastTs = 0;
+    if (aan) camTimer = setTimeout(() => { camBezig = false; st.lastTs = 0; }, 1800);
+  }
+  map.on("zoomstart", () => { if (st.playing) houdCamera(true); });
+  map.on("zoomend moveend", () => { if (camBezig) houdCamera(false); });
+
+  /* De camera kadert de hele etappe van de dag in vóór het lopen begint, zodat
+     je ziet waar iemand naartoe gaat. Alleen wanneer het nodig is: staat de
+     route al comfortabel in beeld, dan blijft de kaart staan — anders schokt
+     hij bij elke dag heen en weer. */
+  function planCamera() {
+    if (st.stilCamera) return;
+    const rij = personDays(st.person)[st.day];
+    if (!rij || !rij.path) return;
+    const pts = rij.path.pts;
+
+    if (!rij.reist) {
+      const ll = L.latLng(pts[0][0], pts[0][1]);
+      if (!map.getBounds().pad(-0.18).contains(ll)) {
+        houdCamera(true);
+        map.panTo(ll, { animate: true, duration: 0.7 });
+      }
+      return;
+    }
+
+    const doel = L.latLngBounds(pts);
+    /* Tweede reden om te herkaderen: de kaart staat zo ver uitgezoomd (na een
+       langeafstandsvlucht) dat de etappe een speldenknop is geworden. Zonder
+       die test blijft de kaart na Brussel → Singapore op wereldniveau hangen. */
+    const nw = map.latLngToContainerPoint(doel.getNorthWest());
+    const se = map.latLngToContainerPoint(doel.getSouthEast());
+    const teKlein = Math.abs(se.x - nw.x) < elMap.clientWidth * 0.22 &&
+                    Math.abs(se.y - nw.y) < elMap.clientHeight * 0.22;
+    if (map.getBounds().pad(-0.1).contains(doel) && !teKlein) return;
+
+    houdCamera(true);
+    map.flyToBounds(doel, Object.assign(
+      { maxZoom: rij.path.len < 80 ? 11 : 9, duration: 0.75 }, paddingFor()));
+  }
+
   function play() {
     if (st.playing) return;
-    if (st.day >= NDAYS - 1) api.setDay(0, false);
+    if (walkRaf) { cancelAnimationFrame(walkRaf); walkRaf = null; }
+    /* Aan het eind aangekomen: opnieuw vanaf dag 1. */
+    if (st.day >= NDAYS - 1) gotoDay(0);
+    if (st.highlight) wisMarkering();
     st.playing = true;
+    st.frac = 0;
+    st.lastTs = 0;
+    root.classList.add("tm-playing");
+    styleAll();
     updateTimeline();
-    st.timer = setInterval(() => {
-      if (st.day >= NDAYS - 1) { pause(); return; }
-      api.setDay(st.day + 1, true);
-    }, 900 / st.speed);
+    if (!camBezig) planCamera();
+    renderFrame();
+    st.raf = requestAnimationFrame(tick);
   }
+
   function pause() {
     if (!st.playing) return;
     st.playing = false;
-    clearInterval(st.timer);
-    st.timer = null;
+    if (st.raf) cancelAnimationFrame(st.raf);
+    st.raf = null;
+    root.classList.remove("tm-playing");
     updateTimeline();
+  }
+
+  function tick(ts) {
+    st.raf = null;
+    if (!st.playing) return;
+    if (!st.lastTs) st.lastTs = ts;
+    /* Bij een tabwissel loopt de klok door; zonder plafond springt de reis dan
+       tien dagen vooruit in één frame. */
+    const dt = Math.min(ts - st.lastTs, 120);
+    st.lastTs = ts;
+
+    if (!camBezig) {
+      st.frac += (dt * st.speed) / dayDuration(st.day);
+      while (st.frac >= 1) {
+        if (st.day >= NDAYS - 1) { st.frac = 1; renderFrame(); pause(); return; }
+        st.frac -= 1;
+        gotoDay(st.day + 1);
+        /* Moet de camera herkaderen, dan wacht de reiziger netjes aan het begin
+           van zijn etappe tot de kaart stilstaat. */
+        if (camBezig) { st.frac = 0; break; }
+      }
+    }
+    renderFrame();
+    st.raf = requestAnimationFrame(tick);
+  }
+
+  /* Een handmatige dagsprong (pijltjestoets, deeplink, "Vandaag") loopt hetzelfde
+     pad af als het afspelen, alleen in één keer. */
+  let walkRaf = null;
+  function startWalk() {
+    if (walkRaf) cancelAnimationFrame(walkRaf);
+    const rij = personDays(st.person)[st.day];
+    const duur = rij && rij.reist ? 700 : 260;
+    const doel = idleFrac(rij);
+    const t0 = performance.now();
+    (function stap(now) {
+      const t = Math.min((now - t0) / duur, 1);
+      st.frac = doel * easeInOutSine(t);
+      renderFrame();
+      walkRaf = t < 1 ? requestAnimationFrame(stap) : null;
+    })(t0);
+  }
+
+  function wisMarkering() {
+    st.highlight = null;
+    Object.values(segViews).forEach(v => { v.seg.gemarkeerd = false; });
+    Object.values(placeViews).forEach(v => { v.place.gemarkeerd = false; });
+  }
+
+  /* Naar een andere dag zonder de afspeelklok aan te raken. */
+  function gotoDay(i) {
+    const nieuw = clampDay(i);
+    const veranderd = nieuw !== st.day;
+    st.day = nieuw;
+    refreshPersonMeta();
+    styleAll();
+    updateTimeline();
+    renderSidebar();
+    planCamera();
+    if (veranderd && opt.onDayChange) opt.onDayChange(st.day, dateOfDay(st.day));
   }
 
   /* ================= kaartuitsnede ================= */
@@ -1172,7 +1637,7 @@ function create(options) {
     const it = itinerary(st.person);
     /* Brussel en Singapore laten de kaart uitzoomen tot halve wereld; de reis
        zelf speelt zich in Indonesië af, dus die vallen buiten de standaardview. */
-    const keys = it.places.map(p => p.key).filter(k => ["brussel", "brussels", "bru", "singapore"].indexOf(k) === -1);
+    const keys = it.places.map(p => p.key).filter(k => ["brussel", "singapore"].indexOf(k) === -1);
     const b = boundsOf(keys.length ? keys : it.places.map(p => p.key));
     if (b) map.fitBounds(b, Object.assign({ animate: !!animate }, paddingFor()));
   }
@@ -1190,30 +1655,6 @@ function create(options) {
     return { paddingTopLeft: [30, 56], paddingBottomRight: [30, 78] };
   }
 
-  /* Bij het doorlopen van de dagen volgt de kaart de etappe van die dag, maar
-     alleen als die niet al volledig in beeld staat — anders springt de kaart
-     onrustig heen en weer bij elke dag. Op een vluchtdag betekent dat de hele
-     boog in beeld komt in plaats van een ingezoomde plek boven zee. */
-  function followDay() {
-    const dag = itinerary(st.person).days[st.day];
-    if (!dag) return;
-    const keys = dag.keys.length ? dag.keys : [dag.positie];
-    const doel = boundsOf(keys);
-    if (!doel) return;
-
-    /* Twee redenen om te herkaderen: de etappe valt buiten beeld, óf de kaart
-       staat zo ver uitgezoomd (na een langeafstandsvlucht) dat de etappe een
-       speldenknop is geworden. Zonder die tweede test blijft de kaart na
-       Brussel → Singapore voorgoed op wereldniveau hangen. */
-    const nw = map.latLngToContainerPoint(doel.getNorthWest());
-    const se = map.latLngToContainerPoint(doel.getSouthEast());
-    const teKlein = Math.abs(se.x - nw.x) < elMap.clientWidth * 0.2 &&
-                    Math.abs(se.y - nw.y) < elMap.clientHeight * 0.2;
-    if (map.getBounds().pad(-0.12).contains(doel) && !teKlein) return;
-
-    map.flyToBounds(doel, Object.assign({ maxZoom: 8, duration: 0.6 }, paddingFor()));
-  }
-
   /* ================= publieke API ================= */
   const uid = Math.random().toString(36).slice(2, 8);
 
@@ -1221,18 +1662,15 @@ function create(options) {
     map, root,
 
     setDay(i, animate) {
+      /* Een gemelde locatie kan intussen gewijzigd zijn (live-pagina); de
+         afgeleide dagpaden moeten dan opnieuw opgebouwd worden. */
+      if (opt.positionResolver) Object.keys(dayCache).forEach(k => delete dayCache[k]);
+      wisMarkering();
       const nieuw = clampDay(i);
-      const veranderd = nieuw !== st.day;
-      st.day = nieuw;
-      st.highlight = null;
-      Object.values(segViews).forEach(v => { v.seg.gemarkeerd = false; });
-      Object.values(placeViews).forEach(v => { v.place.gemarkeerd = false; });
-      movePeople(!!animate);
-      styleAll();
-      updateTimeline();
-      renderSidebar();
-      if (animate) followDay();
-      if (veranderd && opt.onDayChange) opt.onDayChange(st.day, dateOfDay(st.day));
+      st.frac = animate ? 0 : idleFrac(personDays(st.person)[nieuw]);
+      gotoDay(nieuw);
+      if (st.playing) return api;
+      if (animate) startWalk(); else renderFrame();
       return api;
     },
 
@@ -1257,6 +1695,7 @@ function create(options) {
       tiles[key].addTo(map);
       st.tile = key;
       root.classList.toggle("tm-light-tiles", key === "straat");
+      root.classList.toggle("tm-sat-tiles", key === "satelliet" || key === "terrein");
       if (elTop) elTop.querySelectorAll("[data-tile]").forEach(b =>
         b.classList.toggle("active", b.getAttribute("data-tile") === key));
       return api;
@@ -1310,7 +1749,14 @@ function create(options) {
     getDate() { return dateOfDay(st.day); },
     getPerson() { return st.person; },
     invalidate() { map.invalidateSize(); layoutLabels(); return api; },
-    destroy() { pause(); map.remove(); root.innerHTML = ""; root.classList.remove("tm-root", "tm-" + opt.mode); },
+    destroy() {
+      pause();
+      if (walkRaf) cancelAnimationFrame(walkRaf);
+      clearTimeout(camTimer);
+      map.remove();
+      root.innerHTML = "";
+      root.classList.remove("tm-root", "tm-" + opt.mode);
+    },
   };
 
   function redraw(refit) {
@@ -1325,6 +1771,9 @@ function create(options) {
     if (refit || !st.fitted) { fitPerson(st.fitted); st.fitted = true; }
   }
 
+  /* De rustpositie hangt van het dagprofiel af, dus die wordt hier gezet en
+     niet in de begintoestand van st. */
+  st.frac = idleFrac(personDays(st.person)[st.day]);
   redraw(true);
 
   /* De kaart moet opnieuw meten zodra het paneel van formaat verandert. De
