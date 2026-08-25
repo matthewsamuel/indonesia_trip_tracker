@@ -2,5 +2,10 @@
 _chat.txt
 *.docx
 *.pdf
+*.vcf
+
+# Volledige WhatsApp-exportmappen: naast _chat.txt zitten daar ook privéfotos,
+# videos en contactkaarten in die niet in een publieke repo horen.
+WhatsApp Chat - */
 
 .DS_Store

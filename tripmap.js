@@ -78,8 +78,8 @@ function fmtDayLabel(ds) {
    t1 (29–30 aug, brussel→singapore→medan):
        29 aug: brussel → singapore
        30 aug: singapore → medan
-   en t17 (21–22 sep, labuanbajo→ruteng):
-       21 sep: labuanbajo → ruteng, 22 sep: ruteng
+   en t44 (22–24 sep, één sleutel labuanbajo):
+       22 t/m 24 sep: labuanbajo
    ================================================================ */
 function tripKeysOnDay(trip, ds) {
   if (ds < trip.start || ds > trip.end) return null;
@@ -369,7 +369,7 @@ function fmtKm(km) {
 /* Geometrie wordt één keer per traject berekend en hergebruikt door elke
    kaartinstantie op de pagina. GEOM staat onder een gesorteerde sleutel, dus
    we onthouden apart welke kant vooraan ligt: wie hetzelfde traject omgekeerd
-   aflegt (Labuan Bajo → Ruteng én terug) krijgt de punten gespiegeld. */
+   aflegt (Malang → Surabaya heen en terug) krijgt de punten gespiegeld. */
 const GEOM = {};
 const GEOM_DIR = {};
 const OSRM_DONE = {};
@@ -790,7 +790,6 @@ function create(options) {
       const marker = L.marker([place.geo.lat, place.geo.lng], {
         icon: L.divIcon({
           html: '<span class="tm-place" style="--fc:' + kleur + '">' +
-                '<span class="tm-place-ring"></span>' +
                 '<span class="tm-place-dot"><i>' + icoon + "</i></span>" +
                 '<span class="tm-place-label">' + esc(place.geo.name) + "</span></span>",
           className: "tm-place-wrap", iconSize: [14, 14], iconAnchor: [7, 7],
@@ -1724,7 +1723,10 @@ function create(options) {
       });
       styleAll();
       const b = boundsOf([...keys].filter(k => k !== "brussel"));
-      if (b) map.fitBounds(b, Object.assign({ animate: true, maxZoom: 9 }, paddingFor()));
+      /* maxZoom hoog genoeg voor een strakke inkadering van één hoofdstuk (ook
+         als dat maar 1-2 dicht bij elkaar liggende plekken omvat); fitBounds
+         zoomt sowieso nooit verder uit dan nodig om alle punten te tonen. */
+      if (b) map.fitBounds(b, Object.assign({ animate: true, maxZoom: 13 }, paddingFor()));
       return api;
     },
 

@@ -3,13 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Indonesië — Gezondheid &amp; SOS</title>
+<title>Indonesië — Gezondheid</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tripmap.css">
 <style>
-  #healthMap { height: 420px; }
-  @media (max-width: 900px) { #healthMap { height: 340px; } }
 </style>
 <style>
   /* Extra page-specific styling for the health dashboard */
@@ -80,118 +78,15 @@
     margin-top: 2px;
   }
 
-  /* SOS Card Preview */
-  .sos-preview-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    height: 100%;
-  }
-
-  .sos-id-card {
-    background: linear-gradient(135deg, #1e1b1b 0%, #0d111c 100%);
-    border: 1px solid rgba(255, 77, 77, 0.2);
-    border-radius: 16px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(255, 77, 77, 0.15);
-    transition: all 0.3s ease;
-  }
-
-  .sos-id-card::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(255, 77, 77, 0.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .sos-card-header {
-    display: flex;
-    justify-content: space-between;
+  /* Sub-nav tabiconen: vaste breedte zodat ze — ondanks verschillende
+     glyph-breedtes — optisch gecentreerd en even zwaar ogen naast de tekst. */
+  #healthSubTabs button .tab-icon {
+    display: inline-flex;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 77, 77, 0.3);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-  }
-
-  .sos-card-title {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: #ff4d4d;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .sos-blood-type {
-    background: #ff4d4d;
-    color: #000;
-    font-weight: 800;
-    font-size: 14px;
-    padding: 3px 10px;
-    border-radius: 6px;
-    box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
-  }
-
-  .sos-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    font-size: 12px;
-  }
-
-  .sos-field {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sos-field.full {
-    grid-column: span 2;
-  }
-
-  .sos-field-label {
-    font-size: 9px;
-    text-transform: uppercase;
-    color: var(--text-soft);
-    letter-spacing: 0.05em;
-    margin-bottom: 2px;
-  }
-
-  .sos-field-value {
-    color: #fff;
-    font-weight: 600;
-    min-height: 18px;
-    word-break: break-word;
-  }
-
-  .sos-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 15px;
-  }
-
-  .sos-form-grid label {
-    font-size: 11px;
-    color: var(--text-soft);
-    margin-bottom: 4px;
-    display: block;
-  }
-
-  .sos-form-grid input, .sos-form-grid select {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  .sos-form-grid .full-w {
-    grid-column: span 2;
+    justify-content: center;
+    width: 18px;
+    font-size: 15px;
+    line-height: 1;
   }
 
   /* Hospitals Directory */
@@ -399,18 +294,28 @@
 
   <!-- SUB-NAV TABS FOR HEALTH SECTIONS -->
   <nav class="tabs" id="healthSubTabs" style="margin-top: 10px; margin-bottom: 24px;">
-    <button class="active" onclick="switchHealthTab('vac-mal', this)">💉 Vaccinaties &amp; Malaria</button>
-    <button onclick="switchHealthTab('apotheek', this)">🎒 Reisapotheek</button>
-    <button onclick="switchHealthTab('sos-id', this)">🚨 SOS Emergency ID</button>
+    <button class="active" onclick="switchHealthTab('hospitals', this)"><span class="tab-icon">🏥</span> Medische voorzieningen &amp; ziekenhuizen</button>
+    <button onclick="switchHealthTab('vac-mal', this)"><span class="tab-icon">💉</span> Vaccinaties &amp; Malaria</button>
+    <button onclick="switchHealthTab('apotheek', this)"><span class="tab-icon">🎒</span> Reisapotheek</button>
   </nav>
 
   <!-- MAIN HEALTH GRID -->
   <div class="health-dashboard-grid">
     
+    <!-- FIRST PANEL: RECOMMENDED HOSPITALS ON YOUR ROUTE (standaardtab) -->
+    <section class="panel col-12" id="section-hospitals">
+      <h2>🏥 Medische Voorzieningen &amp; Ziekenhuizen op de Route</h2>
+      <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 16px;">Hieronder vind je de dichtstbijzijnde betrouwbare (internationale) klinieken en ziekenhuizen langs de route van de geselecteerde reiziger.</p>
+
+      <div class="hospital-list" id="hospitalList">
+        <!-- Rendered dynamically based on active regions of selected traveler -->
+      </div>
+    </section>
+
     <!-- LEFT PANEL: PERSONAL VACCINATIONS & RISKS -->
     <section class="panel col-12" id="section-vac-mal">
       <h2>💉 Vaccinaties &amp; Malaria</h2>
-      
+
       <div style="margin-bottom: 20px;">
         <h3 class="health-block h3" style="font-size:12px; margin-bottom: 8px; color: var(--text-soft); text-transform: uppercase; letter-spacing:0.05em;">Persoonlijke Vaccinatiestatus</h3>
         <ul class="custom-checkbox-list" id="vaccineList">
@@ -453,128 +358,6 @@
         <ul class="custom-checkbox-list" id="pharmacyListFirstAid">
           <!-- Rendered dynamically -->
         </ul>
-      </div>
-    </section>
-
-    <!-- RIGHT PANEL: SOS EMERGENCY ID CARD GENERATOR -->
-    <section class="panel col-12" id="section-sos-id">
-      <h2>🚨 SOS Emergency ID</h2>
-      
-      <div class="sos-preview-wrapper">
-        <div class="sos-id-card" id="sosIdCard">
-          <div class="sos-card-header">
-            <span class="sos-card-title">⚠️ EMERGENCY MEDICAL ID</span>
-            <span class="sos-blood-type" id="cardBlood">O+</span>
-          </div>
-          <div class="sos-grid">
-            <div class="sos-field">
-              <span class="sos-field-label">Naam</span>
-              <span class="sos-field-value" id="cardName">Matthew</span>
-            </div>
-            <div class="sos-field">
-              <span class="sos-field-label">Geboortedatum</span>
-              <span class="sos-field-value" id="cardBirthdate">—</span>
-            </div>
-            
-            <div class="sos-field full">
-              <span class="sos-field-label">Allergieën</span>
-              <span class="sos-field-value" id="cardAllergies" style="color: #ff8080;">Geen</span>
-            </div>
-            <div class="sos-field full">
-              <span class="sos-field-label">Medische Info / Medicatie</span>
-              <span class="sos-field-value" id="cardConditions">Geen chronische aandoeningen</span>
-            </div>
-            
-            <div class="sos-field">
-              <span class="sos-field-label">Noodcontact (ICE)</span>
-              <span class="sos-field-value" id="cardIceName">—</span>
-            </div>
-            <div class="sos-field">
-              <span class="sos-field-label">Telefoon ICE</span>
-              <span class="sos-field-value" id="cardIcePhone">—</span>
-            </div>
-            
-            <div class="sos-field">
-              <span class="sos-field-label">Reisverzekering</span>
-              <span class="sos-field-value" id="cardInsuranceName">—</span>
-            </div>
-            <div class="sos-field">
-              <span class="sos-field-label">Polis &amp; SOS Nr</span>
-              <span class="sos-field-value" id="cardInsurancePolicy">—</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 8px;">
-          <button class="i-btn" style="flex: 1; height: 32px; border-radius: 8px; font-size: 12px; gap: 4px;" onclick="copySosText()">📋 Kopieer SOS Tekst</button>
-          <button class="i-btn" style="flex: 1; height: 32px; border-radius: 8px; font-size: 12px; gap: 4px; background: rgba(255, 77, 77, 0.15); color: #ff4d4d;" onclick="clearSosData()">↺ Reset Kaart</button>
-        </div>
-
-        <div class="sos-form-grid" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
-          <div class="sos-field">
-            <label for="inputBlood">Bloedgroep</label>
-            <select id="inputBlood" onchange="updateSosCard()">
-              <option value="Onbekend">Onbekend</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
-          </div>
-          <div class="sos-field">
-            <label for="inputBirthdate">Geb. datum</label>
-            <input type="text" id="inputBirthdate" placeholder="DD/MM/JJJJ" oninput="updateSosCard()">
-          </div>
-          <div class="sos-field full-w">
-            <label for="inputAllergies">Allergieën</label>
-            <input type="text" id="inputAllergies" placeholder="bv. Penicilline, pinda's" oninput="updateSosCard()">
-          </div>
-          <div class="sos-field full-w">
-            <label for="inputConditions">Medische Info / Medicatie</label>
-            <input type="text" id="inputConditions" placeholder="bv. Asthma, dagelijks puffertje" oninput="updateSosCard()">
-          </div>
-          <div class="sos-field">
-            <label for="inputIceName">ICE Contact Naam</label>
-            <input type="text" id="inputIceName" placeholder="Moeder, Partner" oninput="updateSosCard()">
-          </div>
-          <div class="sos-field">
-            <label for="inputIcePhone">ICE Telefoon</label>
-            <input type="text" id="inputIcePhone" placeholder="+32 4..." oninput="updateSosCard()">
-          </div>
-          <div class="sos-field">
-            <label for="inputInsuranceName">Verzekeraar</label>
-            <input type="text" id="inputInsuranceName" placeholder="bv. AG, Allianz, DKV" oninput="updateSosCard()">
-          </div>
-          <div class="sos-field">
-            <label for="inputInsurancePolicy">Polisnr. &amp; SOS nr.</label>
-            <input type="text" id="inputInsurancePolicy" placeholder="bv. P-12345 / +32 2..." oninput="updateSosCard()">
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FULL ROW: RISICOKAART -->
-    <section class="panel col-12">
-      <h2>🦟 Risicokaart — route gekleurd naar malariarisico</h2>
-      <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 16px;">
-        Dezelfde route als op de reiskaart, maar elke plaats is gekleurd naar het
-        malariarisico van die regio. Sleep de tijdlijn om te zien wanneer de reis
-        door welk risicogebied gaat.
-      </p>
-      <div id="healthMap"></div>
-    </section>
-
-    <!-- FULL ROW: RECOMMENDED HOSPITALS ON YOUR ROUTE -->
-    <section class="panel col-12">
-      <h2>🏥 Medische Voorzieningen &amp; Ziekenhuizen op de Route</h2>
-      <p style="font-size: 13px; color: var(--text-soft); margin-bottom: 16px;">Hieronder vind je de dichtstbijzijnde betrouwbare (internationale) klinieken en ziekenhuizen langs de route van de geselecteerde reiziger.</p>
-      
-      <div class="hospital-list" id="hospitalList">
-        <!-- Rendered dynamically based on active regions of selected traveler -->
       </div>
     </section>
 
@@ -674,8 +457,9 @@ const MALARIA_REGIONS = [
   { id: "singapore", label: "Singapore", risk: "geen", desc: "Geen risico. Normale muggenpreventie tegen dengue.", phases: ["heen"] },
   { id: "sumatra", label: "Sumatra (Ketambe)", risk: "laag", desc: "Muggenwerende middelen (DEET). Noodbehandeling bij koorts.", phases: ["sumatra"] },
   { id: "jakarta", label: "Jakarta (Stad)", risk: "geen", desc: "Geen malaria-risico. Wel risico op dengue.", phases: ["jakarta"] },
-  { id: "java", label: "Java (Yogya, Malang, Bromo)", risk: "laag", desc: "Laag risico. DEET smeren. Vulkaangassen bij Ijen/Bromo.", phases: ["java"] },
-  { id: "flores", label: "Flores (Labuan Bajo, Ruteng)", risk: "laag", desc: "Laag risico. Muggennet en DEET. Beperkte medische posten.", phases: ["flores"] },
+  { id: "java", label: "Java (Yogya, Malang, Bromo)", risk: "laag", desc: "Laag risico. DEET smeren. Vulkaangassen bij Ijen/Bromo. Let op: begin augustus 2026 verwoestte een natuurbrand ±550 hectare rond Mount Bromo — check de toegankelijkheid vóór vertrek.", phases: ["java"] },
+  { id: "lombok", label: "Lombok", risk: "laag", desc: "Laag risico. DEET en muggennet. Ziekenhuizen in Mataram; op de Gili-eilanden alleen basiszorg — bij iets ernstigs moet je naar het vasteland.", phases: ["lombok"] },
+  { id: "flores", label: "Flores (Labuan Bajo)", risk: "laag", desc: "Laag risico voor malaria, maar beperkte medische posten. Let op: half augustus 2026 werd Labuan Bajo getroffen door een aardbeving en een tsunami — check de actuele situatie en de staat van de accommodaties.", phases: ["flores"] },
   { id: "bali", label: "Bali", risk: "laag", desc: "Laag risico. Toeristische gebieden zeer veilig, wel rabiësgevaar.", phases: ["bali", "komodo"] }
 ];
 
@@ -684,7 +468,7 @@ const VACCINES = [
   { id: "dtp", label: "DTP (Difterie, Tetanus, Polio)", desc: "Herhaling nodig indien >10 jaar geleden." },
   { id: "bmr", label: "BMR (Mazelen, Bof, Rubella)", desc: "Vaccinatiestatus controleren wegens actieve uitbraak!" },
   { id: "buiktyfus", label: "Buiktyfus", desc: "Aanbevolen bij verblijf langer dan 2 weken op Sumatra/Java." },
-  { id: "rabies", label: "Rabiës (Hondsdolheid)", desc: "Bespreek met reiskliniek. Essentieel op Flores & Sumatra." }
+  { id: "rabies", label: "Rabiës (Hondsdolheid)", desc: "Bespreek met reiskliniek. Essentieel op Flores & Sumatra. Tussen de twee dosissen moet minimaal 3 dagen zitten (7 dagen is het standaardschema)." }
 ];
 
 const HOSPITALS = [
@@ -935,103 +719,6 @@ function renderHospitals() {
 }
 
 /* ================================================================
-   SOS MEDICAL ID FUNCTIONS
-   ================================================================ */
-function loadSosData() {
-  const defaultSos = {
-    blood: "O+",
-    birthdate: "",
-    allergies: "Geen",
-    conditions: "Geen chronische aandoeningen",
-    iceName: "",
-    icePhone: "",
-    insuranceName: "",
-    insurancePolicy: ""
-  };
-  
-  const saved = ls_get(`health_sos_${selectedPerson}`, defaultSos);
-  
-  // Fill inputs
-  document.getElementById("inputBlood").value = saved.blood || "Onbekend";
-  document.getElementById("inputBirthdate").value = saved.birthdate || "";
-  document.getElementById("inputAllergies").value = saved.allergies || "";
-  document.getElementById("inputConditions").value = saved.conditions || "";
-  document.getElementById("inputIceName").value = saved.iceName || "";
-  document.getElementById("inputIcePhone").value = saved.icePhone || "";
-  document.getElementById("inputInsuranceName").value = saved.insuranceName || "";
-  document.getElementById("inputInsurancePolicy").value = saved.insurancePolicy || "";
-
-  updateSosCardDOM(saved);
-}
-
-function updateSosCardDOM(data) {
-  const pName = PERSONS[selectedPerson]?.name || "Reiziger";
-  document.getElementById("cardName").textContent = pName;
-  document.getElementById("cardBlood").textContent = data.blood || "Onbekend";
-  document.getElementById("cardBirthdate").textContent = data.birthdate || "—";
-  
-  document.getElementById("cardAllergies").textContent = data.allergies || "Geen";
-  document.getElementById("cardAllergies").style.color = (data.allergies && data.allergies.toLowerCase() !== "geen") ? "#ff8080" : "#fff";
-  
-  document.getElementById("cardConditions").textContent = data.conditions || "Geen";
-  document.getElementById("cardIceName").textContent = data.iceName || "—";
-  document.getElementById("cardIcePhone").textContent = data.icePhone || "—";
-  document.getElementById("cardInsuranceName").textContent = data.insuranceName || "—";
-  document.getElementById("cardInsurancePolicy").textContent = data.insurancePolicy || "—";
-}
-
-function updateSosCard() {
-  const data = {
-    blood: document.getElementById("inputBlood").value,
-    birthdate: document.getElementById("inputBirthdate").value,
-    allergies: document.getElementById("inputAllergies").value,
-    conditions: document.getElementById("inputConditions").value,
-    iceName: document.getElementById("inputIceName").value,
-    icePhone: document.getElementById("inputIcePhone").value,
-    insuranceName: document.getElementById("inputInsuranceName").value,
-    insurancePolicy: document.getElementById("inputInsurancePolicy").value
-  };
-
-  ls_set(`health_sos_${selectedPerson}`, data);
-  updateSosCardDOM(data);
-}
-
-function clearSosData() {
-  if (!confirm("Weet je zeker dat je alle SOS-gegevens voor deze reiziger wilt wissen?")) return;
-  localStorage.removeItem(`health_sos_${selectedPerson}`);
-  loadSosData();
-}
-
-function copySosText() {
-  const pName = PERSONS[selectedPerson]?.name || "Reiziger";
-  const blood = document.getElementById("cardBlood").textContent;
-  const bdate = document.getElementById("cardBirthdate").textContent;
-  const allergies = document.getElementById("cardAllergies").textContent;
-  const conditions = document.getElementById("cardConditions").textContent;
-  const iceName = document.getElementById("cardIceName").textContent;
-  const icePhone = document.getElementById("cardIcePhone").textContent;
-  const insName = document.getElementById("cardInsuranceName").textContent;
-  const insPolicy = document.getElementById("cardInsurancePolicy").textContent;
-
-  const text = `⚠️ EMERGENCY MEDICAL ID - ${pName.toUpperCase()}
----------------------------------
-Bloedgroep: ${blood}
-Geb. datum: ${bdate}
-Allergieën: ${allergies}
-Medische info: ${conditions}
-Noodcontact (ICE): ${iceName} (${icePhone})
-Reisverzekering: ${insName} - Polis: ${insPolicy}
----------------------------------
-Gegenereerd via Indonesië Travel Tracker 2026`;
-
-  navigator.clipboard.writeText(text).then(() => {
-    alert("SOS Medische gegevens gekopieerd naar klembord!");
-  }).catch(err => {
-    alert("Kopiëren mislukt: " + err);
-  });
-}
-
-/* ================================================================
    INTERACTION HANDLERS
    ================================================================ */
 function toggleVaccine(id) {
@@ -1063,51 +750,6 @@ function onPersonChange(key) {
   renderMalariaRisks();
   renderPharmacy();
   renderHospitals();
-  renderRisicoKaart();
-  loadSosData();
-}
-
-/* ══════════════════════════════════════════════════════════
-   RISICOKAART — gedeeld component uit tripmap.js
-
-   MALARIA_REGIONS koppelt een risiconiveau aan reisfases; de kaart weet van
-   elke plaats in welke fase die valt. Die twee samenvoegen levert een route
-   die per plaats gekleurd is naar risico, zonder nieuwe data te verzinnen.
-   ══════════════════════════════════════════════════════════ */
-const RISICO_KLEUR = {
-  geen:      { color: "#4ad66d", label: "Geen malariarisico", icon: "✅" },
-  laag:      { color: "#ffb703", label: "Laag risico",        icon: "🦟" },
-  onbekend:  { color: "#64748b", label: "Niet beoordeeld",    icon: "❔" },
-};
-
-function risicoVoorFase(faseKey) {
-  const regio = MALARIA_REGIONS.find(r => r.phases.includes(faseKey));
-  if (!regio) return { niveau: "onbekend", regio: null };
-  return { niveau: RISICO_KLEUR[regio.risk] ? regio.risk : "onbekend", regio };
-}
-
-let risicoKaart = null;
-
-function renderRisicoKaart() {
-  if (!document.getElementById("healthMap")) return;
-  if (!risicoKaart) {
-    risicoKaart = TripMap.create({
-      el: "#healthMap",
-      mode: "panel",
-      person: selectedPerson,
-      day: "today",
-      placeStyle(place) {
-        const { niveau, regio } = risicoVoorFase(place.fase);
-        const stijl = RISICO_KLEUR[niveau];
-        return { color: stijl.color, icon: stijl.icon, note: regio ? regio.desc : null };
-      },
-      legendItems: Object.keys(RISICO_KLEUR)
-        .filter(k => k !== "onbekend")
-        .map(k => ({ color: RISICO_KLEUR[k].color, label: RISICO_KLEUR[k].label })),
-    });
-  } else {
-    risicoKaart.setPerson(selectedPerson);
-  }
 }
 
 function toggleAccordion(btn) {
@@ -1130,17 +772,17 @@ function toggleAccordion(btn) {
 /* ================================================================
    SUB-TAB NAVIGATION
    ================================================================ */
-let activeHealthTab = ls_get("active_health_subtab", "vac-mal");
+let activeHealthTab = ls_get("active_health_subtab", "hospitals");
 
 function switchHealthTab(tabId, btn) {
   activeHealthTab = tabId;
   ls_set("active_health_subtab", tabId);
-  
+
   // Hide all sections
+  document.getElementById("section-hospitals").style.display = "none";
   document.getElementById("section-vac-mal").style.display = "none";
   document.getElementById("section-apotheek").style.display = "none";
-  document.getElementById("section-sos-id").style.display = "none";
-  
+
   // Show selected section
   document.getElementById("section-" + tabId).style.display = "block";
   
@@ -1166,8 +808,6 @@ function init() {
   renderMalariaRisks();
   renderPharmacy();
   renderHospitals();
-  renderRisicoKaart();
-  loadSosData();
   switchHealthTab(activeHealthTab);
 }
 

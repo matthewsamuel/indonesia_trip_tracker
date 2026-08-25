@@ -278,16 +278,13 @@ body {
 }
 
 .combined-route-grid {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
-@media (max-width: 860px) {
-  .combined-route-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-  }
+
+.route-map-row {
+  width: 100%;
 }
 
 /* ── COSTS SECTION ── */
@@ -566,7 +563,7 @@ body {
 .timeline-container::before {
   content: "";
   position: absolute;
-  left: 96px;
+  left: 124px;
   top: 10px;
   bottom: 10px;
   width: 2px;
@@ -575,7 +572,7 @@ body {
 
 .timeline-item {
   display: grid;
-  grid-template-columns: 80px 32px 1fr;
+  grid-template-columns: 108px 32px 1fr;
   gap: 16px;
   padding: 24px 0;
   border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -1285,13 +1282,23 @@ ul.history .hdel:hover {
   margin-top: 24px;
 }
 
+/* Slangindeling: gebalanceerde rijen kaarten die om en om links-rechts /
+   rechts-links lezen (zie snakeifyStepper() in indonesia-tracker.html), zodat
+   het geen mega lange verticale lijst — of een scheve laatste rij — wordt.
+   Elke .stepper-row krijgt zijn kolomaantal mee als --cols; de kaartbreedte
+   in .simple-step is daarvan afgeleid zodat elke rij netjes de volledige
+   breedte vult, ongeacht hoeveel kaarten erin staan. */
 .simple-timeline {
   display: flex;
   flex-direction: column;
-  position: relative;
-  padding-left: 20px;
+  gap: 16px;
   margin-top: 10px;
-  gap: 14px;
+}
+
+.stepper-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
 }
 
 .simple-step {
@@ -1300,41 +1307,44 @@ ul.history .hdel:hover {
   flex-direction: column;
   gap: 4px;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  flex: 0 1 calc((100% - 16px * (var(--cols, 1) - 1)) / var(--cols, 1));
+  max-width: 320px;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
 .simple-step:hover {
-  transform: translateX(4px);
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.simple-step-line {
+.simple-step-badge {
   position: absolute;
-  left: -14px;
-  top: 12px;
-  bottom: -20px;
-  width: 2px;
-  opacity: 0.35;
-}
-
-.simple-step:last-child .simple-step-line {
-  display: none;
-}
-
-.simple-step-node {
-  position: absolute;
-  left: -19px;
-  top: 4px;
-  width: 12px;
-  height: 12px;
+  top: -10px;
+  left: -10px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 2px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #07090e;
+  background: var(--phase-color);
+  border: 2px solid #07090e;
   z-index: 2;
   transition: transform 0.15s ease;
 }
 
-.simple-step:hover .simple-step-node {
-  transform: scale(1.35);
-  box-shadow: 0 0 8px currentColor;
+.simple-step:hover .simple-step-badge {
+  transform: scale(1.15);
+  box-shadow: 0 0 8px var(--phase-color);
 }
 
 .simple-step-content {
@@ -1512,109 +1522,13 @@ ul.history .hdel:hover {
   font-weight: 500;
 }
 
-/* ── VERGRENDELD FOTOPANEEL (klik op fase in Route & Verloop) ── */
-.locked-photos-panel {
-  margin-top: 14px;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,0.25);
-  animation: lockedFadeIn 0.28s ease;
-}
-
-@keyframes lockedFadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.locked-photo-wrap {
-  position: relative;
-}
-
-.locked-photo-hero {
-  width: 100%;
-  height: 210px;
-  object-fit: contain;
-  background: #000;
-  display: block;
-  cursor: zoom-in;
-  transition: transform 0.35s ease, opacity 0.35s ease;
-}
-.locked-photo-hero:hover {
-  transform: scale(1.025);
-}
-.locked-photo-hero.fading {
-  opacity: 0;
-}
-
-.locked-photo-placeholder {
-  width: 100%;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.03);
-  color: var(--text-soft);
-  font-size: 13px;
-}
-
-.locked-photos-thumbs {
-  display: flex;
-  gap: 3px;
-  background: rgba(0,0,0,0.4);
-  padding: 3px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.locked-photos-thumbs::-webkit-scrollbar { display: none; }
-.locked-photos-thumbs img {
-  height: 58px;
-  width: 86px;
-  object-fit: cover;
-  border-radius: 4px;
-  flex-shrink: 0;
-  cursor: pointer;
-  opacity: 0.68;
-  transition: opacity 0.18s ease, transform 0.15s ease;
-  border: 1.5px solid transparent;
-}
-.locked-photos-thumbs img:hover {
-  opacity: 1;
-  transform: scale(1.06);
-  border-color: rgba(255,255,255,0.3);
-}
-
-.locked-phase-info {
-  padding: 12px 14px 14px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-.locked-phase-title {
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 3px;
-}
-.locked-phase-dates {
-  font-size: 11px;
-  color: var(--text-soft);
-  margin-bottom: 8px;
-}
-.locked-phase-desc-text {
-  font-size: 12.5px;
-  color: var(--text-soft);
-  line-height: 1.65;
-}
-
 /* Vergrendelde stap in de stepper */
-.simple-step.locked > .simple-step-content {
-  background: rgba(255,255,255,0.025);
-  border-radius: 8px;
-  padding: 6px 8px;
-  margin-left: -8px;
+.simple-step.locked {
+  border-color: var(--phase-color);
+  background: rgba(255, 255, 255, 0.05);
 }
-.simple-step.locked .simple-step-node {
-  box-shadow: 0 0 10px currentColor;
+.simple-step.locked .simple-step-badge {
+  box-shadow: 0 0 10px var(--phase-color);
   transform: scale(1.25);
 }
 
@@ -1713,11 +1627,6 @@ ul.history .hdel:hover {
 
   /* Bestemmingen-strip iets compacter */
   .dest-card { flex: 0 0 240px; height: 180px; }
-  .locked-photo-hero { height: 160px; }
-
-  /* Gezondheid: SOS/formulier-grids naar 1 kolom op zeer smalle schermen */
-  .sos-grid, .sos-form-grid { grid-template-columns: minmax(0, 1fr); }
-  .sos-field.full, .sos-form-grid .full-w { grid-column: span 1; }
 
   /* Live tracker */
   .sim-date-display { min-width: 0; font-size: 14px; }
@@ -1917,18 +1826,20 @@ ul.history .hdel:hover {
   text-align: right;
   gap: 4px;
 }
-.timeline-item .when .day-number {
-  font-size: 15px;
+.timeline-item .when .date-range {
+  font-size: 17px;
   font-weight: 800;
   color: var(--phase-color);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
   line-height: 1.2;
 }
-.timeline-item .when .date-range {
-  font-size: 12px;
+.timeline-item .when .day-number {
+  font-size: 10.5px;
+  font-weight: 700;
   color: var(--text-soft);
-  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 .timeline-item .when .dur {
   font-size: 10.5px;
@@ -2245,11 +2156,12 @@ textarea.note::placeholder {
     justify-content: flex-start !important;
     gap: 8px !important;
   }
-  .timeline-item .when .day-number {
-    font-size: 13.5px !important;
-  }
   .timeline-item .when .date-range {
-    font-size: 11.5px !important;
+    font-size: 15px !important;
+  }
+  .timeline-item .when .day-number {
+    font-size: 11px !important;
+    white-space: nowrap !important;
   }
   .timeline-item .when .dur {
     margin-top: 0 !important;
@@ -2318,7 +2230,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .simple-step-collapse-toggle { min-width: 34px; min-height: 34px; }
 
   /* Kaart op de homepagina niet het halve scherm laten innemen */
-  #routemap { height: 260px !important; }
+  #routemap { height: 300px !important; }
   .chart-container { height: 190px; }
 
   /* Tabbladenrijen horizontaal scrollbaar i.p.v. wrappen tot een blok.
@@ -2407,7 +2319,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .cost-line .cost-input { flex: 1 1 90px; min-width: 0; }
   .cost-line .booked { flex: 0 0 auto; }
 
-  #routemap { height: 220px !important; }
+  #routemap { height: 260px !important; }
   .radar-container { height: 150px; }
 }
 
@@ -2485,6 +2397,36 @@ html, body { max-width: 100%; overflow-x: hidden; }
 }
 
 /* ── NOG TE BOEKEN (indonesia-tracker.html) ── */
+.todo-panel-header {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease, border-color 0.2s ease;
+}
+.todo-panel-header:hover { opacity: 0.82; }
+.todo-panel-title { display: flex; align-items: center; }
+.todo-urgent-pill {
+  display: inline-block;
+  background: rgba(255, 77, 77, 0.14);
+  color: #ff8f8f;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 77, 77, 0.25);
+}
+.todo-panel-chevron {
+  font-size: 11px;
+  margin-left: auto;
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+}
+.todo-panel-header.collapsed {
+  border-bottom-color: transparent;
+  margin-bottom: 0;
+}
+.todo-panel-header.collapsed .todo-panel-chevron {
+  transform: rotate(-90deg);
+}
 .todo-intro {
   font-size: 13px;
   color: var(--text-soft);
@@ -2494,6 +2436,11 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .todo-empty {
   font-size: 13.5px;
   color: #4ad66d;
+  background: rgba(74, 214, 109, 0.1);
+  border: 1px solid rgba(74, 214, 109, 0.22);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0;
 }
 .todo-list {
   list-style: none;
@@ -2513,6 +2460,11 @@ html, body { max-width: 100%; overflow-x: hidden; }
   border-radius: 10px;
   padding: 10px 14px;
   min-width: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.todo-item:hover {
+  background: rgba(0, 0, 0, 0.28);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 .todo-item.is-urgent { border-left-color: #ffb703; }
 .todo-item.is-late   { border-left-color: #ff4d4d; }
@@ -2520,7 +2472,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
   flex-shrink: 0;
   width: 26px;
   height: 26px;
-  border-radius: 7px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2529,7 +2481,8 @@ html, body { max-width: 100%; overflow-x: hidden; }
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-soft);
 }
-.todo-type.prijs { background: rgba(255, 183, 3, 0.14); color: #ffb703; }
+.todo-type.prijs   { background: rgba(255, 183, 3, 0.14); color: #ffb703; }
+.todo-type.boeking { background: rgba(0, 180, 216, 0.14); color: var(--teal); }
 .todo-body {
   flex: 1;
   min-width: 0;

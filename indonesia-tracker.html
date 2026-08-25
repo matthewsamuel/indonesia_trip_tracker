@@ -9,9 +9,9 @@
 <link rel="stylesheet" href="tripmap.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
-/* De kaart naast de stepper: paneelvariant van tripmap.js */
-#routemap { height: 420px; }
-@media (max-width: 900px) { #routemap { height: 340px; } }
+/* De kaart boven de stepper: paneelvariant van tripmap.js, nu op volle breedte */
+#routemap { height: 560px; }
+@media (max-width: 900px) { #routemap { height: 440px; } }
 </style>
 </head>
 <body>
@@ -59,22 +59,19 @@
     </section>
   </div>
 
-  <!-- OPEN TO-DO'S: WAT MOET ER NOG GEBOEKT WORDEN -->
-  <section class="panel todo-panel" id="todoPanel"></section>
-
   <!-- BOTTOM ROW: COMBINED ROUTE MAP & STEPPER -->
   <section class="panel combined-route-panel">
     <h2>🗺️ Route &amp; Verloop <span id="routeStepperCount" class="tbd-pill" style="margin-left:auto; background:var(--teal-soft); color:var(--teal); border-color:rgba(0,180,216,0.2)"></span></h2>
     <div class="combined-route-grid">
-      <div class="route-left">
-        <div class="route-stepper" id="routeStepper"></div>
-      </div>
-      <div class="route-right">
+      <div class="route-map-row">
         <div id="routemap"></div>
-        <div id="lockedPhotosPanel" class="locked-photos-panel" style="display:none"></div>
       </div>
+      <div class="route-stepper" id="routeStepper"></div>
     </div>
   </section>
+
+  <!-- OPEN TO-DO'S: WAT MOET ER NOG GEBOEKT WORDEN -->
+  <section class="panel todo-panel" id="todoPanel"></section>
 
   <!-- DESTINATIONS GALLERY -->
   <section class="panel destinations-panel">
@@ -97,7 +94,6 @@
 
 let chartRef = null;
 let lockedTripIds = null;
-let lockedFaseKey = null;
 let lockedGroupKey = null;
 
 function getCostsForPerson(personKey) {
@@ -237,6 +233,12 @@ function recalcAll(){
    Toont per reiziger wat er nog geboekt of ingevuld moet worden: kosten zonder
    bedrag (TBD) en geboekte-vinkjes die nog openstaan. De datum van de bijhorende
    etappe bepaalt de urgentie, zodat het eerstvolgende altijd bovenaan staat. */
+function toggleTodoPanelCollapse() {
+  const current = ls_get("collapsed_todopanel", false);
+  ls_set("collapsed_todopanel", !current);
+  renderTodoPanel();
+}
+
 function renderTodoPanel() {
   const panel = document.getElementById("todoPanel");
   if (!panel) return;
@@ -256,7 +258,7 @@ function renderTodoPanel() {
   const openItems = [];
   for (const cid in costContext) {
     const cost = COSTS[cid];
-    if (!cost) continue;
+    if (!cost || !costIsVisible(cid)) continue;
     const item = costContext[cid];
     const value = costValue(cid);
     const booked = isBooked(cid);
@@ -276,10 +278,17 @@ function renderTodoPanel() {
 
   if (openItems.length === 0) {
     panel.innerHTML = `
-      <h2>✅ Nog te boeken</h2>
+      <h2 class="todo-panel-header">✅ Nog te boeken</h2>
       <p class="todo-empty">Alles is ingevuld en aangevinkt voor ${PERSONS[personKey].name}.</p>`;
     return;
   }
+
+  const urgentCount = openItems.filter(o => {
+    const dagen = Math.ceil((dateOf(o.item.start) - t) / 86400000);
+    return dagen <= 21;
+  }).length;
+
+  const collapsed = ls_get("collapsed_todopanel", false);
 
   const rows = openItems.map(o => {
     const dagen = Math.ceil((dateOf(o.item.start) - t) / 86400000);
@@ -307,12 +316,21 @@ function renderTodoPanel() {
   }).join("");
 
   panel.innerHTML = `
-    <h2>📌 Nog te boeken <span class="tbd-pill">${openItems.length}</span></h2>
-    <p class="todo-intro">
-      Openstaande punten voor <strong>${PERSONS[personKey].name}</strong>, op datum.
-      ${totalKnown > 0 ? `Daarvan staat al <strong>€ ${totalKnown.toFixed(0)}</strong> vast qua prijs maar is nog niet geboekt.` : ""}
-    </p>
-    <ul class="todo-list">${rows}</ul>`;
+    <h2 class="todo-panel-header collapsible ${collapsed ? "collapsed" : ""}" id="todoPanelHeader"
+      role="button" tabindex="0" aria-expanded="${!collapsed}" aria-label="Nog te boeken in- of uitklappen"
+      onclick="toggleTodoPanelCollapse()">
+      <span class="todo-panel-title">📌 Nog te boeken</span>
+      <span class="tbd-pill">${openItems.length}</span>
+      ${urgentCount > 0 ? `<span class="todo-urgent-pill">⏰ ${urgentCount} dringend</span>` : ""}
+      <span class="todo-panel-chevron">▼</span>
+    </h2>
+    <div class="todo-panel-body" style="display:${collapsed ? "none" : "block"}">
+      <p class="todo-intro">
+        Openstaande punten voor <strong>${PERSONS[personKey].name}</strong>, op datum.
+        ${totalKnown > 0 ? `Daarvan staat al <strong>€ ${totalKnown.toFixed(0)}</strong> vast qua prijs maar is nog niet geboekt.` : ""}
+      </p>
+      <ul class="todo-list">${rows}</ul>
+    </div>`;
 }
 
 /* ---------------- RENDER: kaart (tripmap.js) ----------------
@@ -341,9 +359,7 @@ function renderMap(highlightTripIds = null) {
     kaartVoorPersoon = personKey;
     if (lockedTripIds !== null) {
       lockedTripIds = null;
-      lockedFaseKey = null;
       lockedGroupKey = null;
-      updateLockedPhotos(null, null);
     }
   }
   tripKaart.highlightTrips(highlightTripIds);
@@ -360,13 +376,11 @@ function resetHoverPhase() {
   renderMap(null);
 }
 
-function toggleLockPhase(tripIds, faseKey, groupKey) {
+function toggleLockPhase(tripIds, groupKey) {
   const isSame = lockedGroupKey === groupKey;
   lockedTripIds = isSame ? null : tripIds;
-  lockedFaseKey = isSame ? null : faseKey;
   lockedGroupKey = isSame ? null : groupKey;
   renderMap(lockedTripIds);
-  updateLockedPhotos(lockedFaseKey, lockedTripIds);
   document.querySelectorAll(".simple-step").forEach(el => el.classList.remove("locked"));
   if (lockedGroupKey) {
     document.querySelectorAll(`.simple-step[data-group="${lockedGroupKey}"]`).forEach(el => el.classList.add("locked"));
@@ -385,59 +399,6 @@ function closeLightbox() {
   if (overlay) overlay.classList.remove("open");
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeLightbox(); });
-
-let lockedPhotoTimer = null;
-
-function updateLockedPhotos(faseKey, tripIds) {
-  const panel = document.getElementById("lockedPhotosPanel");
-  if (!panel) return;
-  if (lockedPhotoTimer) { clearInterval(lockedPhotoTimer); lockedPhotoTimer = null; }
-  if (!faseKey) { panel.style.display = "none"; return; }
-
-  const fase = FASES[faseKey];
-  const personKey = ls_get("selected_person", "matthew");
-  const tekstOv = getGroupUitleg(faseKey, tripIds, personKey);
-  let photos = FASE_PHOTOS[faseKey] || [];
-  if (personKey !== "matthew" && personKey !== "hinke") {
-    photos = photos.filter(p => !p.includes("airbnbM&H"));
-  }
-  const faseTrips = TRIP.filter(i => i.fase === faseKey && (tripIds || []).includes(i.id));
-  const starts = faseTrips.map(i => i.start).sort();
-  const ends = faseTrips.map(i => i.end).sort();
-  const dateStr = starts.length && ends.length ? fmtRange(starts[0], ends[ends.length - 1]) : "";
-
-  const [hero, ...rest] = photos;
-
-  const thumbsHtml = rest.length > 0
-    ? `<div class="locked-photos-thumbs">${rest.map(src => `<img src="${src}" onclick="openLightbox('${src}')" loading="lazy" alt="">`).join("")}</div>`
-    : "";
-
-  panel.innerHTML = `
-    <div class="locked-photo-wrap">
-      ${hero ? `<img id="lockedPhotoHero" src="${hero}" class="locked-photo-hero" loading="lazy" alt="" onclick="openLightbox(this.src)">` : `<div class="locked-photo-placeholder"><span>${fase.label}</span></div>`}
-      ${thumbsHtml}
-    </div>
-    <div class="locked-phase-info">
-      <div class="locked-phase-title" style="color:${fase.color}">${fase.label}</div>
-      ${dateStr ? `<div class="locked-phase-dates">${dateStr}</div>` : ""}
-      <div class="locked-phase-desc-text">${tekstOv}</div>
-    </div>
-  `;
-  panel.style.display = "block";
-
-  if (photos.length > 1) {
-    let idx = 0;
-    const heroImg = document.getElementById("lockedPhotoHero");
-    lockedPhotoTimer = setInterval(() => {
-      idx = (idx + 1) % photos.length;
-      heroImg.classList.add("fading");
-      setTimeout(() => {
-        heroImg.src = photos[idx];
-        heroImg.classList.remove("fading");
-      }, 300);
-    }, 3000);
-  }
-}
 
 function toggleStepperCollapse(groupKey) {
   const key = "collapsed_stepper_" + groupKey;
@@ -510,8 +471,9 @@ function renderRouteStepper() {
   }
 
   let html = `<div class="simple-timeline">`;
-  
-  for (const p of phases) {
+
+  for (let stepIdx = 0; stepIdx < phases.length; stepIdx++) {
+    const p = phases[stepIdx];
     const companions = p.companions;
 
     let companionsHtml = "";
@@ -554,7 +516,9 @@ function renderRouteStepper() {
       const item = TRIP.find(i => i.id === tid);
       if (item && item.costs) {
         for (const cid of item.costs) {
-          if (COSTS[cid] && COSTS[cid].url) {
+          /* Alleen verblijfslinks: het icoontje is een 🏠, dus een
+             activiteitenlink (GetYourGuide) hoort hier niet in. */
+          if (COSTS[cid] && COSTS[cid].cat === "accommodatie" && COSTS[cid].url) {
             airbnbUrl = COSTS[cid].url;
             break;
           }
@@ -590,13 +554,12 @@ function renderRouteStepper() {
     const isLocked = lockedGroupKey === p.groupKey;
 
     html += `
-      <div class="simple-step ${isStepperCollapsed ? 'collapsed' : ''} ${isLocked ? 'locked' : ''}" 
-           data-fase="${p.faseKey}" data-group="${p.groupKey}"
-           onclick='toggleLockPhase(${tripIdsJson}, "${p.faseKey}", "${p.groupKey}")'
+      <div class="simple-step ${isStepperCollapsed ? 'collapsed' : ''} ${isLocked ? 'locked' : ''}"
+           data-fase="${p.faseKey}" data-group="${p.groupKey}" style="--phase-color: ${color}"
+           onclick='toggleLockPhase(${tripIdsJson}, "${p.groupKey}")'
            onmouseenter='hoverPhaseSteps(${tripIdsJson})'
            onmouseleave="resetHoverPhase()">
-         <div class="simple-step-line" style="background: ${color}"></div>
-         <div class="simple-step-node" style="color: ${color}"></div>
+         <div class="simple-step-badge">${stepIdx + 1}</div>
          <div class="simple-step-content">
           <div class="simple-step-header">
             <span class="simple-step-title" style="color: ${color}">${p.faseInfo.label}${airbnbHtml}</span>
@@ -618,7 +581,52 @@ function renderRouteStepper() {
   
   html += `</div>`;
   container.innerHTML = html;
+  snakeifyStepper(container.querySelector(".simple-timeline"));
 }
+
+/* Verdeelt de stepperkaarten over gebalanceerde rijen (i.p.v. de rijen te laten
+   "vollopen" op containerbreedte, wat bij bv. 6 kaarten een scheve 4+2-indeling
+   gaf). Eerst wordt bepaald hoeveel kaarten van CARD_MIN breed er in de
+   beschikbare breedte passen (maxCols); daarna wordt het totaal zo eerlijk
+   mogelijk over het minimale aantal rijen verdeeld (6 → 3+3, 8 → 4+4, 7 → 4+3),
+   nooit meer dan 1 kaart verschil tussen rijen. Elke oneven rij wordt gespiegeld
+   zodat het geheel als een slang heen-en-weer leest i.p.v. één lange lijst.
+   Het aantal kolommen per rij gaat als CSS-var --cols mee, zodat de kaarten
+   in style.css hun breedte daarop kunnen baseren. */
+function snakeifyStepper(timeline) {
+  if (!timeline) return;
+  const steps = Array.from(timeline.children).filter(el => el.classList.contains("simple-step"));
+  const n = steps.length;
+  if (n === 0) return;
+
+  const CARD_MIN = 240, GAP = 16;
+  const containerWidth = timeline.clientWidth || timeline.parentElement?.clientWidth || 0;
+  const maxCols = Math.max(1, Math.floor((containerWidth + GAP) / (CARD_MIN + GAP)));
+  const rows = Math.max(1, Math.ceil(n / maxCols));
+  const base = Math.floor(n / rows);
+  const extra = n % rows;
+
+  timeline.innerHTML = "";
+  let idx = 0;
+  for (let i = 0; i < rows; i++) {
+    const count = base + (i < extra ? 1 : 0);
+    const rowSteps = steps.slice(idx, idx + count);
+    idx += count;
+    if (i % 2 === 1) rowSteps.reverse();
+
+    const row = document.createElement("div");
+    row.className = "stepper-row";
+    row.style.setProperty("--cols", count);
+    rowSteps.forEach(el => row.appendChild(el));
+    timeline.appendChild(row);
+  }
+}
+
+let stepperResizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(stepperResizeTimer);
+  stepperResizeTimer = setTimeout(renderRouteStepper, 200);
+});
 
 /* ---------------- RENDER: destinations gallery ---------------- */
 function renderDestinationsGallery() {

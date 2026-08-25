@@ -65,6 +65,10 @@
     background: linear-gradient(160deg,#f0fdf4 0%,#dcfce7 100%);
     border-top: 4px solid #4ad66d;
   }
+  .boarding-pass.boot {
+    background: linear-gradient(160deg,#effefb 0%,#ccfbf1 100%);
+    border-top: 4px solid #00f5d4;
+  }
   .bp-header {
     display: flex;
     justify-content: space-between;
@@ -91,6 +95,7 @@
   .bp-type-badge.bin-vlucht { background:rgba(0,180,216,.18); color:#0369a1; }
   .bp-type-badge.trein      { background:rgba(157,78,221,.15); color:#7c3aed; }
   .bp-type-badge.bus-auto   { background:rgba(74,214,109,.15); color:#16a34a; }
+  .bp-type-badge.boot       { background:rgba(0,245,212,.18); color:#0d9488; }
   .bp-route {
     display: flex;
     align-items: center;
@@ -220,6 +225,7 @@
   .tbi-icon.bin-vlucht { background: rgba(0,180,216,0.12); }
   .tbi-icon.trein      { background: rgba(157,78,221,0.12); }
   .tbi-icon.bus-auto   { background: rgba(74,214,109,0.12); }
+  .tbi-icon.boot       { background: rgba(0,245,212,0.12); }
   .tbi-date {
     flex-shrink: 0;
     width: 48px;
@@ -254,6 +260,7 @@
   .tbi-tag.bin-vlucht { color:#00b4d8; border-color:rgba(0,180,216,.3); background:rgba(0,180,216,.07); }
   .tbi-tag.trein      { color:#c084fc; border-color:rgba(192,132,252,.3); background:rgba(157,78,221,.07); }
   .tbi-tag.bus-auto   { color:#4ad66d; border-color:rgba(74,214,109,.3); background:rgba(74,214,109,.07); }
+  .tbi-tag.boot       { color:#00f5d4; border-color:rgba(0,245,212,.3); background:rgba(0,245,212,.07); }
   .tbi-cost {
     text-align: right;
     flex-shrink: 0;
@@ -847,12 +854,12 @@ function getOperatorUrl(op) {
 function typeClass(t){ return t.replace("_","-"); }
 
 function typeLabel(t){
-  const m={int_vlucht:"Internationale vlucht",bin_vlucht:"Binnenlandse vlucht",trein:"Trein",bus_auto:"Bus / Auto / Lokaal"};
+  const m={int_vlucht:"Internationale vlucht",bin_vlucht:"Binnenlandse vlucht",trein:"Trein",bus_auto:"Bus / Auto / Lokaal",boot:"Boot"};
   return m[t]||t;
 }
 
 function typeIcon(t){
-  const m={int_vlucht:"✈️",bin_vlucht:"✈️",trein:"🚂",bus_auto:"🚌"};
+  const m={int_vlucht:"✈️",bin_vlucht:"✈️",trein:"🚂",bus_auto:"🚌",boot:"🛥️"};
   return m[t]||"🚗";
 }
 

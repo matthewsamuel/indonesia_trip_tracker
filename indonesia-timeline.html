@@ -15,6 +15,98 @@
     border-color: var(--teal);
     box-shadow: 0 0 0 1px var(--teal-glow);
   }
+
+  /* ── DAGBLOKKEN ──
+     Eén blok per kalenderdag. Gebeurt er die dag meer dan één ding, dan
+     staan de etappes onder elkaar in dezelfde kaart, gescheiden door een
+     lijn — vandaar dat de kaart zelf geen padding-per-etappe krijgt maar
+     elk .day-part zijn eigen scheiding meebrengt. */
+  .day-part + .day-part {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  }
+  .day-part.tm-gekozen > .item-head > .item-title-wrapper > h3 {
+    color: var(--teal);
+  }
+
+  /* "dag 1 van 5" naast de titel van een meerdaagse etappe */
+  .deel-span {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 5px;
+    padding: 2px 7px;
+    vertical-align: middle;
+  }
+
+  /* Etappes die vandaag doorlopen maar eerder begonnen: alleen een chip,
+     want hun details staan al bij hun startdag. */
+  .day-vervolg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .day-part + .day-vervolg {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  }
+  .vervolg-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-soft);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .vervolg-chip:hover { border-color: var(--border-hover); color: #fff; }
+  .vervolg-chip.tm-gekozen { border-color: var(--teal); color: #fff; }
+  .vervolg-chip b {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--phase-color, var(--teal));
+    white-space: nowrap;
+  }
+
+  .day-leeg { font-size: 13.5px; color: var(--text-soft); }
+
+  .timeline-item .when .weekday {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-soft);
+    opacity: 0.65;
+    line-height: 1.2;
+  }
+
+  /* De dag van vandaag */
+  .timeline-item.is-today .item-card { border-color: rgba(255, 77, 77, 0.35) !important; }
+  .timeline-item.is-today .when .date-range::after {
+    content: "vandaag";
+    display: block;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--today, #ff4d4d);
+  }
+
+  @media (max-width: 768px) {
+    .timeline-item .when .weekday { margin-left: auto; }
+  }
 </style>
 </head>
 <body>
@@ -102,24 +194,25 @@
 
 
 
-function getTripDayRange(startStr, endStr, personKey) {
-  // Find this person's first trip date
-  let personTripStart = TRIP_START_DATE;
-  if (personKey && PERSON_TRIPS[personKey]) {
-    const tripIds = PERSON_TRIPS[personKey];
-    const personTrips = TRIP.filter(i => tripIds.includes(i.id));
-    if (personTrips.length > 0) {
-      const sortedByDate = personTrips.sort((a, b) => a.start.localeCompare(b.start));
-      personTripStart = sortedByDate[0].start;
-    }
-  }
+const WEEKDAGEN = ["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"];
 
-  const tripStart = new Date(personTripStart + "T00:00:00");
-  const s = new Date(startStr + "T00:00:00");
-  const e = new Date(endStr + "T00:00:00");
-  const startDay = Math.round((s - tripStart) / 86400000) + 1;
-  const endDay = Math.round((e - tripStart) / 86400000) + 1;
-  return startDay === endDay ? `Dag ${startDay}` : `Dag ${startDay} – ${endDay}`;
+/* Weekdag van een ISO-datum, in UTC gelezen zodat de zomertijd hem niet een
+   dag verschuift. */
+function weekdagVan(ds) {
+  return WEEKDAGEN[new Date(ds + "T00:00:00Z").getUTCDay()];
+}
+
+/* Vandaag als ISO-datum in lokale tijd — new Date().toISOString() zou in de
+   zomer (CEST) vóór 02:00 nog de vorige dag teruggeven. */
+function isoVandaag() {
+  const t = new Date();
+  return t.getFullYear() + "-" +
+    String(t.getMonth() + 1).padStart(2, "0") + "-" +
+    String(t.getDate()).padStart(2, "0");
+}
+
+function escAttr(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
 /* Bepaalt de categorie van één detail-regel. Losstaande functie zodat
@@ -218,10 +311,8 @@ function parseDetails(detailsArray) {
    Etappes die de kost zelf dragen — t12, t15, t17, t18 — halen hun link via
    getAccommodationUrl() uit COSTS, en horen hier dus niet nog eens te staan. */
 const TRIP_AIRBNB_LINKS = {
-  t13: "https://www.airbnb.com/rooms/1420571119911855020", // Banyuwangi (Bromo/Ijen)
-  t14: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
-  t16: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo
-  t19: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
+  t13: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo, nacht vóór de boottocht
+  t16: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
   t20: "https://www.airbnb.com/rooms/1202849662764744783", // Labuan Bajo return
 };
 
@@ -238,23 +329,19 @@ function getAccommodationUrl(item) {
   return null;
 }
 
-function getPhaseStats(faseKey, tripIds, personKey) {
-  const phaseItems = TRIP.filter(item => item.fase === faseKey && tripIds.includes(item.id));
-  if (phaseItems.length === 0) return null;
+/* Cijfers in de hoofdstukkop. Een fase kan twee keer voorkomen — Matthew
+   gaat van Java naar Bali en daarna weer terug naar Java — dus tellen we per
+   aaneengesloten blok dagen, niet per fase. */
+function getBlokStats(dagen) {
+  if (!dagen.length) return null;
 
-  let minDate = phaseItems[0].start;
-  let maxDate = phaseItems[0].end;
-
-  /* Eén kostenpost kan aan meerdere etappes van dezelfde fase hangen — c4b
-     (guesthouse Ketambe, vóór én na de trek) hangt aan t4 én t6. Zonder deze
-     Set telt het fasetotaal die post dubbel zodra er een bedrag ingevuld is. */
+  /* Eén kostenpost kan aan meerdere etappes hangen — c4b (guesthouse Ketambe,
+     vóór én na de trek) hangt aan t4 én t6. Zonder deze Set telt het totaal
+     die post dubbel zodra er een bedrag ingevuld is. */
   const costIds = new Set();
-
-  phaseItems.forEach(item => {
-    if (item.start < minDate) minDate = item.start;
-    if (item.end > maxDate) maxDate = item.end;
-    item.costs.forEach(cid => costIds.add(cid));
-  });
+  dagen.forEach(dag => dag.delen.forEach(deel => {
+    if (deel.nieuw) deel.trip.costs.forEach(cid => costIds.add(cid));
+  }));
 
   let totalCost = 0;
   costIds.forEach(cid => {
@@ -262,13 +349,9 @@ function getPhaseStats(faseKey, tripIds, personKey) {
     if (v !== null) totalCost += v;
   });
 
-  const tripStart = new Date(minDate + "T00:00:00");
-  const tripEnd = new Date(maxDate + "T00:00:00");
-  const days = Math.round((tripEnd - tripStart) / 86400000) + 1;
-
   return {
-    dateRange: fmtRange(minDate, maxDate),
-    days,
+    dateRange: fmtRange(dagen[0].date, dagen[dagen.length - 1].date),
+    days: dagen.length,
     totalCost: totalCost > 0 ? totalCost.toFixed(2) : null
   };
 }
@@ -276,10 +359,8 @@ function getPhaseStats(faseKey, tripIds, personKey) {
 /* ---------------- RENDER: phase nav ---------------- */
 function renderPhaseNav(){
   const nav = document.getElementById("phaseNav");
-  const personKey = ls_get("selected_person", "matthew");
-  const tripIds = PERSON_TRIPS[personKey] || [];
-  const personTrips = TRIP.filter(i => tripIds.includes(i.id));
-  const visitedFases = new Set(personTrips.map(i => i.fase));
+  const personKey = getSelectedPerson();
+  const visitedFases = new Set(buildDagen(personKey).map(d => d.fase));
 
   nav.innerHTML = Object.entries(FASES).map(([k,f]) => {
     if (!visitedFases.has(k)) return "";
@@ -459,7 +540,7 @@ function getCompactBadgesHtml(item, parsed) {
   if (parsed.tips.length > 0) {
     html += `<span class="c-badge tip" title="Handige tip">💡</span>`;
   }
-  if (item.costs.length > 0) {
+  if (item.costs.some(costIsVisible)) {
     html += `<span class="c-badge cost" title="Kosten gekoppeld">💰</span>`;
   }
   const photos = getPhotos(item.id);
@@ -491,6 +572,12 @@ function matchesSearch(item) {
   return searchQuery.split(/\s+/).filter(Boolean).every(term => hay.includes(term));
 }
 
+/* Een dag blijft staan zodra één van de etappes die er lopen matcht. */
+function dagMatchtZoek(dag) {
+  if (!searchQuery) return true;
+  return dag.delen.some(deel => matchesSearch(deel.trip));
+}
+
 function onSearchInput(value) {
   searchQuery = value.trim().toLowerCase();
   const clearBtn = document.getElementById("tlSearchClear");
@@ -507,26 +594,26 @@ function clearSearch() {
   renderTimeline();
 }
 
-/* Springt naar de etappe van vandaag, of naar de eerstvolgende als de reis
+/* Springt naar de dag van vandaag, of naar de eerstvolgende als de reis
    nog niet begonnen is. */
 function jumpToToday() {
   const personKey = getSelectedPerson();
-  const tripIds = PERSON_TRIPS[personKey] || [];
-  const trips = sortTrips(TRIP.filter(i => tripIds.includes(i.id)));
-  if (trips.length === 0) return;
+  const dagen = buildDagen(personKey);
+  if (dagen.length === 0) return;
 
   clearSearch();
 
-  const target =
-    trips.find(i => statusOf(i) === "bezig") ||
-    trips.find(i => dateOf(i.start) >= today()) ||
-    trips[trips.length - 1];
+  const vandaag = isoVandaag();
+  const doel =
+    dagen.find(d => d.date === vandaag) ||
+    dagen.find(d => d.date > vandaag) ||
+    dagen[dagen.length - 1];
 
-  ls_set("collapsed_fase_" + target.fase, false);
+  ls_set("collapsed_fase_" + doel.fase, false);
   renderTimeline();
 
   setTimeout(() => {
-    const el = document.getElementById(target.id);
+    const el = document.getElementById("dag-" + doel.date);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     el.classList.add("is-flashed");
@@ -534,171 +621,205 @@ function jumpToToday() {
   }, 60);
 }
 
+/* Het blok van één etappe binnen een dag. Wordt alleen getekend op de dag
+   dat de etappe begint — daar horen de details, foto's en kosten. Op de
+   vervolgdagen verschijnt de etappe als compacte chip, zodat de villa in
+   Canggu niet zes dagen lang dezelfde tekst herhaalt. */
+function deelHtml(deel, personKey) {
+  const item = deel.trip;
+  const parsed = parseDetails(item.details);
+  const compactBadgesHtml = getCompactBadgesHtml(item, parsed);
+  const spanChip = deel.dagenTotaal > 1
+    ? `<span class="deel-span">dag 1 van ${deel.dagenTotaal}</span>`
+    : "";
+
+  let detailsHtml = "";
+  if (item.details.length) {
+    const stayUrl = getAccommodationUrl(item);
+
+    // Segmenten in brontekst-volgorde; als er geen verblijf-regel is maar
+    // wel een Airbnb-link (bv. aankomstdag zonder expliciete "overnachting"
+    // in de tekst), voegen we alsnog een lege verblijf-sectie toe zodat de
+    // link zichtbaar blijft.
+    const segs = parsed.segments.slice();
+    if (!segs.some(s => s.cat === "stay") && stayUrl) {
+      segs.push({ cat: "stay", lines: [] });
+    }
+    let lastStayIdx = -1;
+    segs.forEach((s, i) => { if (s.cat === "stay") lastStayIdx = i; });
+
+    const sectionsHtml = segs.map((seg, i) => {
+      if (seg.cat === "transport") {
+        return `
+        <div class="card-section transport-section">
+          <div class="section-title">${transportIcon(item, parsed)} Vervoer &amp; Reisdetails</div>
+          <ul class="transport-list">
+            ${seg.lines.map(t => `<li>${t}</li>`).join("")}
+          </ul>
+        </div>`;
+      }
+      if (seg.cat === "stay") {
+        const showBtn = stayUrl && i === lastStayIdx;
+        return `
+        <div class="card-section stay-section">
+          <div class="section-title">
+            🏨 Verblijf &amp; Accommodatie
+            ${showBtn ? `<a href="${stayUrl}" target="_blank" rel="noopener" class="airbnb-btn-link">🏠 Bekijk Airbnb →</a>` : ""}
+          </div>
+          ${seg.lines.length ? `
+          <ul class="stay-list">
+            ${seg.lines.map(s => `<li>${s}</li>`).join("")}
+          </ul>` : ""}
+        </div>`;
+      }
+      return `
+        <div class="card-section program-section">
+          <div class="section-title">🥾 Activiteiten &amp; Programma</div>
+          <ul class="program-list">
+            ${seg.lines.map(a => `<li>${a}</li>`).join("")}
+          </ul>
+        </div>`;
+    }).join("");
+
+    const tipsHtml = parsed.tips.length ? `
+      <div class="tips-box">
+        <div class="tips-box-title">💡 Handige Tips &amp; Info</div>
+        <ul class="tips-list">
+          ${parsed.tips.map(t => `<li>${t}</li>`).join("")}
+        </ul>
+      </div>
+    ` : "";
+
+    detailsHtml = `
+    <div class="details-content">
+      ${sectionsHtml}
+      ${tipsHtml}
+    </div>
+    `;
+  }
+
+  return `
+  <div class="day-part" id="${item.id}" data-trip="${item.id}">
+    <div class="item-head">
+      <div class="item-title-wrapper">
+        <h3>${item.title}${spanChip}</h3>
+        ${compactBadgesHtml}
+      </div>
+      ${flightTimesHtml(item) || otherFlightHtml(item, personKey)}
+    </div>
+    ${detailsHtml}
+    ${photoStripHtml(item)}
+    ${zichtbareKosten(item).length ? `<div class="costs">${zichtbareKosten(item).map(cid => costLineHtml(cid)).join("")}</div>` : ""}
+  </div>`;
+}
+
+/* Compacte regel voor een etappe die vandaag doorloopt maar eerder begon. */
+function vervolgHtml(deel) {
+  return `
+  <span class="vervolg-chip" data-trip="${deel.trip.id}"
+        title="${escAttr(deel.trip.title)} — begonnen op ${fmtShort(deel.trip.start)}">
+    ${deel.trip.title}
+    <b>dag ${deel.dagNr} van ${deel.dagenTotaal}</b>
+  </span>`;
+}
+
+/* Eén blok per kalenderdag. De dagen komen uit buildDagen() in data.js;
+   opeenvolgende dagen met dezelfde fase worden onder één hoofdstukkop
+   gebundeld. */
 function renderTimeline(){
   const el = document.getElementById("timeline");
   const personKey = getSelectedPerson();
-  const tripIds = PERSON_TRIPS[personKey] || [];
 
-  let html = "";
-  let lastFase = null;
-  const sortedTrips = sortTrips(TRIP).filter(i => tripIds.includes(i.id) && matchesSearch(i));
+  const alleDagen = buildDagen(personKey);
+  const dagen = alleDagen.filter(dagMatchtZoek);
 
   const countEl = document.getElementById("tlSearchCount");
   if (countEl) {
     countEl.textContent = searchQuery
-      ? `${sortedTrips.length} van ${tripIds.length} etappes`
+      ? `${dagen.length} van ${alleDagen.length} dagen`
       : "";
   }
 
-  if (searchQuery && sortedTrips.length === 0) {
-    el.innerHTML = `<p class="tl-no-results">Geen etappes gevonden voor “${searchQuery}”.</p>`;
+  if (searchQuery && dagen.length === 0) {
+    el.innerHTML = `<p class="tl-no-results">Geen dagen gevonden voor “${searchQuery}”.</p>`;
     return;
   }
 
-  for (const item of sortedTrips) {
-    if (item.fase !== lastFase) {
-      if (lastFase !== null) {
-        html += `</div>`; // Close previous phase items container
-      }
-      const f = FASES[item.fase];
-      // Tijdens het zoeken altijd openklappen, anders verdwijnen treffers
-      // in een ingeklapte fase
-      const isCollapsed = searchQuery ? false : ls_get("collapsed_fase_" + item.fase, false);
-      const stats = getPhaseStats(item.fase, tripIds, personKey);
-      let statsHtml = "";
-      if (stats) {
-        statsHtml = `
-        <div class="fase-stats">
-          <span class="fase-days">📅 ${stats.days} ${stats.days === 1 ? 'dag' : 'dagen'}</span>
-          <span class="fase-dates">(${stats.dateRange})</span>
-          ${stats.totalCost ? `<span class="fase-cost">💰 €${stats.totalCost}</span>` : ""}
-        </div>
-        `;
-      }
-      
-      html += `
-      <div class="fase-header collapsible ${isCollapsed ? 'collapsed' : ''}" id="fase-${item.fase}"
-        role="button" tabindex="0" aria-expanded="${!isCollapsed}"
-        aria-label="Fase ${f.label} in- of uitklappen"
-        onclick="toggleFaseCollapse('${item.fase}')" style="--phase-color: ${f.color}">
-        <div class="fase-title-group">
-          <span class="dot" style="color:${f.color}; background:${f.color}"></span>
-          <span class="fase-name">${f.label}</span>
-        </div>
-        ${statsHtml}
-        <span class="fase-chevron">▼</span>
-      </div>
-      <div class="fase-items-container" id="fase-container-${item.fase}" style="display: ${isCollapsed ? 'none' : 'block'}">
-      `;
-      lastFase = item.fase;
-    }
-    let durStr = "";
-    if (item.duration) {
-      durStr = `<span class="dur">⏱️ ${item.duration}</span>`;
-    } else {
-      const nDays = Math.round((dateOf(item.end) - dateOf(item.start)) / 86400000) + 1;
-      durStr = nDays > 1 ? `<span class="dur">${nDays} dagen</span>` : "";
-    }
-    const dayRange = getTripDayRange(item.start, item.end, personKey);
-    
-    const parsed = parseDetails(item.details);
-    const compactBadgesHtml = getCompactBadgesHtml(item, parsed);
+  /* Aaneengesloten dagen met dezelfde fase vormen samen één hoofdstuk. */
+  const blokken = [];
+  dagen.forEach(dag => {
+    const laatste = blokken[blokken.length - 1];
+    if (laatste && laatste.fase === dag.fase) laatste.dagen.push(dag);
+    else blokken.push({ fase: dag.fase, dagen: [dag] });
+  });
 
-    // Collapsible daily details (structured)
-    let detailsHtml = "";
-    if (item.details.length) {
-      const stayUrl = getAccommodationUrl(item);
+  const vandaag = isoVandaag();
+  const faseTeller = {};
+  let html = "";
 
-      // Segmenten in brontekst-volgorde; als er geen verblijf-regel is maar
-      // wel een Airbnb-link (bv. aankomstdag zonder expliciete "overnachting"
-      // in de tekst), voegen we alsnog een lege verblijf-sectie toe zodat de
-      // link zichtbaar blijft.
-      const segs = parsed.segments.slice();
-      if (!segs.some(s => s.cat === "stay") && stayUrl) {
-        segs.push({ cat: "stay", lines: [] });
-      }
-      let lastStayIdx = -1;
-      segs.forEach((s, i) => { if (s.cat === "stay") lastStayIdx = i; });
+  for (const blok of blokken) {
+    const f = FASES[blok.fase] || { label: "Onderweg", color: "#8899aa" };
 
-      const sectionsHtml = segs.map((seg, i) => {
-        if (seg.cat === "transport") {
-          return `
-          <div class="card-section transport-section">
-            <div class="section-title">${transportIcon(item, parsed)} Vervoer &amp; Reisdetails</div>
-            <ul class="transport-list">
-              ${seg.lines.map(t => `<li>${t}</li>`).join("")}
-            </ul>
-          </div>`;
-        }
-        if (seg.cat === "stay") {
-          const showBtn = stayUrl && i === lastStayIdx;
-          return `
-          <div class="card-section stay-section">
-            <div class="section-title">
-              🏨 Verblijf &amp; Accommodatie
-              ${showBtn ? `<a href="${stayUrl}" target="_blank" rel="noopener" class="airbnb-btn-link">🏠 Bekijk Airbnb →</a>` : ""}
-            </div>
-            ${seg.lines.length ? `
-            <ul class="stay-list">
-              ${seg.lines.map(s => `<li>${s}</li>`).join("")}
-            </ul>` : ""}
-          </div>`;
-        }
-        return `
-          <div class="card-section program-section">
-            <div class="section-title">🥾 Activiteiten &amp; Programma</div>
-            <ul class="program-list">
-              ${seg.lines.map(a => `<li>${a}</li>`).join("")}
-            </ul>
-          </div>`;
-      }).join("");
+    /* Komt een fase een tweede keer aan bod (Java → Bali → Java), dan krijgt
+       die kop een eigen id; het in-/uitklappen blijft per fase gedeeld. */
+    const n = faseTeller[blok.fase] = (faseTeller[blok.fase] || 0) + 1;
+    const kopId = n === 1 ? `fase-${blok.fase}` : `fase-${blok.fase}-${n}`;
 
-      let tipsHtml = parsed.tips.length ? `
-        <div class="tips-box">
-          <div class="tips-box-title">💡 Handige Tips &amp; Info</div>
-          <ul class="tips-list">
-            ${parsed.tips.map(t => `<li>${t}</li>`).join("")}
-          </ul>
-        </div>
-      ` : "";
-
-      detailsHtml = `
-      <div class="details-content">
-        ${sectionsHtml}
-        ${tipsHtml}
-      </div>
-      `;
-    }
-
-    const f = FASES[item.fase];
+    // Tijdens het zoeken altijd openklappen, anders verdwijnen treffers
+    // in een ingeklapte fase
+    const isCollapsed = searchQuery ? false : ls_get("collapsed_fase_" + blok.fase, false);
+    const stats = getBlokStats(blok.dagen);
+    const statsHtml = stats ? `
+      <div class="fase-stats">
+        <span class="fase-days">📅 ${stats.days} ${stats.days === 1 ? 'dag' : 'dagen'}</span>
+        <span class="fase-dates">(${stats.dateRange})</span>
+        ${stats.totalCost ? `<span class="fase-cost">💰 €${stats.totalCost}</span>` : ""}
+      </div>` : "";
 
     html += `
-    <div class="timeline-item" id="${item.id}">
-      <div class="when" style="--phase-color: ${f.color}">
-        <span class="day-number">${dayRange}</span>
-        <span class="date-range">${fmtRange(item.start,item.end)}</span>
-        ${durStr}
+    <div class="fase-header collapsible ${isCollapsed ? 'collapsed' : ''}" id="${kopId}"
+      role="button" tabindex="0" aria-expanded="${!isCollapsed}"
+      aria-label="Fase ${f.label} in- of uitklappen"
+      onclick="toggleFaseCollapse('${blok.fase}')" style="--phase-color: ${f.color}">
+      <div class="fase-title-group">
+        <span class="dot" style="color:${f.color}; background:${f.color}"></span>
+        <span class="fase-name">${f.label}</span>
       </div>
-      <div class="timeline-node" style="--phase-color: ${f.color}"></div>
-      <div class="item-card">
-        <div class="item-head">
-          <div class="item-title-wrapper">
-            <h3>${item.title}</h3>
-            ${compactBadgesHtml}
-          </div>
-          ${flightTimesHtml(item) || otherFlightHtml(item, personKey)}
+      ${statsHtml}
+      <span class="fase-chevron">▼</span>
+    </div>
+    <div class="fase-items-container" id="container-${kopId}" style="display: ${isCollapsed ? 'none' : 'block'}">`;
+
+    for (const dag of blok.dagen) {
+      const nieuwe = dag.delen.filter(d => d.nieuw);
+      const lopend = dag.delen.filter(d => !d.nieuw);
+
+      /* De duur hoort bij een etappe, niet bij een dag — alleen tonen als er
+         precies één nieuwe etappe is, anders slaat het op niets. */
+      const durTrip = nieuwe.length === 1 && nieuwe[0].trip.duration ? nieuwe[0].trip : null;
+      const durStr = durTrip ? `<span class="dur">⏱️ ${durTrip.duration}</span>` : "";
+
+      html += `
+      <div class="timeline-item day-item ${dag.date === vandaag ? 'is-today' : ''}"
+           id="dag-${dag.date}" data-date="${dag.date}">
+        <div class="when" style="--phase-color: ${f.color}">
+          <span class="date-range">${fmtShort(dag.date)}</span>
+          <span class="day-number">Dag ${dag.nr}</span>
+          <span class="weekday">${weekdagVan(dag.date)}</span>
+          ${durStr}
         </div>
-        ${detailsHtml}
-        ${photoStripHtml(item)}
-        ${item.costs.length ? `<div class="costs">${item.costs.map(cid => costLineHtml(cid)).join("")}</div>` : ""}
-      </div>
-    </div>`;
+        <div class="timeline-node" style="--phase-color: ${f.color}"></div>
+        <div class="item-card">
+          ${nieuwe.map(deel => deelHtml(deel, personKey)).join("")}
+          ${lopend.length ? `<div class="day-vervolg">${lopend.map(vervolgHtml).join("")}</div>` : ""}
+          ${dag.delen.length === 0 ? `<div class="day-leeg">Vrije dag — nog niets ingepland.</div>` : ""}
+        </div>
+      </div>`;
+    }
+
+    html += `</div>`;
   }
-  
-  if (lastFase !== null) {
-    html += `</div>`; // Close the last phase container
-  }
-  
+
   el.innerHTML = html;
 
   // Add event listeners to input fields
@@ -715,40 +836,50 @@ function renderTimeline(){
 
 /* ---------------- PHOTOS ---------------- */
 const TRIP_DEFAULT_PHOTOS = {
-  t1:  ["images/singapore_famoushotel.webp", null, null],
-  /* Geen Singapore-foto: t3 speelt zich volledig in Medan/Sumatra af. */
-  t3:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
-  t4:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
-  t5:  ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", "images/sumatra_Waterval.jpg"],
-  t6:  ["images/sumatra_Waterval.jpg", "images/ketambe_jungle.jpg", null],
-  t7:  ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
-  t8:  ["images/Yogyakartatempel.jpg", "images/Yogyakartamonument.jpeg", "images/Yogyakartahandmonument.jpg"],
-  t9:  ["images/Yogyakartahandmonument.jpg", "images/Yogyakartamonument.jpeg", null],
-  t10: ["images/Javaeiland.jpg", "images/tumpak-sewu-waterfalls.jpg", null],
-  /* Dezelfde etappes als t12/t13, maar dan de versie van de jongens — die
-     stonden zonder foto's terwijl Matthews variant er wél had. */
-  t10b: ["images/tumpaksewuwaterval.webp", "images/mountbromo.webp", "images/bromo.jpg"],
-  t11: ["images/airbnbM&H/15-16.avif", "images/airbnbM&H/15-16a.avif", "images/airbnbM&H/15-16b.avif"],
-  t11b: ["images/airbnbM&H/15-16.avif", "images/airbnbM&H/15-16c.avif", "images/airbnbM&H/15-16d.avif"],
-  t12: ["images/tumpaksewuwaterval.webp", "images/mountbromo.webp", "images/bromo.jpg"],
-  t13: ["images/Ijen.jpeg", "images/bromoblauwvuur.jpeg", null],
-  t14: ["images/Flores.jpg", "images/bali.jpg", "images/Labuanbajo.jpg"],
-  t15: ["images/Labuanbajo.jpg", "images/Flores.jpg", null],
-  t16: ["images/Labuanbajo.jpg", "images/Flores.jpg", null],
-  t17: ["images/Flores.jpg", "images/Labuanbajo.jpg", null],
-  t18: ["images/Labuanbajo.jpg", null, null],
-  t19: ["images/Komodovaraan.jpg", "images/komodo-national-park-1250x488.jpg.webp", "images/Labuanbajo.jpg"],
-  t20: ["images/Labuanbajo.jpg", "images/Komodovaraan.jpg", null],
-  t21: ["images/bali.jpg", "images/balivilla.jpg", null],
-  t22: ["images/balivilla.jpg", "images/bali.jpg", "images/bali2.jpg"],
-  t23: ["images/bali4.jpg", null, null],
-  t27: ["images/singapore_famoushotel.webp", "images/jakarta.jpg", null],
-  t28: ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
-  t29: ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg", null],
-  t30: ["images/Ijen.jpeg", "images/bromoblauwvuur.jpeg", null],
-  t30c: ["images/balivilla.jpg", "images/bali2.jpg", null],
-  t39: ["images/jakartanightskyline.jpg", "images/jakarta.jpg", null],
-  t41: ["images/singapore_famoushotel.webp", null, null],
+  t1:   ["images/singapore_famoushotel.webp", "images/singapore_bigtree.webp", "images/singapore_airport_waterval.jpg"],
+  t3:   ["images/medan_landscape.jpg", "images/Javaeiland.jpg"],
+  t4:   ["images/ketambe_jungle.jpg", "images/sumatra_oerangoetang.jpg"],
+  t5:   ["images/airbnbM&H/15-16.avif", "images/airbnbM&H/15-16a.avif", "images/airbnbM&H/15-16b.avif"],
+  t6:   ["images/airbnbM&H/15-16c.avif", "images/airbnbM&H/15-16d.avif"],
+  t6b:  ["images/tumpaksewuwaterval.webp", "images/sumatra_Waterval.jpg", "images/java_bromo_couple.jpg", "images/java_eiland.avif"],
+  t7:   ["images/jakarta.jpg", "images/jakartanightskyline.jpg"],
+  t8:   ["images/Yogyakartatempel.jpg", "images/bromo.jpg"],
+  t9:   ["images/Ijen.jpeg", "images/mountbromo.webp"],
+  t10b: ["images/java_tumpaksewu.jpg", "images/bromoblauwvuur.jpeg"],
+  t11:  ["images/airbnbBaliboyz/1733290a-9bdd-4d7a-99cc-a52833969425.jpeg.avif", "images/airbnbBaliboyz/2edfb196-c196-485a-b95c-c3972b363dc2.jpeg.webp"],
+  t11a: ["images/bali.jpg", "images/bali2.jpg"],
+  t11b: ["images/balivilla.jpg", "images/Yogyakartahandmonument.jpg"],
+  t12:  ["images/flores_sunset.jpg", "images/flores_boat_tour.jpg"],
+  t13:  ["images/Labuanbajo.jpg", "images/Flores.jpg"],
+  t14:  ["images/Flores.jpg", "images/Labuanbajo.jpg"],
+  t15:  ["images/java_eiland.avif", "images/Labuanbajo.jpg"],
+  t16:  ["images/komodo-national-park-1250x488.jpg.webp", "images/Labuanbajo.jpg"],
+  t17:  ["images/tumpak-sewu-waterfalls.jpg", "images/java_eiland.avif"],
+  t18:  ["images/Yogyakartamonument.jpeg", "images/Flores.jpg"],
+  t19:  ["images/flores_boat_tour.jpg", "images/flores_sunset.jpg"],
+  t19b: ["images/komodo-national-park-1250x488.jpg.webp", "images/Komodovaraan.jpg"],
+  t19c: ["images/bali_amed_snorkel.jpg", "images/komodo_sunset.jpg"],
+  t20:  ["images/bali_sunset_return.jpg", "images/bali4.jpg"],
+  t21:  ["images/bangkok_skyline.jpg", "images/bali.jpg"],
+  t22:  ["images/airbnbBaliboyz/7d24e741-442e-42fb-9ffe-3250f7eaf1fc.jpeg.avif", "images/balivilla.jpg"],
+  t27:  ["images/singapore_airport.jpg", "images/singapore_airport_waterval.jpg"],
+  t28:  ["images/jakarta.jpg", "images/Yogyakartahandmonument.jpg"],
+  t29:  ["images/medan_landscape.jpg", "images/ketambe_jungle.jpg"],
+  t30:  ["images/bromoblauwvuur.jpeg", "images/mountbromo.webp"],
+  t30b: ["images/bali.jpg", "images/bali2.jpg"],
+  t30c: ["images/airbnbM&H/15-16.avif", "images/airbnbM&H/15-16a.avif"],
+  t31:  ["images/airbnbM&H/15-16b.avif", "images/airbnbM&H/15-16c.avif"],
+  t32:  ["images/airbnbM&H/15-16d.avif", "images/Yogyakartatempel.jpg"],
+  t33:  ["images/java_bromo_couple.jpg", "images/Yogyakartahandmonument.jpg"],
+  t34:  ["images/Yogyakartamonument.jpeg", "images/Flores.jpg"],
+  t35:  ["images/java_tumpaksewu.jpg", "images/Ijen.jpeg"],
+  t36:  ["images/bromo.jpg", "images/Komodovaraan.jpg"],
+  t37:  ["images/brussels_departure.jpg", "images/brussels_arrival.jpg"],
+  t38:  ["images/bangkok_skyline.jpg", "images/brussels_arrival.jpg"],
+  t38b: ["images/brussels_departure.jpg", "images/brussels_arrival.jpg"],
+  t40:  ["images/bali_sunset_return.jpg", "images/balivilla.jpg"],
+  t41:  ["images/bali.jpg", "images/bali4.jpg"],
+  t23:  ["images/bangkok_skyline.jpg", "images/brussels_arrival.jpg"],
 };
 
 function getPhotos(id){
@@ -776,6 +907,12 @@ function photoStripHtml(item){
        onclick="openLightbox('${src}')"><img src="${src}" alt="" loading="lazy"></div>`
   );
   return `<div class="photo-strip">${slots.join("")}</div>`;
+}
+
+/* Alleen posten die Matthew echt geld kosten of nog een prijs missen; een
+   post van € 0 hoort niet in het schema (zie costIsVisible in data.js). */
+function zichtbareKosten(item){
+  return item.costs.filter(costIsVisible);
 }
 
 function costLineHtml(cid){
@@ -815,14 +952,13 @@ function updateViewModeUI() {
 }
 
 function toggleAllDetails(open) {
-  const personKey = ls_get("selected_person", "matthew");
-  const tripIds = PERSON_TRIPS[personKey] || [];
-  const activeFases = new Set(TRIP.filter(i => tripIds.includes(i.id)).map(i => i.fase));
-  
+  const personKey = getSelectedPerson();
+  const activeFases = new Set(buildDagen(personKey).map(d => d.fase));
+
   activeFases.forEach(faseKey => {
     ls_set("collapsed_fase_" + faseKey, !open);
   });
-  
+
   renderTimeline();
 }
 
@@ -858,12 +994,16 @@ function toonEtappe(tripId, scrollNaarBlok) {
   else document.getElementById("timelineMap").scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+/* De etappe zit nu binnen een dagblok, dus lichten we allebei op: het
+   dagblok krijgt de rand, de etappe zelf de markering erbinnen. */
 function markeerEtappe(tripId) {
-  document.querySelectorAll(".timeline-item.tm-gekozen").forEach(el => el.classList.remove("tm-gekozen"));
-  if (tripId) {
-    const el = document.getElementById(tripId);
-    if (el) el.classList.add("tm-gekozen");
-  }
+  document.querySelectorAll(".tm-gekozen").forEach(el => el.classList.remove("tm-gekozen"));
+  if (!tripId) return;
+  const el = document.getElementById(tripId);
+  if (!el) return;
+  el.classList.add("tm-gekozen");
+  const dag = el.closest(".timeline-item");
+  if (dag) dag.classList.add("tm-gekozen");
 }
 
 function init() {
@@ -873,11 +1013,13 @@ function init() {
   renderSchemaKaart();
   updateViewModeUI();
 
-  /* Klik op een etappe in het schema → die etappe op de kaart. */
+  /* Klik op een etappe in het schema → die etappe op de kaart. Een dagblok
+     kan meerdere etappes bevatten, dus zoeken we het aangeklikte deel op
+     via data-trip (ook de vervolg-chips dragen dat attribuut). */
   document.getElementById("timeline").addEventListener("click", e => {
     if (e.target.closest("a, button, input, textarea, summary, .cost-line")) return;
-    const item = e.target.closest(".timeline-item");
-    if (item && item.id) toonEtappe(item.id, false);
+    const deel = e.target.closest("[data-trip]");
+    if (deel) toonEtappe(deel.dataset.trip, false);
   });
 
   if (window.location.hash) {

@@ -317,244 +317,6 @@
     border-radius: 10px;
     transition: width 0.4s ease;
   }
-
-  /* Tickets Panel */
-  .tickets-panel {
-    margin-bottom: 24px;
-  }
-
-  .tickets-scroll {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    margin-top: 14px;
-  }
-
-  .ticket-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-    min-height: 260px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .ticket-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--teal);
-    box-shadow: 0 8px 24px rgba(0, 180, 216, 0.15);
-  }
-
-  .ticket-card.empty {
-    border: 2px dashed rgba(255,255,255,0.15);
-    background: rgba(0,0,0,0.1);
-    color: var(--text-soft);
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    min-height: 240px;
-  }
-
-  .ticket-card.empty:hover {
-    border-color: var(--teal);
-    background: rgba(0,180,216,0.04);
-  }
-
-  .ticket-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    padding-bottom: 10px;
-  }
-
-  .ticket-route {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--teal);
-    letter-spacing: 0.05em;
-  }
-
-  .ticket-type {
-    font-size: 9px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    background: rgba(0,180,216,0.15);
-    color: var(--teal);
-    font-weight: 600;
-  }
-
-  .ticket-body {
-    flex: 1;
-    font-size: 13px;
-    line-height: 1.5;
-    margin-bottom: 12px;
-  }
-
-  .ticket-from-to {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-
-  .ticket-location {
-    font-weight: 700;
-    font-size: 16px;
-  }
-
-  .ticket-arrow {
-    color: var(--teal);
-    font-weight: 500;
-  }
-
-  .ticket-date {
-    font-size: 12px;
-    color: var(--text-soft);
-    margin-top: 8px;
-  }
-
-  .ticket-footer {
-    display: flex;
-    gap: 8px;
-    margin-top: auto;
-  }
-
-  .ticket-upload-btn {
-    flex: 1;
-    background: rgba(0,180,216,0.1);
-    border: 1px solid rgba(0,180,216,0.2);
-    color: var(--teal);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .ticket-upload-btn:hover {
-    background: var(--teal-soft);
-    border-color: var(--teal);
-  }
-
-  .ticket-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 12px;
-  }
-
-  .ticket-empty-placeholder {
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .ticket-empty-placeholder strong {
-    color: #fff;
-    display: block;
-    margin-bottom: 4px;
-  }
-
-  /* Tickets Gallery Modal */
-  .tickets-modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .tickets-modal-overlay.open {
-    display: flex;
-  }
-
-  .tickets-modal-content {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 900px;
-    max-height: 85vh;
-    overflow-y: auto;
-    width: 100%;
-    position: relative;
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 32px;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-
-  .modal-close:hover {
-    transform: scale(1.1);
-  }
-
-  .tickets-gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-  }
-
-  .ticket-gallery-item {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-
-  .ticket-gallery-item:hover {
-    border-color: var(--teal);
-    transform: scale(1.02);
-    box-shadow: 0 8px 24px rgba(0,180,216,0.1);
-  }
-
-  .ticket-gallery-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    display: block;
-  }
-
-  .ticket-gallery-info {
-    padding: 14px;
-  }
-
-  .ticket-gallery-route {
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 6px;
-  }
-
-  .ticket-gallery-date {
-    font-size: 12px;
-    color: var(--text-soft);
-  }
 </style>
 </head>
 <body>
@@ -621,26 +383,6 @@
       <div class="groups-list" id="groups-container">
         <!-- Rendered by JS -->
       </div>
-    </div>
-  </div>
-
-  <!-- TICKETS & BOARDING PASSES -->
-  <section class="panel tickets-panel">
-    <h3 style="display:flex; align-items:center; gap:8px; margin-top:0; font-size:15px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft); border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:12px;">
-      🎫 Tickets &amp; Instapkaarten
-      <span id="ticketCountPill" style="margin-left:auto; background:var(--teal-soft); color:var(--teal); border:1px solid rgba(0,180,216,0.2); padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;">0 tickets</span>
-    </h3>
-    <div class="tickets-scroll" id="ticketsContainer">
-      <!-- Tickets rendered here -->
-    </div>
-  </section>
-
-  <!-- TICKETS GALLERY MODAL -->
-  <div id="ticketsModal" class="tickets-modal-overlay" onclick="closeTicketsGallery()">
-    <div class="tickets-modal-content" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeTicketsGallery()">×</button>
-      <h2 style="margin-top:0;">Alle Tickets &amp; Boarding Passes</h2>
-      <div class="tickets-gallery-grid" id="ticketsGalleryGrid"></div>
     </div>
   </div>
 
@@ -713,14 +455,14 @@
       },
       {
         "date": "2026-09-10",
-        "location": "Nachttrein naar Malang",
-        "note": "Borobudur overdag, dan nachttrein",
+        "location": "Yogyakarta",
+        "note": "Borobudur in de ochtend, dan start van de 4-daagse tour richting Oost-Java (Tumpak Sewu, Bromo, Ijen, tot in Bali)",
         "planned": true
       },
       {
         "date": "2026-09-11",
-        "location": "Malang",
-        "note": "Met de jongens mee naar Tumpak Sewu en Bromo",
+        "location": "Tumpak Sewu",
+        "note": "Met de jongens mee naar Tumpak Sewu, daarna door naar Bromo",
         "planned": true
       },
       {
@@ -732,55 +474,49 @@
       {
         "date": "2026-09-15",
         "location": "Surabaya",
-        "note": "Vlucht DPS 16:40 → SUB met IU 703; Hinke landt om 18:15 met CX629, samen verder. Villa Wonderhouz in Blimbing geboekt (HMJFAKQ8FH)",
+        "note": "Vlucht DPS 16:40 → SUB met IU 703; Hinke landt om 18:15 met CX629, samen verder. Villa Panda in Blimbing geboekt (15-18/09)",
         "planned": true
       },
       {
         "date": "2026-09-16",
-        "location": "Banyuwangi",
-        "note": "Bromo + Tumpak Sewu met Hinke",
+        "location": "Malang",
+        "note": "Tumpak Sewu met Hinke (tour die zij zelf boekte)",
         "planned": true
       },
       {
         "date": "2026-09-17",
-        "location": "Banyuwangi",
-        "note": "Kawah Ijen met Hinke",
+        "location": "Bromo",
+        "note": "Mount Bromo bij zonsopgang en de Madakaripura-waterval, daarna terug naar Villa Panda",
         "planned": true
       },
       {
         "date": "2026-09-18",
-        "location": "Labuan Bajo",
-        "note": "Via Denpasar",
+        "location": "Lombok",
+        "note": "Checkout Blimbing, rit naar Surabaya, vlucht SUB 11:00 → Lombok 13:05 met Super Air Jet",
         "planned": true
       },
       {
-        "date": "2026-09-21",
-        "location": "Ruteng",
-        "note": "Roadtrip binnenland",
-        "planned": true
-      },
-      {
-        "date": "2026-09-23",
+        "date": "2026-09-22",
         "location": "Labuan Bajo",
-        "note": "Terug richting kust, Komodo-voorbereiding",
+        "note": "Vlucht Lombok 12:25 → Labuan Bajo 13:40 met Wings Abadi; twee nachten aan wal",
         "planned": true
       },
       {
         "date": "2026-09-24",
         "location": "Komodo National Park",
-        "note": "Komodo boottour (Padar, Pink Beach, Komodo, Manta Point)",
+        "note": "Start 2-daagse boottour (pickup 10:00): Kelor, Rinca, zonsondergang bij Kalong — nacht aan boord",
         "planned": true
       },
       {
         "date": "2026-09-25",
         "location": "Labuan Bajo",
-        "note": "Relaxdag in Labuan Bajo",
+        "note": "Boottour dag 2: Padar bij zonsopgang, Pink Beach, Manta Point en Taka Makassar — terug in de haven rond 19:00",
         "planned": true
       },
       {
         "date": "2026-09-26",
         "location": "Bali",
-        "note": "Villa, laatste etappe",
+        "note": "Vlucht Labuan Bajo 10:35 → Denpasar 11:50; villa, laatste etappe",
         "planned": true
       },
       {
@@ -810,49 +546,43 @@
       {
         "date": "2026-09-15",
         "location": "Surabaya",
-        "note": "Landt om 18:15 met CX629, Matthew wacht haar op. Villa Wonderhouz in Blimbing geboekt (HMJFAKQ8FH)",
+        "note": "Landt om 18:15 met CX629, Matthew wacht haar op. Villa Panda in Blimbing geboekt (15-18/09)",
         "planned": true
       },
       {
         "date": "2026-09-16",
-        "location": "Banyuwangi",
-        "note": "Bromo + Tumpak Sewu met Matthew",
+        "location": "Malang",
+        "note": "Tumpak Sewu met Matthew — tour die Hinke zelf via GetYourGuide boekte",
         "planned": true
       },
       {
         "date": "2026-09-17",
-        "location": "Banyuwangi",
-        "note": "Kawah Ijen met Matthew",
+        "location": "Bromo",
+        "note": "Mount Bromo bij zonsopgang en de Madakaripura-waterval, daarna terug naar Villa Panda",
         "planned": true
       },
       {
         "date": "2026-09-18",
-        "location": "Labuan Bajo",
-        "note": "Via Denpasar",
+        "location": "Lombok",
+        "note": "Checkout Blimbing, rit naar Surabaya, vlucht SUB 11:00 → Lombok 13:05 met Super Air Jet",
         "planned": true
       },
       {
-        "date": "2026-09-21",
-        "location": "Ruteng",
-        "note": "Roadtrip binnenland",
-        "planned": true
-      },
-      {
-        "date": "2026-09-23",
+        "date": "2026-09-22",
         "location": "Labuan Bajo",
-        "note": "Terug naar de kust, voorbereiding Komodo",
+        "note": "Vlucht Lombok 12:25 → Labuan Bajo 13:40 met Wings Abadi; twee nachten aan wal",
         "planned": true
       },
       {
         "date": "2026-09-24",
         "location": "Komodo National Park",
-        "note": "Komodo boottour (Padar, Pink Beach, Komodo, Manta Point) met Matthew",
+        "note": "Start 2-daagse boottour met Matthew (pickup 10:00): Kelor, Rinca, zonsondergang bij Kalong — nacht aan boord",
         "planned": true
       },
       {
         "date": "2026-09-25",
         "location": "Labuan Bajo",
-        "note": "Relaxdag in Labuan Bajo",
+        "note": "Boottour dag 2: Padar bij zonsopgang, Pink Beach, Manta Point en Taka Makassar — terug in de haven rond 19:00",
         "planned": true
       },
       {
@@ -971,8 +701,8 @@
       },
       {
         "date": "2026-09-20",
-        "location": "Bali",
-        "note": "Villa Canggu uitgecheckt; nog zes dagen op Bali tot de vlucht van 25/09 (verblijf nog te boeken)",
+        "location": "Lombok",
+        "note": "Villa Canggu uitgecheckt; door naar Lombok en Nusa Penida tot de vlucht van 25/09 (verblijf nog te boeken)",
         "planned": true
       },
       {
@@ -1164,7 +894,7 @@
       {
         "date": "2026-09-19",
         "location": "Onderweg naar huis",
-        "note": "Terugvlucht Bali → Brussel nog te boeken (samen met Kamiel) — niet mee op de Thai Airways-boeking van 25/09",
+        "note": "Vertrek uit Bali 19/09, thuis op 21/09 — vlucht Bali → Jakarta en terugvlucht nog te boeken (samen met Kamiel) — niet mee op de Thai Airways-boeking van 25/09",
         "planned": true
       }
     ]
@@ -1241,8 +971,8 @@
       },
       {
         "date": "2026-09-20",
-        "location": "Bali",
-        "note": "Villa Canggu uitgecheckt; nog zes dagen op Bali tot de vlucht van 25/09 (verblijf nog te boeken)",
+        "location": "Lombok",
+        "note": "Villa Canggu uitgecheckt; door naar Lombok en Nusa Penida tot de vlucht van 25/09 (verblijf nog te boeken)",
         "planned": true
       },
       {
@@ -1356,7 +1086,7 @@
       {
         "date": "2026-09-19",
         "location": "Onderweg naar huis",
-        "note": "Terugvlucht Bali → Brussel nog te boeken (samen met Eliott) — niet mee op de Thai Airways-boeking van 25/09",
+        "note": "Vertrek uit Bali 19/09, thuis op 21/09 — vlucht Bali → Jakarta en terugvlucht nog te boeken (samen met Eliott) — niet mee op de Thai Airways-boeking van 25/09",
         "planned": true
       }
     ]
@@ -1493,14 +1223,14 @@
       },
       {
         "date": "2026-09-10",
-        "location": "Malang",
-        "note": "Borobudur vroeg, nachttrein Yogyakarta → Malang",
+        "location": "Yogyakarta",
+        "note": "Borobudur vroeg, dan start van de 4-daagse tour naar Oost-Java en verder tot in Bali",
         "planned": true
       },
       {
         "date": "2026-09-11",
-        "location": "Tumpak Sewu → Combu Lawang",
-        "note": "Waterval Tumpak Sewu (2,5u rijden), dan naar Combu Lawang",
+        "location": "Tumpak Sewu",
+        "note": "Waterval Tumpak Sewu, dan door naar de Bromo-regio",
         "planned": true
       },
       {
@@ -1552,9 +1282,9 @@
         "planned": true
       },
       {
-        "date": "2026-09-19",
-        "location": "Bali → Vietnam",
-        "note": "Vlucht naar Vietnam (samen met Mathias & Maurice) — TBD",
+        "date": "2026-09-20",
+        "location": "Lombok",
+        "note": "Villa Canggu uitgecheckt; met Arne, Kasper en Jens door naar Lombok en Nusa Penida — hier duiken in plaats van op Bali",
         "planned": true
       }
     ]
@@ -1661,8 +1391,8 @@
       },
       {
         "date": "2026-09-20",
-        "location": "Bali",
-        "note": "Villa Canggu uitgecheckt; nog zes dagen op Bali tot de vlucht van 25/09 (verblijf nog te boeken)",
+        "location": "Lombok",
+        "note": "Villa Canggu uitgecheckt; door naar Lombok en Nusa Penida tot de vlucht van 25/09 (verblijf nog te boeken)",
         "planned": true
       },
       {
@@ -2171,7 +1901,6 @@ function renderAll(){
   renderPanels();
   renderMapNodes();
   renderGroupComposition();
-  renderTickets();
 }
 
 function downloadUpdatedSite(){
@@ -2193,9 +1922,7 @@ function downloadUpdatedSite(){
   a.remove();
 }
 
-/* Data alvast laden; de eerste render gebeurt onderaan het script, ná de
-   FLIGHTS-declaratie. renderAll() roept renderTickets() aan, en dat leest
-   FLIGHTS — hier zou die const nog in zijn temporal dead zone zitten. */
+/* Data alvast laden; de eerste render gebeurt onderaan het script. */
 DATA = loadData();
 
 // Start timezone clocks updater — meteen één keer, anders staat er een
@@ -2204,143 +1931,8 @@ if (clockTimer) clearInterval(clockTimer);
 updateLiveClocks();
 clockTimer = setInterval(updateLiveClocks, 1000);
 
-/* ================================================================
-   TICKETS & BOARDING PASSES
-   ================================================================ */
-
-/* Eén ticketvakje per vluchtsegment, om er een boarding-passfoto bij te
-   bewaren. De id's zijn localStorage-sleutels (ticket_image_<id>) en mogen
-   dus niet zomaar wijzigen. Datums, tijden, vluchtnummers en passagiers
-   horen gelijk te lopen met TRANSPORT_LEGS in data.js. */
-const FLIGHTS = [
-  { id: "sq303", route: "BRU → SIN", from: "Brussel", to: "Singapore", date: "2026-08-29", time: "11:45", operator: "Singapore Airlines", flightNo: "SQ303", passengers: ["matthew", "arne", "eliott", "kamiel", "willem", "kasper"] },
-  { id: "sq990", route: "SIN → Medan", from: "Singapore", to: "Medan", date: "2026-08-30", time: "07:30", operator: "Singapore Airlines", flightNo: "SQ990", passengers: ["matthew", "arne"] },
-  { id: "sq956", route: "SIN → Jakarta", from: "Singapore", to: "Jakarta", date: "2026-08-30", time: "09:05", operator: "Singapore Airlines", flightNo: "SQ956", passengers: ["eliott", "kamiel", "willem", "kasper"] },
-  { id: "jak_medan", route: "Jakarta → Medan", from: "Jakarta", to: "Medan", date: "2026-09-01", time: "08:05", operator: "Lion Air", flightNo: "JT204", passengers: ["eliott", "kamiel", "willem", "kasper"] },
-  { id: "med_jak", route: "Medan → Jakarta", from: "Medan", to: "Jakarta", date: "2026-09-07", time: "19:00", operator: "Lion Air", flightNo: "JT383", passengers: ["matthew", "arne", "eliott", "kamiel", "willem", "kasper"] },
-  { id: "sq303_jmj", route: "BRU → SIN", from: "Brussel", to: "Singapore", date: "2026-09-07", time: "11:45", operator: "Singapore Airlines", flightNo: "SQ303", passengers: ["jens", "maurice", "mathias"] },
-  { id: "sq952", route: "SIN → Jakarta", from: "Singapore", to: "Jakarta", date: "2026-09-08", time: "07:40", operator: "Singapore Airlines", flightNo: "SQ952", passengers: ["jens", "maurice", "mathias"] },
-  { id: "hinke_hkg", route: "BRU → HKG", from: "Brussel", to: "Hongkong", date: "2026-09-14", time: "13:05", operator: "Cathay Pacific", flightNo: "CX294", passengers: ["hinke"] },
-  { id: "hinke_sub", route: "HKG → SUB", from: "Hongkong", to: "Surabaya", date: "2026-09-15", time: "14:30", operator: "Cathay Pacific", flightNo: "CX629", passengers: ["hinke"] },
-  { id: "dps_sub", route: "DPS → SUB", from: "Bali", to: "Surabaya", date: "2026-09-15", time: "16:40", operator: "Super Air Jet", flightNo: "IU703", passengers: ["matthew"] },
-  { id: "java_denp", route: "Java → Denpasar → Labuan Bajo", from: "Surabaya", to: "Labuan Bajo", date: "2026-09-18", time: "09:00", operator: "Garuda Indonesia", flightNo: "GA402", passengers: ["matthew", "hinke"] },
-  { id: "bali_boys", route: "Bali → Bangkok", from: "Bali", to: "Bangkok", date: "2026-09-25", time: "16:55", operator: "Thai Airways", flightNo: "TG432", passengers: ["arne", "jens", "kasper"] },
-  { id: "bkk_bru", route: "Bangkok → Brussel", from: "Bangkok", to: "Brussel", date: "2026-09-26", time: "00:05", operator: "Thai Airways", flightNo: "TG934", passengers: ["arne", "jens", "kasper"] },
-  { id: "bali_ek", route: "Bali → Brussel", from: "Bali", to: "Brussel", date: "2026-09-19", time: "TBD", operator: "TBD", flightNo: "TBD", passengers: ["eliott", "kamiel"] },
-  { id: "bali_vietnam", route: "Bali → Vietnam", from: "Bali", to: "Ho Chi Minh City", date: "2026-09-19", time: "TBD", operator: "TBD", flightNo: "TBD", passengers: ["maurice", "mathias", "willem"] },
-  { id: "labuan_bali", route: "Labuan Bajo → Bali", from: "Labuan Bajo", to: "Bali", date: "2026-09-26", time: "11:15", operator: "Indonesia AirAsia", flightNo: "QZ503", passengers: ["matthew", "hinke"] },
-  { id: "bali_home", route: "Bali → Bangkok", from: "Bali", to: "Bangkok", date: "2026-09-29", time: "19:00", operator: "Thai Airways", flightNo: "TG440", passengers: ["matthew", "hinke"] },
-  { id: "bkk_bru_mh", route: "Bangkok → Brussel", from: "Bangkok", to: "Brussel", date: "2026-09-30", time: "00:05", operator: "Thai Airways", flightNo: "TG934", passengers: ["matthew", "hinke"] }
-];
-
-function getTicketImage(ticketId) {
-  const stored = localStorage.getItem(`ticket_image_${ticketId}`);
-  return stored ? stored : null;
-}
-
-function setTicketImage(ticketId, dataUrl) {
-  localStorage.setItem(`ticket_image_${ticketId}`, dataUrl);
-  renderTickets();
-}
-
-function renderTickets() {
-  const container = document.getElementById("ticketsContainer");
-  if (!container) return;
-
-  container.innerHTML = FLIGHTS.map(flight => {
-    const image = getTicketImage(flight.id);
-    const canUpload = flight.passengers.includes(activeTab) || activeTab === "overzicht";
-
-    if (image) {
-      // Ticket has been uploaded
-      return `
-        <div class="ticket-card" onclick="openTicketsGallery('${flight.id}')">
-          <img src="${image}" alt="${flight.route}" class="ticket-image">
-          <div class="ticket-header">
-            <span class="ticket-route">${flight.route}</span>
-            <span class="ticket-type">Vlucht</span>
-          </div>
-          <div class="ticket-body">
-            <div class="ticket-from-to">
-              <span class="ticket-location">${flight.from.split("→")[0].trim()}</span>
-              <span class="ticket-arrow">→</span>
-              <span class="ticket-location">${flight.to.split("→").pop().trim()}</span>
-            </div>
-            <div class="ticket-date">${new Date(flight.date).toLocaleDateString("nl-NL", {day:"numeric", month:"short", year:"numeric"})}</div>
-          </div>
-          <div class="ticket-footer">
-            <input type="file" class="hidden-file-input" id="upload-${flight.id}" accept="image/*" onchange="handleImageUpload(event, '${flight.id}')">
-            <button class="ticket-upload-btn" onclick="document.getElementById('upload-${flight.id}').click(); event.stopPropagation();">Vervang foto</button>
-          </div>
-        </div>
-      `;
-    } else {
-      // Empty ticket placeholder
-      return `
-        <div class="ticket-card empty" onclick="canUpload ? document.getElementById('upload-${flight.id}').click() : null">
-          <div class="ticket-empty-placeholder">
-            <strong>${flight.from}</strong>
-            ↓<br>
-            <strong>${flight.to}</strong>
-            <div style="font-size:12px; margin-top:12px; opacity:0.7;">${new Date(flight.date).toLocaleDateString("nl-NL")}</div>
-            <div style="margin-top:14px; font-size:11px;">Klik om boarding pass<br>foto op te laden</div>
-          </div>
-          <input type="file" class="hidden-file-input" id="upload-${flight.id}" accept="image/*" onchange="handleImageUpload(event, '${flight.id}')" ${canUpload ? "" : "disabled"}>
-        </div>
-      `;
-    }
-  }).join("");
-
-  document.getElementById("ticketCountPill").textContent = `${FLIGHTS.filter(f => getTicketImage(f.id)).length} / ${FLIGHTS.length} tickets`;
-
-  // Add hidden file input styling
-  if (!document.querySelector("style[data-file-inputs]")) {
-    const style = document.createElement("style");
-    style.setAttribute("data-file-inputs", "true");
-    style.textContent = `.hidden-file-input { display: none; }`;
-    document.head.appendChild(style);
-  }
-}
-
-function handleImageUpload(event, ticketId) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    setTicketImage(ticketId, dataUrl);
-  };
-  reader.readAsDataURL(file);
-}
-
-function openTicketsGallery(activeTicketId = null) {
-  const modal = document.getElementById("ticketsModal");
-  const galleryGrid = document.getElementById("ticketsGalleryGrid");
-
-  galleryGrid.innerHTML = FLIGHTS.filter(f => getTicketImage(f.id)).map(flight => {
-    const image = getTicketImage(flight.id);
-    return `
-      <div class="ticket-gallery-item">
-        <img src="${image}" alt="${flight.route}" class="ticket-gallery-image">
-        <div class="ticket-gallery-info">
-          <div class="ticket-gallery-route">${flight.route}</div>
-          <div class="ticket-gallery-date">${flight.flightNo}<br>${new Date(flight.date).toLocaleDateString("nl-NL", {day:"numeric", month:"long"})}</div>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  modal.classList.add("open");
-}
-
-function closeTicketsGallery() {
-  const modal = document.getElementById("ticketsModal");
-  modal.classList.remove("open");
-}
-
-/* Eerste render: alles staat nu gedeclareerd, inclusief FLIGHTS.
-   onSliderChange() zet de simulatiedatum en roept renderAll() aan. */
+/* Eerste render: onSliderChange() zet de simulatiedatum en roept
+   renderAll() aan. */
 onSliderChange(0);
 </script>
 </body>

@@ -422,22 +422,12 @@
   border-radius: 50%;
   background: var(--fc);
   border: 2px solid rgba(7, 9, 14, 0.85);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--fc) 60%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: width 0.3s ease, height 0.3s ease, inset 0.3s ease, opacity 0.3s ease;
 }
 .tm-place-dot i { font-style: normal; font-size: 0; transition: font-size 0.25s ease; }
-
-.tm-place-ring {
-  position: absolute;
-  inset: -7px;
-  border-radius: 50%;
-  border: 2px solid var(--fc);
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
 
 .tm-place-label {
   position: absolute;
@@ -458,7 +448,6 @@
 /* Status ten opzichte van de gekozen dag */
 .tm-place-actief .tm-place-dot { inset: -4px; }
 .tm-place-actief .tm-place-dot i { font-size: 11px; }
-.tm-place-actief .tm-place-ring { opacity: 0.75; inset: -11px; }
 .tm-place-actief .tm-place-label { color: #fff; font-weight: 700; }
 
 /* Hier staat de reiziger nu even stil: de plek waar op dit moment iets gebeurt.
@@ -466,28 +455,17 @@
    en er is er maar één waar hij op dít moment is. */
 .tm-place-hier .tm-place-dot { inset: -6px; }
 .tm-place-hier .tm-place-dot i { font-size: 13px; }
-.tm-place-hier .tm-place-ring {
-  opacity: 1;
-  inset: -14px;
-  border-width: 2.5px;
-  animation: tm-halte 1.1s ease-out infinite;
-}
 .tm-place-hier .tm-place-label {
   color: #fff;
   font-weight: 700;
   font-size: 12.5px;
   opacity: 1 !important;
 }
-@keyframes tm-halte {
-  0%   { transform: scale(0.82); opacity: 0.95; }
-  70%  { transform: scale(1.18); opacity: 0.15; }
-  100% { transform: scale(1.18); opacity: 0; }
-}
 
 .tm-place-verleden .tm-place-dot { opacity: 0.55; }
 .tm-place-verleden .tm-place-label { opacity: 0.65; font-weight: 500; }
 
-.tm-place-toekomst .tm-place-dot { background: transparent; border-color: var(--fc); box-shadow: none; opacity: 0.75; }
+.tm-place-toekomst .tm-place-dot { background: transparent; border-color: var(--fc); opacity: 0.75; }
 .tm-place-toekomst .tm-place-label { opacity: 0.4; font-weight: 500; }
 
 .tm-place-dof .tm-place-dot { opacity: 0.12; }
@@ -819,7 +797,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tm-seg-actief, .tm-person-focus .tm-person-pulse,
-  .tm-place-hier .tm-place-ring { animation: none; }
-  .tm-place-dot, .tm-place-ring, .tm-person-av, .tm-place-label { transition: none; }
+  .tm-seg-actief, .tm-person-focus .tm-person-pulse { animation: none; }
+  .tm-place-dot, .tm-person-av, .tm-place-label { transition: none; }
 }
